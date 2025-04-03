@@ -176,7 +176,7 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
         await expect.soft(createListV1Row.leftSummary.changes).toBeHidden()
         await expect.soft(createListV1Row.rightSummary.path).toHaveText(`${CREATE_LIST_OF_USERS_V2.method}${CREATE_LIST_OF_USERS_V2.path}`)
         await expect.soft(createListV1Row.rightSummary.changes.breaking).toHaveText('Breaking: 1')
-        await expect.soft(createListV1Row.rightSummary.changes.semiBreaking).toBeHidden()
+        await expect.soft(createListV1Row.rightSummary.changes.risky).toBeHidden()
         await expect.soft(createListV1Row.rightSummary.changes.deprecated).toHaveText('Deprecated: 1')
         //! await expect.soft(createListV1Row.rightSummary.changes.nonBreaking).toHaveText('Non-breaking: 1') //Issue TestCase-B-1442
         await expect.soft(createListV1Row.rightSummary.changes.annotation).toHaveText('Annotation: 2')
@@ -208,7 +208,7 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
         await expect.soft(createListV1Row.leftSummary.changes).toBeHidden()
         await expect.soft(createListV1Row.rightSummary.path).toHaveText(`${CREATE_LIST_OF_USERS_V1_UPDATED.method}${CREATE_LIST_OF_USERS_V1_UPDATED.path}`)
         await expect.soft(createListV1Row.rightSummary.changes.breaking).toHaveText('Breaking: 1')
-        await expect.soft(createListV1Row.rightSummary.changes.semiBreaking).toBeHidden
+        await expect.soft(createListV1Row.rightSummary.changes.risky).toBeHidden
         await expect.soft(createListV1Row.rightSummary.changes.deprecated).toHaveText('Deprecated: 1')
         //! await expect.soft(createListV1Row.rightSummary.changes.nonBreaking).toHaveText('Non-breaking: 1') //Issue TestCase-B-1442
         await expect.soft(createListV1Row.rightSummary.changes.annotation).toHaveText('Annotation: 2')

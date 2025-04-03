@@ -5,7 +5,7 @@ export class OperationChangesSummary extends BaseComponent {
 
   readonly componentType: string = 'changes summary'
   readonly breaking = new Content(this.mainLocator.getByTestId('breaking'), `${this.componentName} Breaking changes`)
-  readonly semiBreaking = new Content(this.mainLocator.getByTestId('risky'), `${this.componentName} Changes Requiring Attention`)
+  readonly risky = new Content(this.mainLocator.getByTestId('risky'), `${this.componentName} Changes Requiring Attention`)
   readonly deprecated = new Content(this.mainLocator.getByTestId('deprecated'), `${this.componentName} Deprecated changes`)
   readonly nonBreaking = new Content(this.mainLocator.getByTestId('non-breaking'), `${this.componentName} Non-breaking changes`)
   readonly annotation = new Content(this.mainLocator.getByTestId('annotation'), `${this.componentName} Annotation changes`)
