@@ -119,9 +119,9 @@ test.describe('09.3 Compare Dashboard versions', () => {
       await expect.soft(comparePage.toolbar.breakingChangesFilterBtn).not.toBePressed()
       await expect(comparePage.compareContent.getPackageRow()).toHaveCount(2)
 
-      await comparePage.toolbar.semiBreakingChangesFilterBtn.click()
+      await comparePage.toolbar.riskyChangesFilterBtn.click()
 
-      await expect.soft(comparePage.toolbar.semiBreakingChangesFilterBtn).not.toBePressed()
+      await expect.soft(comparePage.toolbar.riskyChangesFilterBtn).not.toBePressed()
       await expect(comparePage.compareContent.getPackageRow()).toHaveCount(2)
 
       await comparePage.toolbar.deprecatedChangesFilterBtn.click()

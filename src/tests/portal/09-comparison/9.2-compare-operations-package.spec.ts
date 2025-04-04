@@ -280,9 +280,9 @@ test.describe('09.2 Compare Operations (Package)', () => {
       await expect(compareOperationsPage.sidebar.getOperationButton()).toHaveCount(1)
       await expect(compareOperationsPage.sidebar.getTagButton()).toHaveCount(2)
 
-      await compareOperationsPage.toolbar.semiBreakingChangesFilterBtn.click()
+      await compareOperationsPage.toolbar.riskyChangesFilterBtn.click()
 
-      await expect.soft(compareOperationsPage.toolbar.semiBreakingChangesFilterBtn).toBePressed()
+      await expect.soft(compareOperationsPage.toolbar.riskyChangesFilterBtn).toBePressed()
       await expect(compareOperationsPage.sidebar.getOperationButton()).toHaveCount(1)
       await expect(compareOperationsPage.sidebar.getTagButton()).toHaveCount(3)
 
@@ -316,9 +316,9 @@ test.describe('09.2 Compare Operations (Package)', () => {
       await expect(compareOperationsPage.sidebar.getOperationButton()).toHaveCount(3)
       await expect(compareOperationsPage.sidebar.getTagButton()).toHaveCount(2)
 
-      await compareOperationsPage.toolbar.semiBreakingChangesFilterBtn.click()
+      await compareOperationsPage.toolbar.riskyChangesFilterBtn.click()
 
-      await expect.soft(compareOperationsPage.toolbar.semiBreakingChangesFilterBtn).not.toBePressed()
+      await expect.soft(compareOperationsPage.toolbar.riskyChangesFilterBtn).not.toBePressed()
       await expect(compareOperationsPage.sidebar.getOperationButton()).toHaveCount(3)
       await expect(compareOperationsPage.sidebar.getTagButton()).toHaveCount(1)
 

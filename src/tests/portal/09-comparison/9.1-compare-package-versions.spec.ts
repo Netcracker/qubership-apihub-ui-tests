@@ -517,7 +517,7 @@ test.describe('09.1 Compare Package versions', () => {
         await comparePage.toolbar.riskyChangesFilterBtn.hover()
 
         await expect(portalPage.tooltip).toHaveCount(1)
-        for (const msg of TOOLTIP_SEVERITY_MSG.semiBreaking) {
+        for (const msg of TOOLTIP_SEVERITY_MSG.risky) {
           await expect.soft(portalPage.tooltip).toContainText(msg)
         }
 

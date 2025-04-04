@@ -155,7 +155,7 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
         await compareSelectDialog.compareBtn.click()
 
         /*! await expect(comparePage.toolbar.breakingChangesFilterBtn).toHaveText('2') //Issue TestCase-B-1442
-        await expect(comparePage.toolbar.semiBreakingChangesFilterBtn).toHaveText('0')
+        await expect(comparePage.toolbar.riskyChangesFilterBtn).toHaveText('0')
         await expect(comparePage.toolbar.deprecatedChangesFilterBtn).toHaveText('2')
         await expect(comparePage.toolbar.nonBreakingChangesFilterBtn).toHaveText('2')
         await expect(comparePage.toolbar.annotationChangesFilterBtn).toHaveText('1')
@@ -187,7 +187,7 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
         await comparePage.swapper.swapBtn.click()
 
         // await expect(comparePage.toolbar.breakingChangesFilterBtn).toHaveText('2')
-        // await expect(comparePage.toolbar.semiBreakingChangesFilterBtn).toHaveText('0')
+        // await expect(comparePage.toolbar.riskyChangesFilterBtn).toHaveText('0')
         // await expect(comparePage.toolbar.deprecatedChangesFilterBtn).toHaveText('2')
         // await expect(comparePage.toolbar.nonBreakingChangesFilterBtn).toHaveText('2')
         // await expect(comparePage.toolbar.annotationChangesFilterBtn).toHaveText('1')
