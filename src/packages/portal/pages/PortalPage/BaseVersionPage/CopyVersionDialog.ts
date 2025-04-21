@@ -24,6 +24,7 @@ export class CopyVersionDialog extends BasePublishDialog {
     if (params.package) {
       await report.step('Set "Package"', async () => {
         await this.packageAc.click()
+        await this.packageAc.clear()
         await this.packageAc.getListItem(`${params.package!.name} ${params.package!.packageId}`).click()
       })
     }
