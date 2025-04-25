@@ -60,11 +60,11 @@ test.describe('14.2 Copying Dashboard Version', () => {
         })
 
         await expect(copyVersionDialog.packageAc).toBeEnabled()
-        /*!await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version) //Issue: TestCase-B-1403
+        await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version) //Issue: TestCase-B-1403
         await expect(copyVersionDialog.statusAc).toHaveValue(sourceVersion.status)
         for (const label of sourceVersion.metadata!.versionLabels!) {
           await expect(copyVersionDialog.labelsAc).toContainText(label)
-        }*/
+        }
       })
 
       await test.step('Set target Dashboard', async () => {
@@ -72,11 +72,11 @@ test.describe('14.2 Copying Dashboard Version', () => {
           package: targetDashboard,
         })
 
-        /*!await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version) //Issue: TestCase-B-1403
+        await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version) //Issue: TestCase-B-1403
         await expect(copyVersionDialog.statusAc).toHaveValue(sourceVersion.status)
         for (const label of sourceVersion.metadata!.versionLabels!) {
           await expect(copyVersionDialog.labelsAc).toContainText(label)
-        }*/
+        }
       })
 
       await test.step('Set target Version Info and copy Version', async () => {
@@ -184,11 +184,11 @@ test.describe('14.2 Copying Dashboard Version', () => {
         })
 
         await expect(copyVersionDialog.packageAc).toHaveValue(targetDashboard.name)
-        /*!await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version) //Issue: TestCase-B-1403
+        await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version) //Issue: TestCase-B-1403
         await expect(copyVersionDialog.statusAc).toHaveValue(sourceVersion.status)
         for (const label of sourceVersion.metadata!.versionLabels!) {
           await expect(copyVersionDialog.labelsAc).toContainText(label)
-        }*/
+        }
         await expect(copyVersionDialog.previousVersionAc).toHaveValue(NO_PREV_RELEASE_VERSION)
       })
 
