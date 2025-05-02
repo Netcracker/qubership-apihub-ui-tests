@@ -21,7 +21,7 @@ test.describe('14.2 Copying Dashboard Version', () => {
 
   const sourceVersion = V_P_DSH_COPYING_SOURCE_R
 
-  test.skip('[P-CDAD-1.1] Copy Version dialog field validation logic',
+  test('[P-CDAD-1.1] Copy Version dialog field validation logic',
     {
       tag: '@smoke',
       annotation: [
@@ -30,7 +30,6 @@ test.describe('14.2 Copying Dashboard Version', () => {
           description: 'Verifies the behavior of fields in the Copy Version dialog. The test checks pre-populated fields in the dialog, field clearing behavior, dashboard field disabling when workspace is cleared, and ensures cleared target version fields are not auto-populated when workspace/dashboard is selected.',
         },
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-9380` },
-        { type: 'Issue', description: `${TICKET_BASE_URL}TestCase-B-1403` },
       ],
     },
     async ({ sysadminPage: page }) => {
