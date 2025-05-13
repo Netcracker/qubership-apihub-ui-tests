@@ -106,13 +106,15 @@ test.describe('14.1 Copying Package Version', () => {
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-9365` },
       ],
     },
-    async ({ sysadminPage: page }) => {
+    async ({ sysadminPage: page }, testInfo) => {
 
+      const { retry = 0 } = testInfo
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
       const { overviewTab, operationsTab, deprecatedTab, documentsTab, copyVersionDialog } = versionPage
       const targetWorkspace = P_WS_MAIN_R
       const targetPackage = P_PK_CP_EMPTY
+      const targetVersion = `20${retry}0.2`
 
       await test.step('Open Copy Version dialog', async () => {
         await portalPage.gotoVersion(sourceVersion)
@@ -131,7 +133,7 @@ test.describe('14.1 Copying Package Version', () => {
 
       await test.step('Set target Version Info and copy Version', async () => {
         await copyVersionDialog.fillForm({
-          version: '2000.2',
+          version: targetVersion,
           status: DRAFT_VERSION_STATUS,
           labels: ['label-1', 'label-2'],
           previousVersion: NO_PREV_RELEASE_VERSION,
@@ -147,8 +149,8 @@ test.describe('14.1 Copying Package Version', () => {
 
         await expect(overviewTab.summaryTab.body.labels).toContainText('label-1')
         await expect(overviewTab.summaryTab.body.labels).toContainText('label-2')
-        await expect(overviewTab.summaryTab.body.summary.currentVersion).toHaveText('2000.2')
-        await expect(overviewTab.summaryTab.body.summary.revision).not.toBeEmpty() //not a specific number because it changes every retry
+        await expect(overviewTab.summaryTab.body.summary.currentVersion).toHaveText(targetVersion)
+        await expect(overviewTab.summaryTab.body.summary.revision).toHaveText('1')
         await expect(overviewTab.summaryTab.body.summary.previousVersion).toHaveText('-')
         await expect(overviewTab.summaryTab.body.summary.publishedBy).toHaveText(SYSADMIN.name)
         await expect(overviewTab.summaryTab.body.summary.publicationDate).not.toBeEmpty()
@@ -184,7 +186,7 @@ test.describe('14.1 Copying Package Version', () => {
         await versionPage.toolbar.versionSlt.click()
         await versionPage.toolbar.versionSlt.draftBtn.click()
 
-        await expect(versionPage.toolbar.versionSlt.getVersionRow()).toHaveCount(1)
+        await expect(versionPage.toolbar.versionSlt.getVersionRow(targetVersion)).toBeVisible()
       })
     })
 
@@ -200,13 +202,15 @@ test.describe('14.1 Copying Package Version', () => {
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-9371` },
       ],
     },
-    async ({ sysadminPage: page }) => {
+    async ({ sysadminPage: page }, testInfo) => {
 
+      const { retry = 0 } = testInfo
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
       const { overviewTab, operationsTab, apiChangesTab, deprecatedTab, documentsTab, copyVersionDialog } = versionPage
       const targetWorkspace = P_WS_MAIN_R
       const targetPackage = P_PK_CP_RELEASE
+      const targetVersion = `20${retry}0.2`
 
       await test.step('Open Copy Version dialog', async () => {
         await portalPage.gotoVersion(sourceVersion)
@@ -226,7 +230,7 @@ test.describe('14.1 Copying Package Version', () => {
 
       await test.step('Set target Version Info and copy Version', async () => {
         await copyVersionDialog.fillForm({
-          version: '2000.2',
+          version: targetVersion,
           status: RELEASE_VERSION_STATUS,
           labels: ['label-1', 'label-2'],
           previousVersion: V_P_PKG_COPYING_RELEASE_N.version,
@@ -242,8 +246,8 @@ test.describe('14.1 Copying Package Version', () => {
 
         await expect(overviewTab.summaryTab.body.labels).toContainText('label-1')
         await expect(overviewTab.summaryTab.body.labels).toContainText('label-2')
-        await expect(overviewTab.summaryTab.body.summary.currentVersion).toHaveText('2000.2')
-        await expect(overviewTab.summaryTab.body.summary.revision).not.toBeEmpty() //not a specific number because it changes every retry
+        await expect(overviewTab.summaryTab.body.summary.currentVersion).toHaveText(targetVersion)
+        await expect(overviewTab.summaryTab.body.summary.revision).toHaveText('1')
         await expect(overviewTab.summaryTab.body.summary.previousVersion).toHaveText(V_P_PKG_COPYING_RELEASE_N.version)
         await expect(overviewTab.summaryTab.body.summary.publishedBy).toHaveText(SYSADMIN.name)
         await expect(overviewTab.summaryTab.body.summary.publicationDate).not.toBeEmpty()
@@ -278,7 +282,7 @@ test.describe('14.1 Copying Package Version', () => {
       await test.step('Open the Version selector', async () => {
         await versionPage.toolbar.versionSlt.click()
 
-        await expect(versionPage.toolbar.versionSlt.getVersionRow()).toHaveCount(2)
+        await expect(versionPage.toolbar.versionSlt.getVersionRow(targetVersion)).toBeVisible()
       })
     })
 
