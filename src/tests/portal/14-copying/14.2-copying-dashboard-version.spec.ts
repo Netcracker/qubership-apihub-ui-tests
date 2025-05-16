@@ -27,7 +27,7 @@ test.describe('14.2 Copying Dashboard Version', () => {
       annotation: [
         {
           type: 'Description',
-          description: 'Verifies the behavior of fields in the Copy Version dialog. The test checks pre-populated fields in the dialog, field clearing behavior, dashboard field disabling when workspace is cleared, and ensures cleared target version fields are not auto-populated when workspace/dashboard is selected.',
+          description: 'Verifies the behavior of fields in the Copy Version dialog. The test checks pre-populated fields in the dialog, field clearing behavior, validation of disabled fields, and ensures cleared target version fields are not auto-populated when workspace/dashboard is selected.',
         },
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-9380` },
       ],
@@ -47,20 +47,25 @@ test.describe('14.2 Copying Dashboard Version', () => {
         await expect(copyVersionDialog.workspaceAc).toHaveValue(targetWorkspace.name)
         await expect(copyVersionDialog.packageAc).toBeEnabled()
         await expect(copyVersionDialog.packageAc).toBeEmpty()
+        await expect(copyVersionDialog.versionAc).toBeDisabled()
         await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version)
+        await expect(copyVersionDialog.statusAc).toBeDisabled()
         await expect(copyVersionDialog.statusAc).toHaveValue(sourceVersion.status)
+        await expect(copyVersionDialog.labelsAc).toBeDisabled()
         for (const label of sourceVersion.metadata!.versionLabels!) {
           await expect(copyVersionDialog.labelsAc.getChip(label)).toBeVisible()
         }
+        await expect(copyVersionDialog.previousVersionAc).toBeDisabled()
       })
 
-      await test.step('Clear fields', async () => {
+      await test.step('Clear Workspace field', async () => {
         await copyVersionDialog.workspaceAc.clear()
-        await copyVersionDialog.versionAc.clear()
-        await copyVersionDialog.labelsAc.hover()
-        await copyVersionDialog.labelsAc.clearBtn.click()
 
         await expect(copyVersionDialog.packageAc).toBeDisabled()
+        await expect(copyVersionDialog.versionAc).toBeDisabled()
+        await expect(copyVersionDialog.statusAc).toBeDisabled()
+        await expect(copyVersionDialog.labelsAc).toBeDisabled()
+        await expect(copyVersionDialog.previousVersionAc).toBeDisabled()
       })
 
       await test.step('Set target Workspace', async () => {
@@ -71,9 +76,10 @@ test.describe('14.2 Copying Dashboard Version', () => {
         await expect(copyVersionDialog.workspaceAc).toHaveValue(targetWorkspace.name)
         await expect(copyVersionDialog.packageAc).toBeEnabled()
         await expect(copyVersionDialog.packageAc).toBeEmpty()
-        await expect(copyVersionDialog.versionAc).toBeEmpty()
-        await expect(copyVersionDialog.statusAc).toHaveValue(sourceVersion.status)
-        await expect(copyVersionDialog.labelsAc.getChip()).toHaveCount(0)
+        await expect(copyVersionDialog.versionAc).toBeDisabled()
+        await expect(copyVersionDialog.statusAc).toBeDisabled()
+        await expect(copyVersionDialog.labelsAc).toBeDisabled()
+        await expect(copyVersionDialog.previousVersionAc).toBeDisabled()
       })
 
       await test.step('Set target Dashboard', async () => {
@@ -82,6 +88,22 @@ test.describe('14.2 Copying Dashboard Version', () => {
         })
 
         await expect(copyVersionDialog.packageAc).toHaveValue(targetDashboard.name)
+        await expect(copyVersionDialog.versionAc).toBeEnabled()
+        await expect(copyVersionDialog.versionAc).toHaveValue(sourceVersion.version)
+        await expect(copyVersionDialog.statusAc).toBeEnabled()
+        await expect(copyVersionDialog.statusAc).toHaveValue(sourceVersion.status)
+        await expect(copyVersionDialog.labelsAc).toBeEnabled()
+        for (const label of sourceVersion.metadata!.versionLabels!) {
+          await expect(copyVersionDialog.labelsAc.getChip(label)).toBeVisible()
+        }
+        await expect(copyVersionDialog.previousVersionAc).toBeEnabled()
+      })
+
+      await test.step('Clear fields', async () => {
+        await copyVersionDialog.versionAc.clear()
+        await copyVersionDialog.labelsAc.hover()
+        await copyVersionDialog.labelsAc.clearBtn.click()
+
         await expect(copyVersionDialog.versionAc).toBeEmpty()
         await expect(copyVersionDialog.statusAc).toHaveValue(sourceVersion.status)
         await expect(copyVersionDialog.labelsAc.getChip()).toHaveCount(0)
