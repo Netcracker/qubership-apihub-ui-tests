@@ -24,12 +24,7 @@ import {
   V_DSH_DMGR_200_R,
   V_DSH_DMGR_CHANGED_R,
 } from '@test-data/portal'
-import {
-  VERSION_CHANGES_TAB_REST,
-  VERSION_DEPRECATED_TAB_REST,
-  VERSION_OPERATIONS_TAB_REST,
-  VERSION_OVERVIEW_TAB_GROUPS,
-} from '@portal/entities'
+import { VERSION_CHANGES_TAB_REST, VERSION_DEPRECATED_TAB_REST, VERSION_OPERATIONS_TAB_REST, VERSION_OVERVIEW_TAB_GROUPS } from '@portal/entities'
 import { TICKET_BASE_URL } from '@test-setup'
 
 test.describe('12.2.2 Manual grouping: Viewing (Dashboards)', () => {
@@ -47,7 +42,8 @@ test.describe('12.2.2 Manual grouping: Viewing (Dashboards)', () => {
     async ({ sysadminPage: page }) => {
 
       const portalPage = new PortalPage(page)
-      const { versionPackagePage: versionPage } = portalPage
+      const { versionDashboardPage: versionPage } = portalPage
+      const { exportSettingsDialog: exportDialog } = versionPage
       const { overviewTab } = versionPage
       const { groupsTab } = overviewTab
       const { groupName } = OGR_DMGR_DOWNLOAD_REST_R
@@ -55,33 +51,63 @@ test.describe('12.2.2 Manual grouping: Viewing (Dashboards)', () => {
       await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Download as combined YAML', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadCombinedYaml()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testDashboard.packageId}_${testVersion.version}.yaml`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${groupName}.yaml`)
       })
 
       await test.step('Download as combined JSON', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadCombinedJson()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testDashboard.packageId}_${testVersion.version}.json`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${groupName}.json`)
+      })
+
+      await test.step('Download as combined HTML', async () => {
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
+
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${groupName}.zip`)
       })
 
       await test.step('Download as reduced YAML', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadReducedYaml()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testDashboard.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${groupName}.yaml`)
       })
 
       await test.step('Download as reduced JSON', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadReducedJson()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testDashboard.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${groupName}.json`)
       })
 
       await test.step('Download as reduced HTML', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadReducedHtml()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testDashboard.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${groupName}.zip`)
       })
     })
 
@@ -102,7 +128,7 @@ test.describe('12.2.2 Manual grouping: Viewing (Dashboards)', () => {
 
       await groupsTab.getGroupRow(groupName).hover()
 
-      await expect(groupsTab.getGroupRow(groupName).downloadMenu).toBeDisabled()
+      await expect(groupsTab.getGroupRow(groupName).exportBtn).toBeDisabled()
     })
 
   test('[P-MGO-3.1-N] Change API type for group (Negative)',

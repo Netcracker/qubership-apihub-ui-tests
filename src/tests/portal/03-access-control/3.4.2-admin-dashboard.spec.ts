@@ -25,21 +25,9 @@ import {
   V_P_DSH_UAC_ADMIN_EDITING_RELEASE_N,
   VERSION_DELETED_MSG,
 } from '@test-data/portal'
-import {
-  SETTINGS_TAB_GENERAL,
-  SETTINGS_TAB_TOKENS,
-  SETTINGS_TAB_USERS,
-  SETTINGS_TAB_VERSIONS,
-  VERSION_OVERVIEW_TAB_GROUPS,
-} from '@portal/entities'
+import { SETTINGS_TAB_GENERAL, SETTINGS_TAB_TOKENS, SETTINGS_TAB_USERS, SETTINGS_TAB_VERSIONS, VERSION_OVERVIEW_TAB_GROUPS } from '@portal/entities'
 import type { VersionStatuses } from '@shared/entities'
-import {
-  API_TITLES_MAP,
-  ARCHIVED_VERSION_STATUS,
-  DRAFT_VERSION_STATUS,
-  RELEASE_VERSION_STATUS,
-  REST_API_TYPE,
-} from '@shared/entities'
+import { API_TITLES_MAP, ARCHIVED_VERSION_STATUS, DRAFT_VERSION_STATUS, RELEASE_VERSION_STATUS, REST_API_TYPE } from '@shared/entities'
 import { PUBLISH_TIMEOUT, SNAPSHOT_TIMEOUT, TICKET_BASE_URL } from '@test-setup'
 import { EMPTY_VALUE } from '@test-data/shared'
 import { TEST_USER_1, TEST_USER_2, TEST_USER_3, TEST_USER_4 } from '@test-data'
@@ -218,38 +206,70 @@ test.describe('03.4.2 Access Control. Admin role. (Dashboard)', () => {
     async ({ user1Page: page }) => {
 
       const portalPage = new PortalPage(page)
-      const { groupsTab } = portalPage.versionDashboardPage.overviewTab
+      const { versionDashboardPage: versionPage } = portalPage
+      const { exportSettingsDialog: exportDialog } = versionPage
+      const { groupsTab } = versionPage.overviewTab
 
       await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Download as combined YAML', async () => {
-        const file = await groupsTab.getGroupRow(downloadingGroupName).downloadCombinedYaml()
+        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
-        await expectFile(file).toHaveName(`${downloadingGroupName}_${testDashboard.packageId}_${testVersion.version}.yaml`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as combined JSON', async () => {
-        const file = await groupsTab.getGroupRow(downloadingGroupName).downloadCombinedJson()
+        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
-        await expectFile(file).toHaveName(`${downloadingGroupName}_${testDashboard.packageId}_${testVersion.version}.json`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.json`)
+      })
+
+      await test.step('Download as combined HTML', async () => {
+        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
+
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.zip`)
       })
 
       await test.step('Download as reduced YAML', async () => {
-        const file = await groupsTab.getGroupRow(downloadingGroupName).downloadReducedYaml()
+        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
-        await expectFile(file).toHaveName(`${downloadingGroupName}_${testDashboard.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as reduced JSON', async () => {
-        const file = await groupsTab.getGroupRow(downloadingGroupName).downloadReducedJson()
+        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
-        await expectFile(file).toHaveName(`${downloadingGroupName}_${testDashboard.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.json`)
       })
 
       await test.step('Download as reduced HTML', async () => {
-        const file = await groupsTab.getGroupRow(downloadingGroupName).downloadReducedHtml()
+        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
-        await expectFile(file).toHaveName(`${downloadingGroupName}_${testDashboard.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.zip`)
       })
     })
 
@@ -302,6 +322,7 @@ test.describe('03.4.2 Access Control. Admin role. (Dashboard)', () => {
 
       const portalPage = new PortalPage(page)
       const { versionDashboardPage: versionPage } = portalPage
+      const { exportSettingsDialog: exportDialog } = versionPage
       const { documentsTab } = versionPage
       const { slug } = FILE_P_PETSTORE30_CHANGELOG_BASE
       const { docName } = FILE_P_PETSTORE30.testMeta!
@@ -309,41 +330,39 @@ test.describe('03.4.2 Access Control. Admin role. (Dashboard)', () => {
       await portalPage.gotoVersion(testVersion)
       await documentsTab.click()
       await documentsTab.sidebar.packageFilterAc.set(testPackage.name)
-      const docButton = documentsTab.sidebar.getDocRestButton(docName)
+      const docButton = documentsTab.sidebar.getFileButton(docName)
 
-      await test.step('Download document as Interactive HTML', async () => {
+      await test.step('Export as YAML', async () => {
         await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadZip()
+        await docButton.actionMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'yaml' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${slug}.yaml`)
       })
 
-      await test.step('Download document as YAML', async () => {
+      await test.step('Export as JSON', async () => {
         await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadYaml()
+        await docButton.actionMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'json' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${slug}.json`)
       })
 
-      await test.step('Download document as JSON', async () => {
+      await test.step('Export as HTML', async () => {
         await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadJson()
+        await docButton.actionMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'html' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
-      })
+        const file = await exportDialog.performExport()
 
-      await test.step('Download document as YAML (inline refs)', async () => {
-        await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadYamlInlineRefs()
-
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
-      })
-
-      await test.step('Download document as JSON (inline refs)', async () => {
-        await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadJsonInlineRefs()
-
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${slug}.zip`)
       })
     })
 

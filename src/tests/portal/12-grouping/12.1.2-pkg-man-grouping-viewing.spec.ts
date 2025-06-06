@@ -17,12 +17,7 @@ import {
   V_PKG_PMGR_CHANGED_R,
   V_PKG_PMGR_DOWNLOAD_PUBLISH_N,
 } from '@test-data/portal'
-import {
-  VERSION_CHANGES_TAB_REST,
-  VERSION_DEPRECATED_TAB_REST,
-  VERSION_OPERATIONS_TAB_REST,
-  VERSION_OVERVIEW_TAB_GROUPS,
-} from '@portal/entities'
+import { VERSION_CHANGES_TAB_REST, VERSION_DEPRECATED_TAB_REST, VERSION_OPERATIONS_TAB_REST, VERSION_OVERVIEW_TAB_GROUPS } from '@portal/entities'
 import type { DownloadedTestFile } from '@shared/entities'
 import { ROOT_DOWNLOADS, TestFile } from '@shared/entities'
 import path from 'node:path'
@@ -44,6 +39,7 @@ test.describe('12.1.2 Manual grouping: Viewing (Packages)', () => {
 
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
+      const { exportSettingsDialog: exportDialog } = versionPage
       const { overviewTab } = versionPage
       const { groupsTab } = overviewTab
       const { groupName } = OGR_PMGR_DOWNLOAD_REST_R
@@ -51,33 +47,69 @@ test.describe('12.1.2 Manual grouping: Viewing (Packages)', () => {
       await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Download as combined YAML', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadCombinedYaml()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.yaml`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        // await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.yaml`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@1_${groupName}.yaml`)
       })
 
       await test.step('Download as combined JSON', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadCombinedJson()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.json`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        // await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.json`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@1_${groupName}.json`)
+      })
+
+      await test.step('Download as combined HTML', async () => {
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
+
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        // await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@1_${groupName}.zip`)
       })
 
       await test.step('Download as reduced YAML', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadReducedYaml()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        // await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@1_${groupName}.yaml`)
       })
 
       await test.step('Download as reduced JSON', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadReducedJson()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        // await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@1_${groupName}.json`)
       })
 
       await test.step('Download as reduced HTML', async () => {
-        const file = await groupsTab.getGroupRow(groupName).downloadReducedHtml()
+        await groupsTab.getGroupRow(groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
-        await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.zip`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        // await expectFile(file).toHaveName(`${groupName}_${testPackage.packageId}_${testVersion.version}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@1_${groupName}.zip`)
       })
     })
 
@@ -98,7 +130,7 @@ test.describe('12.1.2 Manual grouping: Viewing (Packages)', () => {
 
       await groupsTab.getGroupRow(groupName).hover()
 
-      await expect(groupsTab.getGroupRow(groupName).downloadMenu).toBeDisabled()
+      await expect(groupsTab.getGroupRow(groupName).exportBtn).toBeDisabled()
     })
 
   test('[P-MGOP-2.2.3] Downloading the combined specification and its subsequent publication',
@@ -112,7 +144,7 @@ test.describe('12.1.2 Manual grouping: Viewing (Packages)', () => {
 
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
-      const { overviewTab, apiChangesTab } = versionPage
+      const { overviewTab, apiChangesTab, exportSettingsDialog: exportDialog } = versionPage
       const { groupsTab } = overviewTab
       const testVersion = V_PKG_PMGR_DOWNLOAD_PUBLISH_N
       const testGroup = OGR_PMGR_DOWNLOAD_PUBLISH_N
@@ -122,7 +154,12 @@ test.describe('12.1.2 Manual grouping: Viewing (Packages)', () => {
       await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Download group as combined YAML', async () => {
-        downloadedFile = await groupsTab.getGroupRow(testGroup.groupName).downloadCombinedYaml()
+        await groupsTab.getGroupRow(testGroup.groupName).openExportDialog()
+        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
+
+        downloadedFile = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
       })
 
       await test.step('Publish version with downloaded file', async () => {

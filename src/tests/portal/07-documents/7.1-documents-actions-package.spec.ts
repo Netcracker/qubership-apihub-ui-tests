@@ -90,8 +90,8 @@ test.describe('7.1 Documents actions (Package)', () => {
       await portalPage.gotoVersion(testVersion)
 
       await versionPage.documentsTab.click()
-      await documentsTab.sidebar.getDocRestButton(docName).openActionMenu()
-      await documentsTab.sidebar.getDocRestButton(docName).actionMenu.previewDocItm.click()
+      await documentsTab.sidebar.getFileButton(docName).openActionMenu()
+      await documentsTab.sidebar.getFileButton(docName).actionMenu.previewItm.click()
 
       await expect.soft(docPreviewPage.toolbar.title).toHaveText(docTitle!)
       await expect.soft(docPreviewPage.toolbar.simpleBtn).toBeVisible()
@@ -115,55 +115,50 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
+      const { exportSettingsDialog: exportDialog } = versionPage
       const { documentsTab } = versionPage
       const { slug } = FILE_P_PETSTORE30
       const { docName, jsonString, jsonRefString, yamlString, yamlRefString } = FILE_P_PETSTORE30.testMeta!
 
       await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
 
-      const docButton = documentsTab.sidebar.getDocRestButton(docName)
+      const docButton = documentsTab.sidebar.getFileButton(docName)
 
-      await test.step('Download document as zip', async () => {
+      await test.step('Export as YAML', async () => {
         await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadZip()
+        await docButton.actionMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'yaml' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.zip`)
-      })
+        const file = await exportDialog.performExport()
 
-      await test.step('Download document as yaml', async () => {
-        await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadYaml()
-
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.yaml`)
         await expectFile.soft(file).toContainText(yamlString!)
         await expectFile.soft(file).toContainText(yamlRefString!)
       })
 
-      await test.step('Download document as json', async () => {
+      await test.step('Export as JSON', async () => {
         await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadJson()
+        await docButton.actionMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'json' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.json`)
         await expectFile.soft(file).toContainText(jsonString!)
         await expectFile.soft(file).toContainText(jsonRefString!)
       })
 
-      await test.step('Download document as yaml (inline refs)', async () => {
+      await test.step('Export as HTML', async () => {
         await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadYamlInlineRefs()
+        await docButton.actionMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'html' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
-        await expectFile.soft(file).toContainText(yamlString!)
-        await expectFile.soft(file).not.toContainText(yamlRefString!)
-      })
+        const file = await exportDialog.performExport()
 
-      await test.step('Download document as json (inline refs)', async () => {
-        await docButton.openActionMenu()
-        const file = await docButton.actionMenu.downloadJsonInlineRefs()
-
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
-        await expectFile.soft(file).toContainText(jsonString!)
-        await expectFile.soft(file).not.toContainText(jsonRefString!)
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.zip`)
       })
     })
 
@@ -175,53 +170,50 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
+      const { exportSettingsDialog: exportDialog } = versionPage
       const { documentsTab } = versionPage
       const { slug } = FILE_P_PETSTORE30
       const { jsonString, jsonRefString, yamlString, yamlRefString } = FILE_P_PETSTORE30.testMeta!
 
       await portalPage.gotoDocument(testVersion, slug)
 
-      await test.step('Download document as zip', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const file = await documentsTab.openapiView.toolbar.downloadMenu.downloadZip()
+      await test.step('Export as YAML', async () => {
+        await documentsTab.toolbar.moreMenu.click()
+        await documentsTab.toolbar.moreMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'yaml' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.zip`)
-      })
+        const file = await exportDialog.performExport()
 
-      await test.step('Download document as yaml', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const file = await documentsTab.openapiView.toolbar.downloadMenu.downloadYaml()
-
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.yaml`)
         await expectFile.soft(file).toContainText(yamlString!)
         await expectFile.soft(file).toContainText(yamlRefString!)
       })
 
-      await test.step('Download document as json', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const file = await documentsTab.openapiView.toolbar.downloadMenu.downloadJson()
+      await test.step('Export as JSON', async () => {
+        await documentsTab.toolbar.moreMenu.click()
+        await documentsTab.toolbar.moreMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'json' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.json`)
         await expectFile.soft(file).toContainText(jsonString!)
         await expectFile.soft(file).toContainText(jsonRefString!)
       })
 
-      await test.step('Download document as yaml (inline refs)', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const file = await documentsTab.openapiView.toolbar.downloadMenu.downloadYamlInlineRefs()
+      await test.step('Export as HTML', async () => {
+        await documentsTab.toolbar.moreMenu.click()
+        await documentsTab.toolbar.moreMenu.exportItm.click()
+        await exportDialog.fillForm({ fileFormat: 'html' })
 
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
+        const file = await exportDialog.performExport()
+
+        await expect(exportDialog.exportBtn).toBeHidden()
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.zip`)
         await expectFile.soft(file).toContainText(yamlString!)
-        await expectFile.soft(file).not.toContainText(yamlRefString!)
-      })
-
-      await test.step('Download document as json (inline refs)', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const file = await documentsTab.openapiView.toolbar.downloadMenu.downloadJsonInlineRefs()
-
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
-        await expectFile.soft(file).toContainText(jsonString!)
-        await expectFile.soft(file).not.toContainText(jsonRefString!)
+        await expectFile.soft(file).toContainText(yamlRefString!)
       })
     })
 
@@ -239,46 +231,46 @@ test.describe('7.1 Documents actions (Package)', () => {
       await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
 
       await test.step('Download JSON Schema (json)', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_JSON_SCHEMA_JSON.slug).openActionMenu()
-        const file = await documentsTab.sidebar.getDocFileButton(FILE_P_JSON_SCHEMA_JSON.slug).actionMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_JSON_SCHEMA_JSON.slug).openActionMenu()
+        const file = await documentsTab.sidebar.getFileButton(FILE_P_JSON_SCHEMA_JSON.slug).actionMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_JSON_SCHEMA_JSON.name)
         await expectFile.soft(file).toContainText(FILE_P_JSON_SCHEMA_JSON.testMeta!.jsonString!)
       })
 
       await test.step('Download JSON Schema (yaml)', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_JSON_SCHEMA_YAML.slug).openActionMenu()
-        const file = await documentsTab.sidebar.getDocFileButton(FILE_P_JSON_SCHEMA_YAML.slug).actionMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_JSON_SCHEMA_YAML.slug).openActionMenu()
+        const file = await documentsTab.sidebar.getFileButton(FILE_P_JSON_SCHEMA_YAML.slug).actionMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_JSON_SCHEMA_YAML.name)
         await expectFile.soft(file).toContainText(FILE_P_JSON_SCHEMA_YAML.testMeta!.yamlString!)
       })
 
       await test.step('Download MARKDOWN', async () => {
-        await documentsTab.sidebar.getDocMdButton(FILE_P_MARKDOWN.slug).openActionMenu()
-        const file = await documentsTab.sidebar.getDocMdButton(FILE_P_MARKDOWN.slug).actionMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_MARKDOWN.slug).openActionMenu()
+        const file = await documentsTab.sidebar.getFileButton(FILE_P_MARKDOWN.slug).actionMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_MARKDOWN.name)
         await expectFile.soft(file).toContainText(FILE_P_MARKDOWN.testMeta!.mdString!)
       })
 
       await test.step('Download Picture file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_PICTURE.slug).openActionMenu()
-        const file = await documentsTab.sidebar.getDocFileButton(FILE_P_PICTURE.slug).actionMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_PICTURE.slug).openActionMenu()
+        const file = await documentsTab.sidebar.getFileButton(FILE_P_PICTURE.slug).actionMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_PICTURE.name)
       })
 
       await test.step('Download Office file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_MSOFFICE.slug).openActionMenu()
-        const file = await documentsTab.sidebar.getDocFileButton(FILE_P_MSOFFICE.slug).actionMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_MSOFFICE.slug).openActionMenu()
+        const file = await documentsTab.sidebar.getFileButton(FILE_P_MSOFFICE.slug).actionMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_MSOFFICE.name)
       })
 
       await test.step('Download Archive file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_ARCHIVE.slug).openActionMenu()
-        const file = await documentsTab.sidebar.getDocFileButton(FILE_P_ARCHIVE.slug).actionMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_ARCHIVE.slug).openActionMenu()
+        const file = await documentsTab.sidebar.getFileButton(FILE_P_ARCHIVE.slug).actionMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_ARCHIVE.name)
       })
@@ -297,52 +289,52 @@ test.describe('7.1 Documents actions (Package)', () => {
       await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
 
       await test.step('Download JSON Schema (json)', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_JSON_SCHEMA_JSON.slug).click()
-        await documentsTab.jsonSchemaView.toolbar.downloadMenu.click()
-        const file = await documentsTab.jsonSchemaView.toolbar.downloadMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_JSON_SCHEMA_JSON.slug).click()
+        await documentsTab.toolbar.moreMenu.click()
+        const file = await documentsTab.toolbar.moreMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_JSON_SCHEMA_JSON.name)
         await expectFile.soft(file).toContainText(FILE_P_JSON_SCHEMA_JSON.testMeta!.jsonString!)
       })
 
       await test.step('Download JSON Schema (yaml)', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_JSON_SCHEMA_YAML.slug).click()
-        await documentsTab.jsonSchemaView.toolbar.downloadMenu.click()
-        const file = await documentsTab.jsonSchemaView.toolbar.downloadMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_JSON_SCHEMA_YAML.slug).click()
+        await documentsTab.toolbar.moreMenu.click()
+        const file = await documentsTab.toolbar.moreMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_JSON_SCHEMA_YAML.name)
         await expectFile.soft(file).toContainText(FILE_P_JSON_SCHEMA_YAML.testMeta!.yamlString!)
       })
 
       await test.step('Download MARKDOWN', async () => {
-        await documentsTab.sidebar.getDocMdButton(FILE_P_MARKDOWN.slug).click()
-        await documentsTab.mdView.toolbar.downloadMenu.click()
-        const file = await documentsTab.mdView.toolbar.downloadMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_MARKDOWN.slug).click()
+        await documentsTab.toolbar.moreMenu.click()
+        const file = await documentsTab.toolbar.moreMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_MARKDOWN.name)
         await expectFile.soft(file).toContainText(FILE_P_MARKDOWN.testMeta!.mdString!)
       })
 
       await test.step('Download Picture file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_PICTURE.slug).click()
-        await documentsTab.fileView.toolbar.downloadMenu.click()
-        const file = await documentsTab.fileView.toolbar.downloadMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_PICTURE.slug).click()
+        await documentsTab.toolbar.moreMenu.click()
+        const file = await documentsTab.toolbar.moreMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_PICTURE.name)
       })
 
       await test.step('Download Office file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_MSOFFICE.slug).click()
-        await documentsTab.fileView.toolbar.downloadMenu.click()
-        const file = await documentsTab.fileView.toolbar.downloadMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_MSOFFICE.slug).click()
+        await documentsTab.toolbar.moreMenu.click()
+        const file = await documentsTab.toolbar.moreMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_MSOFFICE.name)
       })
 
       await test.step('Download Archive file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_ARCHIVE.slug).click()
-        await documentsTab.fileView.toolbar.downloadMenu.click()
-        const file = await documentsTab.fileView.toolbar.downloadMenu.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_ARCHIVE.slug).click()
+        await documentsTab.toolbar.moreMenu.click()
+        const file = await documentsTab.toolbar.moreMenu.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_ARCHIVE.name)
       })
@@ -361,22 +353,22 @@ test.describe('7.1 Documents actions (Package)', () => {
       await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
 
       await test.step('Download Picture file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_PICTURE.slug).click()
-        const file = await documentsTab.fileView.content.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_PICTURE.slug).click()
+        const file = await documentsTab.fileView.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_PICTURE.name)
       })
 
       await test.step('Download Office file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_MSOFFICE.slug).click()
-        const file = await documentsTab.fileView.content.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_MSOFFICE.slug).click()
+        const file = await documentsTab.fileView.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_MSOFFICE.name)
       })
 
       await test.step('Download Archive file', async () => {
-        await documentsTab.sidebar.getDocFileButton(FILE_P_ARCHIVE.slug).click()
-        const file = await documentsTab.fileView.content.download()
+        await documentsTab.sidebar.getFileButton(FILE_P_ARCHIVE.slug).click()
+        const file = await documentsTab.fileView.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_ARCHIVE.name)
       })
@@ -453,8 +445,29 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
 
-      await documentsTab.sidebar.getDocMdButton(FILE_P_GQL_SMALL.slug).openActionMenu() // TODO need to create getDocGqlButton()
-      const file = await documentsTab.sidebar.getDocMdButton(FILE_P_GQL_SMALL.slug).actionMenu.download()
+      await documentsTab.sidebar.getFileButton(FILE_P_GQL_SMALL.slug).openActionMenu()
+      const file = await documentsTab.sidebar.getFileButton(FILE_P_GQL_SMALL.slug).actionMenu.performDownload()
+
+      await expectFile.soft(file).toHaveName(FILE_P_GQL_SMALL.name)
+      await expectFile.soft(file).toContainText(FILE_P_GQL_SMALL.testMeta!.gqlString!)
+    })
+
+  test('[P-DCPDN-8] Downloading a GraphQL document via download menu',
+    {
+      annotation: { type: 'Test Case', description: ' ' },
+    },
+    async ({ sysadminPage: page }) => {
+
+      const portalPage = new PortalPage(page)
+      const { versionPackagePage: versionPage } = portalPage
+      const { documentsTab } = versionPage
+
+      await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
+
+      await documentsTab.sidebar.getFileButton(FILE_P_GQL_SMALL.slug).click()
+      await documentsTab.toolbar.moreMenu.click()
+
+      const file = await documentsTab.toolbar.moreMenu.performDownload()
 
       await expectFile.soft(file).toHaveName(FILE_P_GQL_SMALL.name)
       await expectFile.soft(file).toContainText(FILE_P_GQL_SMALL.testMeta!.gqlString!)
@@ -465,7 +478,6 @@ test.describe('7.1 Documents actions (Package)', () => {
       tag: '@smoke',
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4512` },
-        { type: 'Issue', description: `${TICKET_BASE_URL}TestCase-B-1358` },
       ],
     },
     async ({ sysadminPage: page }) => {
@@ -478,21 +490,11 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
 
-      const docButton = documentsTab.sidebar.getDocRestButton(docName)
-
-      //TODO: TestCase-B-1358
-      /*await test.step('Share link to the document page', async () => {
-        await docButton.openActionMenu()
-        const clipboard = await docButton.actionMenu.shareDocPageLink()
-
-        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
-        await expect(portalPage.snackbar).toContainText('Link copied')
-        await expectText(clipboard).toContain(`${BASE_URL}/portal/packages/${testPackage.packageId}/${DOCUMENTS_TEST_VERSION.version}/documents/${slug}`)
-      })*/
+      const docButton = documentsTab.sidebar.getFileButton(docName)
 
       await test.step('Share page template', async () => {
         await docButton.openActionMenu()
-        const clipboard = await docButton.actionMenu.sharePageTemplate()
+        const clipboard = await docButton.actionMenu.copyPageTemplate()
 
         await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
         await expect(portalPage.snackbar).toContainText('Template copied')
@@ -501,7 +503,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await test.step('Share public link to source', async () => {
         await docButton.openActionMenu()
-        const clipboard = await docButton.actionMenu.shareSourceLink()
+        const clipboard = await docButton.actionMenu.copyPublicLink()
 
         await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
         await expect(portalPage.snackbar).toContainText('Link copied')
@@ -532,11 +534,11 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoVersion({ ...testVersion, version: `${testVersion.version}@1` }, VERSION_DOCUMENTS_TAB)
 
-      const docButton = documentsTab.sidebar.getDocRestButton(docName)
+      const docButton = documentsTab.sidebar.getFileButton(docName)
 
       await test.step('Share public link to source', async () => {
         await docButton.openActionMenu()
-        const clipboard = await docButton.actionMenu.shareSourceLink()
+        const clipboard = await docButton.actionMenu.copyPublicLink()
 
         await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
         await expect(portalPage.snackbar).toContainText('Link copied')
@@ -564,18 +566,9 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoDocument(testVersion, slug)
 
-      await test.step('Share link to the document page', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const clipboard = await documentsTab.openapiView.toolbar.downloadMenu.shareDocPageLink()
-
-        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
-        await expect(portalPage.snackbar).toContainText('Link copied')
-        await expectText(clipboard).toContain(`${BASE_ORIGIN}/portal/packages/${testPackage.packageId}/${V_P_PKG_DOCUMENTS_R.version}/documents/${slug}`)
-      })
-
       await test.step('Share page template', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const clipboard = await documentsTab.openapiView.toolbar.downloadMenu.sharePageTemplate()
+        await documentsTab.toolbar.moreMenu.click()
+        const clipboard = await documentsTab.toolbar.moreMenu.copyPageTemplate()
 
         await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
         await expect(portalPage.snackbar).toContainText('Template copied')
@@ -583,8 +576,8 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
 
       await test.step('Share public link to source', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const clipboard = await documentsTab.openapiView.toolbar.downloadMenu.shareSourceLink()
+        await documentsTab.toolbar.moreMenu.click()
+        const clipboard = await documentsTab.toolbar.moreMenu.copyPublicLink()
 
         await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
         await expect(portalPage.snackbar).toContainText('Link copied')
@@ -602,7 +595,6 @@ test.describe('7.1 Documents actions (Package)', () => {
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4513` },
-        { type: 'Issue', description: `${TICKET_BASE_URL}TestCase-B-1358` },
       ],
     },
     async ({ sysadminPage: page }) => {
@@ -615,30 +607,11 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
 
-      const docButton = documentsTab.sidebar.getDocRestButton(slug)
-
-      //TODO: TestCase-B-1358
-      /*await test.step('Share link to the document page', async () => {
-        await docButton.openActionMenu()
-        const clipboard = await docButton.actionMenu.shareDocPageLink()
-
-        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
-        await expect(portalPage.snackbar).toContainText('Link copied')
-        await expectText(clipboard).toContain(`${BASE_URL}/portal/packages/${testPackage.packageId}/${DOCUMENTS_TEST_VERSION.version}/documents/${slug}`)
-      })*/
-
-      await test.step('Share page template', async () => {
-        await docButton.openActionMenu()
-        const clipboard = await docButton.actionMenu.sharePageTemplate()
-
-        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
-        await expect(portalPage.snackbar).toContainText('Template copied')
-        await expectText(clipboard).toContain(`apiDescriptionUrl="${BASE_ORIGIN}/api/v2/sharedFiles/`)
-      })
+      const docButton = documentsTab.sidebar.getFileButton(slug)
 
       await test.step('Share public link to source', async () => {
         await docButton.openActionMenu()
-        const clipboard = await docButton.actionMenu.shareSourceLink()
+        const clipboard = await docButton.actionMenu.copyPublicLink()
 
         await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
         await expect(portalPage.snackbar).toContainText('Link copied')
@@ -667,27 +640,9 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoDocument(testVersion, slug)
 
-      await test.step('Share link to the document page', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const clipboard = await documentsTab.openapiView.toolbar.downloadMenu.shareDocPageLink()
-
-        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
-        await expect(portalPage.snackbar).toContainText('Link copied')
-        await expectText(clipboard).toContain(`${BASE_ORIGIN}/portal/packages/${testPackage.packageId}/${V_P_PKG_DOCUMENTS_R.version}/documents/${slug}`)
-      })
-
-      await test.step('Share page template', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const clipboard = await documentsTab.openapiView.toolbar.downloadMenu.sharePageTemplate()
-
-        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
-        await expect(portalPage.snackbar).toContainText('Template copied')
-        await expectText(clipboard).toContain(`apiDescriptionUrl="${BASE_ORIGIN}/api/v2/sharedFiles/`)
-      })
-
       await test.step('Share public link to source', async () => {
-        await documentsTab.openapiView.toolbar.downloadMenu.click()
-        const clipboard = await documentsTab.openapiView.toolbar.downloadMenu.shareSourceLink()
+        await documentsTab.toolbar.moreMenu.click()
+        const clipboard = await documentsTab.toolbar.moreMenu.copyPublicLink()
 
         await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
         await expect(portalPage.snackbar).toContainText('Link copied')
@@ -697,6 +652,70 @@ test.describe('7.1 Documents actions (Package)', () => {
 
         await expectFile.soft(file).toHaveName(`${slug}.md`)
         await expectFile.soft(file).toContainText(mdString!)
+      })
+    })
+
+  test('[P-DCPSH-5] Sharing a GraphQL document via action menu',
+    {
+      annotation: [
+        { type: 'Test Case', description: '' },
+      ],
+    },
+    async ({ sysadminPage: page }) => {
+
+      const portalPage = new PortalPage(page)
+      const { versionPackagePage: versionPage } = portalPage
+      const { documentsTab } = versionPage
+      const { slug, name } = FILE_P_GQL_SMALL
+      const { gqlString } = FILE_P_GQL_SMALL.testMeta!
+
+      await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
+
+      const docButton = documentsTab.sidebar.getFileButton(slug)
+
+      await test.step('Share public link to source', async () => {
+        await docButton.openActionMenu()
+        const clipboard = await docButton.actionMenu.copyPublicLink()
+
+        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
+        await expect(portalPage.snackbar).toContainText('Link copied')
+        await expectText(clipboard).toContain(`${BASE_ORIGIN}/api/v2/sharedFiles/`)
+
+        const file = await portalPage.downloadFile(clipboard)
+
+        await expectFile.soft(file).toHaveName(name)
+        await expectFile.soft(file).toContainText(gqlString!)
+      })
+    })
+
+  test('[P-DCPSH-6] Sharing a GraphQL document via download menu',
+    {
+      annotation: [
+        { type: 'Test Case', description: '' },
+      ],
+    },
+    async ({ sysadminPage: page }) => {
+
+      const portalPage = new PortalPage(page)
+      const { versionPackagePage: versionPage } = portalPage
+      const { documentsTab } = versionPage
+      const { slug, name } = FILE_P_GQL_SMALL
+      const { gqlString } = FILE_P_GQL_SMALL.testMeta!
+
+      await portalPage.gotoDocument(testVersion, slug)
+
+      await test.step('Share public link to source', async () => {
+        await documentsTab.toolbar.moreMenu.click()
+        const clipboard = await documentsTab.toolbar.moreMenu.copyPublicLink()
+
+        await expect(portalPage.snackbar).toContainText(SUCCESS_MSG)
+        await expect(portalPage.snackbar).toContainText('Link copied')
+        await expectText(clipboard).toContain(`${BASE_ORIGIN}/api/v2/sharedFiles/`)
+
+        const file = await portalPage.downloadFile(clipboard)
+
+        await expectFile.soft(file).toHaveName(name)
+        await expectFile.soft(file).toContainText(gqlString!)
       })
     })
 })

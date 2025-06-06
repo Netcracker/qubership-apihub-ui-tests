@@ -246,13 +246,17 @@ test.describe('5.2.1 Package details', () => {
 
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
+      const { exportSettingsDialog } = versionPage
       const { version } = V_P_PKG_OVERVIEW_R
 
       await portalPage.gotoPackage(PK11)
+      await versionPage.toolbar.exportBtn.click()
 
-      const file = await versionPage.exportVersion()
+      const file = await exportSettingsDialog.performExport()
 
-      await expectFile(file).toHaveName(`${PK11.name}_${version}.zip`)
+      await expect(exportSettingsDialog.exportBtn).toBeHidden()
+      // await expectFile(file).toHaveName(`${PK11.name}_${version}.zip`)
+      await expectFile(file).toHaveName(`${PK11.packageId}_${version}@2.zip`)
     })
 
   test('[P-PKDTV-1] View Versions selector',
