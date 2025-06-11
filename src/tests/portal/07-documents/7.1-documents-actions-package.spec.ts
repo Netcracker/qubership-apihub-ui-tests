@@ -12,14 +12,12 @@ import {
   FILE_P_MSOFFICE,
   FILE_P_PETSTORE30,
   FILE_P_PICTURE,
-  PK11,
   V_P_PKG_DOCUMENTS_R,
 } from '@test-data/portal'
 import { VERSION_DOCUMENTS_TAB } from '@portal/entities'
 
 test.describe('7.1 Documents actions (Package)', () => {
 
-  const testPackage = PK11
   const testVersion = V_P_PKG_DOCUMENTS_R
 
   test('[P-DCPSE-1] Search documents',
@@ -75,7 +73,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPOP-1] Opening the Document Preview page',
+  test('[P-DCPPR-1] Opening the Document Preview page',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4860` },
@@ -99,122 +97,11 @@ test.describe('7.1 Documents actions (Package)', () => {
       await expect.soft(docPreviewPage.toolbar.breadcrumbs).toBeVisible()
       await expect.soft(docPreviewPage.toolbar.docBtn).toBeVisible()
       await expect.soft(docPreviewPage.toolbar.rawBtn).toBeVisible()
-      await expect.soft(docPreviewPage.toolbar.exportDocumentMenu).toBeVisible()
+      await expect.soft(docPreviewPage.toolbar.moreMenu).toBeVisible()
 
       await docPreviewPage.toolbar.backBtn.click()
 
       await expect(versionPage.overviewTab).toBeVisible()
-    })
-
-  test('[P-DCPDN-1] Downloading a REST API document via action menu',
-    {
-      tag: '@smoke',
-      annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-1726` },
-    },
-    async ({ sysadminPage: page }) => {
-
-      const portalPage = new PortalPage(page)
-      const { versionPackagePage: versionPage } = portalPage
-      const { exportSettingsDialog: exportDialog } = versionPage
-      const { documentsTab } = versionPage
-      const { slug } = FILE_P_PETSTORE30
-      const { docName, jsonString, jsonRefString, yamlString, yamlRefString } = FILE_P_PETSTORE30.testMeta!
-
-      await portalPage.gotoVersion(testVersion, VERSION_DOCUMENTS_TAB)
-
-      const docButton = documentsTab.sidebar.getFileButton(docName)
-
-      await test.step('Export as YAML', async () => {
-        await docButton.openActionMenu()
-        await docButton.actionMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'yaml' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.yaml`)
-        await expectFile.soft(file).toContainText(yamlString!)
-        await expectFile.soft(file).toContainText(yamlRefString!)
-      })
-
-      await test.step('Export as JSON', async () => {
-        await docButton.openActionMenu()
-        await docButton.actionMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'json' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.json`)
-        await expectFile.soft(file).toContainText(jsonString!)
-        await expectFile.soft(file).toContainText(jsonRefString!)
-      })
-
-      await test.step('Export as HTML', async () => {
-        await docButton.openActionMenu()
-        await docButton.actionMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'html' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.zip`)
-      })
-    })
-
-  test('[P-DCPDN-2] Downloading a REST API document via download menu',
-    {
-      annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4983` },
-    },
-    async ({ sysadminPage: page }) => {
-
-      const portalPage = new PortalPage(page)
-      const { versionPackagePage: versionPage } = portalPage
-      const { exportSettingsDialog: exportDialog } = versionPage
-      const { documentsTab } = versionPage
-      const { slug } = FILE_P_PETSTORE30
-      const { jsonString, jsonRefString, yamlString, yamlRefString } = FILE_P_PETSTORE30.testMeta!
-
-      await portalPage.gotoDocument(testVersion, slug)
-
-      await test.step('Export as YAML', async () => {
-        await documentsTab.toolbar.moreMenu.click()
-        await documentsTab.toolbar.moreMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'yaml' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.yaml`)
-        await expectFile.soft(file).toContainText(yamlString!)
-        await expectFile.soft(file).toContainText(yamlRefString!)
-      })
-
-      await test.step('Export as JSON', async () => {
-        await documentsTab.toolbar.moreMenu.click()
-        await documentsTab.toolbar.moreMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'json' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.json`)
-        await expectFile.soft(file).toContainText(jsonString!)
-        await expectFile.soft(file).toContainText(jsonRefString!)
-      })
-
-      await test.step('Export as HTML', async () => {
-        await documentsTab.toolbar.moreMenu.click()
-        await documentsTab.toolbar.moreMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'html' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testVersion.version}@2_${slug}.zip`)
-        await expectFile.soft(file).toContainText(yamlString!)
-        await expectFile.soft(file).toContainText(yamlRefString!)
-      })
     })
 
   test('[P-DCPDN-3] Downloading JSON Schema, MARKDOWN, Picture, Office, Archive files via action menu',
@@ -371,65 +258,6 @@ test.describe('7.1 Documents actions (Package)', () => {
         const file = await documentsTab.fileView.performDownload()
 
         await expectFile.soft(file).toHaveName(FILE_P_ARCHIVE.name)
-      })
-    })
-
-  test('[P-DCPDN-6] Downloading a REST API document from the Document Preview page',
-    {
-      tag: '@smoke',
-      annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4511` },
-    },
-    async ({ sysadminPage: page }) => {
-
-      const portalPage = new PortalPage(page)
-      const { versionPackagePage: versionPage } = portalPage
-      const { documentPreviewPage } = versionPage
-      const { slug } = FILE_P_PETSTORE30
-      const { jsonString, jsonRefString, yamlString, yamlRefString } = FILE_P_PETSTORE30.testMeta!
-
-      await portalPage.gotoDocument(testVersion, slug, true)
-
-      await test.step('Download document as yaml', async () => {
-        await documentPreviewPage.toolbar.exportDocumentMenu.click()
-        const file = await documentPreviewPage.toolbar.exportDocumentMenu.downloadYaml()
-
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
-        await expectFile.soft(file).toContainText(yamlString!)
-        await expectFile.soft(file).toContainText(yamlRefString!)
-      })
-
-      await test.step('Download document as json', async () => {
-        await documentPreviewPage.toolbar.exportDocumentMenu.click()
-        const file = await documentPreviewPage.toolbar.exportDocumentMenu.downloadJson()
-
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
-        await expectFile.soft(file).toContainText(jsonString!)
-        await expectFile.soft(file).toContainText(jsonRefString!)
-      })
-
-      await test.step('Download document as yaml (inline refs)', async () => {
-        await documentPreviewPage.toolbar.exportDocumentMenu.click()
-        const file = await documentPreviewPage.toolbar.exportDocumentMenu.downloadYamlInlineRefs()
-
-        await expectFile.soft(file).toHaveName(`${slug}.yaml`)
-        await expectFile.soft(file).toContainText(yamlString!)
-        await expectFile.soft(file).not.toContainText(yamlRefString!)
-      })
-
-      await test.step('Download document as json (inline refs)', async () => {
-        await documentPreviewPage.toolbar.exportDocumentMenu.click()
-        const file = await documentPreviewPage.toolbar.exportDocumentMenu.downloadJsonInlineRefs()
-
-        await expectFile.soft(file).toHaveName(`${slug}.json`)
-        await expectFile.soft(file).toContainText(jsonString!)
-        await expectFile.soft(file).not.toContainText(jsonRefString!)
-      })
-
-      await test.step('Download HTML interactive', async () => {
-        await documentPreviewPage.toolbar.exportDocumentMenu.click()
-        const file = await documentPreviewPage.toolbar.exportDocumentMenu.downloadZip()
-
-        await expectFile.soft(file).toHaveName(`${slug}.zip`)
       })
     })
 

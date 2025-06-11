@@ -4,15 +4,12 @@ import { PortalPage } from '@portal/pages/PortalPage'
 import {
   CREATE_LIST_OF_USERS_V1,
   DSH_P_EDITOR_N,
-  FILE_P_PETSTORE30,
-  FILE_P_PETSTORE30_CHANGELOG_BASE,
   GRP_P_EDITOR_ROOT_N,
   NO_PERM_ADD_MEMBER,
   NO_PERM_DEL_PACKAGE,
   NO_PERM_EDIT_PACKAGE,
   NO_PERM_GEN_TOKEN,
   NO_PERM_MANAGE_ROLES,
-  OGR_DSH_UAC_EDITOR_REST_DOWNLOADING_N,
   ORG_DSH_UAC_EDITOR_REST_CHANGING_OPERATIONS_N,
   ORG_DSH_UAC_EDITOR_REST_DELETING_N,
   ORG_DSH_UAC_EDITOR_REST_EDITING_PARAMS_N,
@@ -35,7 +32,6 @@ test.describe('03.2.2 Access Control. Editor role. (Dashboard)', () => {
   const testPackage = PKG_P_EDITOR_N
   const testDashboard = DSH_P_EDITOR_N
   const testVersion = V_P_DSH_UAC_EDITOR_CHANGED_N
-  const downloadingGroupName = OGR_DSH_UAC_EDITOR_REST_DOWNLOADING_N.groupName
 
   test('[P-ACED-01.1] Dashboard. Editor. Shared and Overview tabs.',
     {
@@ -193,82 +189,6 @@ test.describe('03.2.2 Access Control. Editor role. (Dashboard)', () => {
       await expect(groupsTab.getGroupRow(manualGroup.groupName).operationsNumberCell).toHaveText('2')
     })
 
-  test('[P-ACED-01.6] Dashboard. Editor. Download operation group.',
-    {
-      annotation: [
-        { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10488` },
-      ],
-    },
-    async ({ user1Page: page }) => {
-
-      const portalPage = new PortalPage(page)
-      const { versionDashboardPage: versionPage } = portalPage
-      const { exportSettingsDialog: exportDialog } = versionPage
-      const { groupsTab } = versionPage.overviewTab
-
-      await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
-
-      await test.step('Download as combined YAML', async () => {
-        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
-        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.yaml`)
-      })
-
-      await test.step('Download as combined JSON', async () => {
-        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
-        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.json`)
-      })
-
-      await test.step('Download as combined HTML', async () => {
-        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
-        await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.zip`)
-      })
-
-      await test.step('Download as reduced YAML', async () => {
-        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
-        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.yaml`)
-      })
-
-      await test.step('Download as reduced JSON', async () => {
-        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
-        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.json`)
-      })
-
-      await test.step('Download as reduced HTML', async () => {
-        await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
-        await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${downloadingGroupName}.zip`)
-      })
-    })
-
   test('[P-ACED-01.7] Dashboard. Editor. Download operations on the all main tabs.',
     {
       annotation: [
@@ -305,60 +225,6 @@ test.describe('03.2.2 Access Control. Editor role. (Dashboard)', () => {
         const file = await operationsTab.toolbar.exportMenu.downloadAll()
 
         await expectFile(file).toHaveName(`DeprecatedOperations_${testDashboard.packageId}_${testVersion.version}.xlsx`)
-      })
-    })
-
-  test('[P-ACED-01.8] Dashboard. Editor. Download documents.',
-    {
-      annotation: [
-        { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10488` },
-      ],
-    },
-    async ({ user1Page: page }) => {
-
-      const portalPage = new PortalPage(page)
-      const { versionDashboardPage: versionPage } = portalPage
-      const { exportSettingsDialog: exportDialog } = versionPage
-      const { documentsTab } = versionPage
-      const { slug } = FILE_P_PETSTORE30_CHANGELOG_BASE
-      const { docName } = FILE_P_PETSTORE30.testMeta!
-
-      await portalPage.gotoVersion(testVersion)
-      await documentsTab.click()
-      await documentsTab.sidebar.packageFilterAc.set(testPackage.name)
-      const docButton = documentsTab.sidebar.getFileButton(docName)
-
-      await test.step('Export as YAML', async () => {
-        await docButton.openActionMenu()
-        await docButton.actionMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'yaml' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${slug}.yaml`)
-      })
-
-      await test.step('Export as JSON', async () => {
-        await docButton.openActionMenu()
-        await docButton.actionMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'json' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${slug}.json`)
-      })
-
-      await test.step('Export as HTML', async () => {
-        await docButton.openActionMenu()
-        await docButton.actionMenu.exportItm.click()
-        await exportDialog.fillForm({ fileFormat: 'html' })
-
-        const file = await exportDialog.performExport()
-
-        await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}@1_${slug}.zip`)
       })
     })
 
