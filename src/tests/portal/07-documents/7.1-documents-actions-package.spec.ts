@@ -20,7 +20,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
   const testVersion = V_P_PKG_DOCUMENTS_R
 
-  test('[P-DCPSE-1] Search documents',
+  test('[P-DCPSE-1] Search documents.',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-1845` },
@@ -73,7 +73,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPPR-1] Opening the Document Preview page',
+  test('[P-DCPPR-1] Opening the Document Preview page.',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4860` },
@@ -104,7 +104,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       await expect(versionPage.overviewTab).toBeVisible()
     })
 
-  test('[P-DCPDN-3] Downloading JSON Schema, MARKDOWN, Picture, Office, Archive files via action menu',
+  test('[P-DCPDN-3] Downloading JSON Schema, MARKDOWN, Picture, Office, Archive files via action menu.',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-1738` },
@@ -163,7 +163,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPDN-4] Downloading JSON Schema, MARKDOWN, Picture, Office, Archive files via download menu',
+  test('[P-DCPDN-4] Downloading JSON Schema, MARKDOWN, Picture, Office, Archive files via More menu.',
     {
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4984` },
     },
@@ -227,7 +227,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPDN-5] Downloading Picture, Office, Archive files via placeholder',
+  test('[P-DCPDN-5] Downloading Picture, Office, Archive files via placeholder.',
     {
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4985` },
     },
@@ -261,7 +261,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPDN-7] Downloading a GraphQL document via action menu',
+  test('[P-DCPDN-7] Downloading a GraphQL document via action menu.',
     {
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-5633` },
     },
@@ -280,9 +280,9 @@ test.describe('7.1 Documents actions (Package)', () => {
       await expectFile.soft(file).toContainText(FILE_P_GQL_SMALL.testMeta!.gqlString!)
     })
 
-  test('[P-DCPDN-8] Downloading a GraphQL document via download menu',
+  test('[P-DCPDN-8] Downloading a GraphQL document via More menu.',
     {
-      annotation: { type: 'Test Case', description: ' ' },
+      annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-11972` },
     },
     async ({ sysadminPage: page }) => {
 
@@ -301,7 +301,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       await expectFile.soft(file).toContainText(FILE_P_GQL_SMALL.testMeta!.gqlString!)
     })
 
-  test('[P-DCPSH-1.1] Sharing a REST API document via action menu',
+  test('[P-DCPSH-1.1] Sharing a REST API document via action menu.',
     {
       tag: '@smoke',
       annotation: [
@@ -320,7 +320,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       const docButton = documentsTab.sidebar.getFileButton(docName)
 
-      await test.step('Share page template', async () => {
+      await test.step('Copy page template', async () => {
         await docButton.openActionMenu()
         const clipboard = await docButton.actionMenu.copyPageTemplate()
 
@@ -329,7 +329,7 @@ test.describe('7.1 Documents actions (Package)', () => {
         await expectText(clipboard).toContain(`apiDescriptionUrl="${BASE_ORIGIN}/api/v2/sharedFiles/`)
       })
 
-      await test.step('Share public link to source', async () => {
+      await test.step('Copy public link to source', async () => {
         await docButton.openActionMenu()
         const clipboard = await docButton.actionMenu.copyPublicLink()
 
@@ -345,7 +345,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPSH-1.2] Sharing a public link to source of old revision of REST API document',
+  test('[P-DCPSH-1.2] Sharing a public link to source of old revision of REST API document.',
     {
       tag: '@smoke',
       annotation: [
@@ -364,7 +364,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       const docButton = documentsTab.sidebar.getFileButton(docName)
 
-      await test.step('Share public link to source', async () => {
+      await test.step('Copy public link to source', async () => {
         await docButton.openActionMenu()
         const clipboard = await docButton.actionMenu.copyPublicLink()
 
@@ -380,7 +380,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPSH-2] Sharing a REST API document via download menu',
+  test('[P-DCPSH-2] Sharing a REST API document via More menu.',
     {
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-5055` },
     },
@@ -394,7 +394,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoDocument(testVersion, slug)
 
-      await test.step('Share page template', async () => {
+      await test.step('Copy page template', async () => {
         await documentsTab.toolbar.moreMenu.click()
         const clipboard = await documentsTab.toolbar.moreMenu.copyPageTemplate()
 
@@ -403,7 +403,7 @@ test.describe('7.1 Documents actions (Package)', () => {
         await expectText(clipboard).toContain(`apiDescriptionUrl="${BASE_ORIGIN}/api/v2/sharedFiles/`)
       })
 
-      await test.step('Share public link to source', async () => {
+      await test.step('Copy public link to source', async () => {
         await documentsTab.toolbar.moreMenu.click()
         const clipboard = await documentsTab.toolbar.moreMenu.copyPublicLink()
 
@@ -419,7 +419,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPSH-3] Sharing a MARKDOWN document via action menu',
+  test('[P-DCPSH-3] Sharing a MARKDOWN document via action menu.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4513` },
@@ -437,7 +437,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       const docButton = documentsTab.sidebar.getFileButton(slug)
 
-      await test.step('Share public link to source', async () => {
+      await test.step('Copy public link to source', async () => {
         await docButton.openActionMenu()
         const clipboard = await docButton.actionMenu.copyPublicLink()
 
@@ -452,7 +452,7 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPSH-4] Sharing a MARKDOWN document via download menu',
+  test('[P-DCPSH-4] Sharing a MARKDOWN document via More menu.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-5057` },
@@ -468,7 +468,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoDocument(testVersion, slug)
 
-      await test.step('Share public link to source', async () => {
+      await test.step('Copy public link to source', async () => {
         await documentsTab.toolbar.moreMenu.click()
         const clipboard = await documentsTab.toolbar.moreMenu.copyPublicLink()
 
@@ -483,10 +483,10 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPSH-5] Sharing a GraphQL document via action menu',
+  test('[P-DCPSH-5] Sharing a GraphQL document via action menu.',
     {
       annotation: [
-        { type: 'Test Case', description: '' },
+        { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-11973` },
       ],
     },
     async ({ sysadminPage: page }) => {
@@ -501,7 +501,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       const docButton = documentsTab.sidebar.getFileButton(slug)
 
-      await test.step('Share public link to source', async () => {
+      await test.step('Copy public link to source', async () => {
         await docButton.openActionMenu()
         const clipboard = await docButton.actionMenu.copyPublicLink()
 
@@ -516,10 +516,10 @@ test.describe('7.1 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPSH-6] Sharing a GraphQL document via download menu',
+  test('[P-DCPSH-6] Sharing a GraphQL document via More menu.',
     {
       annotation: [
-        { type: 'Test Case', description: '' },
+        { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-11973` },
       ],
     },
     async ({ sysadminPage: page }) => {
@@ -532,7 +532,7 @@ test.describe('7.1 Documents actions (Package)', () => {
 
       await portalPage.gotoDocument(testVersion, slug)
 
-      await test.step('Share public link to source', async () => {
+      await test.step('Copy public link to source', async () => {
         await documentsTab.toolbar.moreMenu.click()
         const clipboard = await documentsTab.toolbar.moreMenu.copyPublicLink()
 

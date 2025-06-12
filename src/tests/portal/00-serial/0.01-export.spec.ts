@@ -57,7 +57,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
   const prefixGroupName = 'v1'
   const manualGroupName = ORG_UAC_PKG_REST.groupName
 
-  test('[P-ACVP-01.3] Package. Viewer. Download operation groups.',
+  test('[P-ACVP-01.3] Package. Viewer. Exporting operation groups.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-8568` },
@@ -74,7 +74,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
 
       await test.step('Prefix group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -84,7 +84,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -94,7 +94,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -104,7 +104,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -114,7 +114,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -124,7 +124,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -137,7 +137,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
 
       await test.step('Manual group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -147,7 +147,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${manualGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -157,7 +157,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${manualGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -167,7 +167,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${manualGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -177,7 +177,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${manualGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -187,7 +187,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${manualGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -199,7 +199,7 @@ test.describe('03.1.1.0 Access Control. Viewer role. (Package)', () => {
       })
     })
 
-  test('[P-ACVP-01.5] Package. Viewer. Download documents.',
+  test('[P-ACVP-01.5] Package. Viewer. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-8568` },
@@ -261,7 +261,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
   const testPackageVersion = V_P_PKG_UAC_VIEWER_CHANGED_R
   const manualGroupName = OGR_UAC_DSH_REST.groupName
 
-  test('[P-ACVD-01.3] Dashboard. Viewer. Download operation groups.',
+  test('[P-ACVD-01.3] Dashboard. Viewer. Exporting operation groups.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-8578` },
@@ -278,7 +278,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
 
       await test.step('Manual group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -288,7 +288,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -298,7 +298,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -308,7 +308,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -318,7 +318,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -328,7 +328,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(manualGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -340,7 +340,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
       })
     })
 
-  test('[P-ACVD-01.5] Dashboard. Viewer. Download documents.',
+  test('[P-ACVD-01.5] Dashboard. Viewer. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-8578` },
@@ -403,7 +403,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
   const prefixGroupName = 'v1'
   const downloadingGroupName = ORG_PKG_UAC_EDITOR_REST_DOWNLOADING_N.groupName
 
-  test('[P-ACEP-01.6] Package. Editor. Download operation groups.',
+  test('[P-ACEP-01.6] Package. Editor. Exporting operation groups.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10485` },
@@ -420,7 +420,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
 
       await test.step('Prefix group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -430,7 +430,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -440,7 +440,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -450,7 +450,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -460,7 +460,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -470,7 +470,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -483,7 +483,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
 
       await test.step('Manual group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -493,7 +493,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -503,7 +503,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -513,7 +513,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -523,7 +523,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -533,7 +533,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -545,7 +545,7 @@ test.describe('03.2.1.0 Access Control. Editor role. (Package)', () => {
       })
     })
 
-  test('[P-ACEP-01.8] Package. Editor. Download documents.',
+  test('[P-ACEP-01.8] Package. Editor. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10485` },
@@ -607,7 +607,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
   const testPackageVersion = V_P_PKG_UAC_EDITOR_CHANGED_N
   const downloadingGroupName = OGR_DSH_UAC_EDITOR_REST_DOWNLOADING_N.groupName
 
-  test('[P-ACED-01.6] Dashboard. Editor. Download operation group.',
+  test('[P-ACED-01.6] Dashboard. Editor. Exporting operation group.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10488` },
@@ -622,7 +622,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
 
       await portalPage.gotoVersion(testDashboardVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
-      await test.step('Download as combined YAML', async () => {
+      await test.step('Export as combined YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -632,7 +632,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
-      await test.step('Download as combined JSON', async () => {
+      await test.step('Export as combined JSON', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -642,7 +642,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
-      await test.step('Download as combined HTML', async () => {
+      await test.step('Export as combined HTML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -652,7 +652,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
 
-      await test.step('Download as reduced YAML', async () => {
+      await test.step('Export as reduced YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -662,7 +662,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
-      await test.step('Download as reduced JSON', async () => {
+      await test.step('Export as reduced JSON', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -672,7 +672,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
-      await test.step('Download as reduced HTML', async () => {
+      await test.step('Export as reduced HTML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -683,7 +683,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
       })
     })
 
-  test('[P-ACED-01.8] Dashboard. Editor. Download documents.',
+  test('[P-ACED-01.8] Dashboard. Editor. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10488` },
@@ -745,7 +745,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
   const prefixGroupName = 'v1'
   const downloadingGroupName = ORG_PKG_UAC_OWNER_REST_DOWNLOADING_N.groupName
 
-  test('[P-ACOP-01.6] Package. Owner. Download operation groups.',
+  test('[P-ACOP-01.6] Package. Owner. Exporting operation groups.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10545` },
@@ -762,7 +762,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
 
       await test.step('Prefix group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -772,7 +772,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -782,7 +782,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -792,7 +792,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -802,7 +802,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -812,7 +812,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -825,7 +825,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
 
       await test.step('Manual group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -835,7 +835,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -845,7 +845,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -855,7 +855,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -865,7 +865,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -875,7 +875,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -887,7 +887,7 @@ test.describe('03.3.1.0 Access Control. Owner role. (Package)', () => {
       })
     })
 
-  test('[P-ACOP-01.8] Package. Owner. Download documents.',
+  test('[P-ACOP-01.8] Package. Owner. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10545` },
@@ -949,7 +949,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
   const testPackageVersion = V_P_PKG_UAC_OWNER_CHANGED_N
   const downloadingGroupName = OGR_DSH_UAC_OWNER_REST_DOWNLOADING_N.groupName
 
-  test('[P-ACOD-01.6] Dashboard. Owner. Download operation group.',
+  test('[P-ACOD-01.6] Dashboard. Owner. Exporting operation group.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10548` },
@@ -964,7 +964,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
 
       await portalPage.gotoVersion(testDashboardVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
-      await test.step('Download as combined YAML', async () => {
+      await test.step('Export as combined YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -974,7 +974,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
-      await test.step('Download as combined JSON', async () => {
+      await test.step('Export as combined JSON', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -984,7 +984,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
-      await test.step('Download as combined HTML', async () => {
+      await test.step('Export as combined HTML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -994,7 +994,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
 
-      await test.step('Download as reduced YAML', async () => {
+      await test.step('Export as reduced YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -1004,7 +1004,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
-      await test.step('Download as reduced JSON', async () => {
+      await test.step('Export as reduced JSON', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -1014,7 +1014,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
-      await test.step('Download as reduced HTML', async () => {
+      await test.step('Export as reduced HTML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -1025,7 +1025,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
       })
     })
 
-  test('[P-ACOD-01.8] Dashboard. Owner. Download documents.',
+  test('[P-ACOD-01.8] Dashboard. Owner. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10548` },
@@ -1087,7 +1087,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
   const prefixGroupName = 'v1'
   const downloadingGroupName = ORG_PKG_UAC_ADMIN_REST_DOWNLOADING_N.groupName
 
-  test('[P-ACAP-01.6] Package. Admin. Download operation groups.',
+  test('[P-ACAP-01.6] Package. Admin. Exporting operation groups.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10611` },
@@ -1104,7 +1104,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
 
       await test.step('Prefix group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -1114,7 +1114,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -1124,7 +1124,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -1134,7 +1134,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -1144,7 +1144,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -1154,7 +1154,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${prefixGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(prefixGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -1167,7 +1167,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
 
       await test.step('Manual group', async () => {
 
-        await test.step('Download as combined YAML', async () => {
+        await test.step('Export as combined YAML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -1177,7 +1177,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
         })
 
-        await test.step('Download as combined JSON', async () => {
+        await test.step('Export as combined JSON', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -1187,7 +1187,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
         })
 
-        await test.step('Download as combined HTML', async () => {
+        await test.step('Export as combined HTML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -1197,7 +1197,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
         })
 
-        await test.step('Download as reduced YAML', async () => {
+        await test.step('Export as reduced YAML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -1207,7 +1207,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
         })
 
-        await test.step('Download as reduced JSON', async () => {
+        await test.step('Export as reduced JSON', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -1217,7 +1217,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
           await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
         })
 
-        await test.step('Download as reduced HTML', async () => {
+        await test.step('Export as reduced HTML', async () => {
           await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
           await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -1229,7 +1229,7 @@ test.describe('03.4.1.0 Access Control. Admin role. (Package)', () => {
       })
     })
 
-  test('[P-ACAP-01.8] Package. Admin. Download documents.',
+  test('[P-ACAP-01.8] Package. Admin. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10611` },
@@ -1291,7 +1291,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
   const testPackageVersion = V_P_PKG_UAC_ADMIN_CHANGED_N
   const downloadingGroupName = OGR_DSH_UAC_ADMIN_REST_DOWNLOADING_N.groupName
 
-  test('[P-ACAD-01.6] Dashboard. Admin. Download operation group.',
+  test('[P-ACAD-01.6] Dashboard. Admin. Exporting operation group.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10614` },
@@ -1306,7 +1306,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
 
       await portalPage.gotoVersion(testDashboardVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
-      await test.step('Download as combined YAML', async () => {
+      await test.step('Export as combined YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -1316,7 +1316,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
-      await test.step('Download as combined JSON', async () => {
+      await test.step('Export as combined JSON', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -1326,7 +1326,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
-      await test.step('Download as combined HTML', async () => {
+      await test.step('Export as combined HTML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -1336,7 +1336,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
 
-      await test.step('Download as reduced YAML', async () => {
+      await test.step('Export as reduced YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -1346,7 +1346,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
-      await test.step('Download as reduced JSON', async () => {
+      await test.step('Export as reduced JSON', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -1356,7 +1356,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
-      await test.step('Download as reduced HTML', async () => {
+      await test.step('Export as reduced HTML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -1367,7 +1367,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
       })
     })
 
-  test('[P-ACAD-01.8] Dashboard. Admin. Download documents.',
+  test('[P-ACAD-01.8] Dashboard. Admin. Exporting documents.',
     {
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10614` },
@@ -1450,7 +1450,7 @@ test.describe('7.1.0 Documents actions (Package)', () => {
   const testPackage = PK11
   const testVersion = V_P_PKG_DOCUMENTS_R
 
-  test('[P-DCPDN-1] Downloading a REST API document via action menu',
+  test('[P-DCPDN-1] Exporting a REST API document via action menu.',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-1726` },
@@ -1506,7 +1506,7 @@ test.describe('7.1.0 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPDN-2] Downloading a REST API document via download menu',
+  test('[P-DCPDN-2] Exporting a REST API document via More menu.',
     {
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4983` },
     },
@@ -1559,7 +1559,7 @@ test.describe('7.1.0 Documents actions (Package)', () => {
       })
     })
 
-  test('[P-DCPDN-6] Downloading a REST API document from the Document Preview page',
+  test('[P-DCPDN-6] Exporting a REST API document from the Document Preview page.',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4511` },
@@ -1619,7 +1619,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
   const testPackage = P_PKG_PMGR_R
   const testVersion = V_PKG_PMGR_CHANGED_R
 
-  test('[P-MGOP-2.2.1] Downloading for REST API group',
+  test('[P-MGOP-2.2.1] Exporting a REST API group.',
     {
       tag: '@smoke',
       annotation: [
@@ -1637,7 +1637,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
 
       await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
-      await test.step('Download as combined YAML', async () => {
+      await test.step('Export as combined YAML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -1647,7 +1647,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.yaml`)
       })
 
-      await test.step('Download as combined JSON', async () => {
+      await test.step('Export as combined JSON', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -1657,7 +1657,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.json`)
       })
 
-      await test.step('Download as combined HTML', async () => {
+      await test.step('Export as combined HTML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -1667,7 +1667,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.zip`)
       })
 
-      await test.step('Download as reduced YAML', async () => {
+      await test.step('Export as reduced YAML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -1677,7 +1677,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.yaml`)
       })
 
-      await test.step('Download as reduced JSON', async () => {
+      await test.step('Export as reduced JSON', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -1687,7 +1687,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.json`)
       })
 
-      await test.step('Download as reduced HTML', async () => {
+      await test.step('Export as reduced HTML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -1698,7 +1698,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
       })
     })
 
-  test('[P-MGOP-2.2.2-N] Downloading for GraphQL group (Negative)',
+  test('[P-MGOP-2.2.2-N] Exporting a GraphQL group (Negative).',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10191` },
@@ -1718,7 +1718,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
       await expect(groupsTab.getGroupRow(groupName).exportBtn).toBeDisabled()
     })
 
-  test('[P-MGOP-2.2.3] Downloading the combined specification and its subsequent publication',
+  test('[P-MGOP-2.2.3] Exporting the combined specification and its subsequent publication.',
     {
       tag: '@smoke',
       annotation: [
@@ -1775,7 +1775,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
   const testDashboard = P_DSH_DMGR_R
   const testVersion = V_DSH_DMGR_CHANGED_R
 
-  test('[P-MGO-2.2.1] Downloading for REST API group',
+  test('[P-MGO-2.2.1] Exporting a REST API group.',
     {
       tag: '@smoke',
       annotation: [
@@ -1793,7 +1793,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
 
       await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
-      await test.step('Download as combined YAML', async () => {
+      await test.step('Export as combined YAML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -1803,7 +1803,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${groupName}.yaml`)
       })
 
-      await test.step('Download as combined JSON', async () => {
+      await test.step('Export as combined JSON', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -1813,7 +1813,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${groupName}.json`)
       })
 
-      await test.step('Download as combined HTML', async () => {
+      await test.step('Export as combined HTML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -1823,7 +1823,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${groupName}.zip`)
       })
 
-      await test.step('Download as reduced YAML', async () => {
+      await test.step('Export as reduced YAML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -1833,7 +1833,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${groupName}.yaml`)
       })
 
-      await test.step('Download as reduced JSON', async () => {
+      await test.step('Export as reduced JSON', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -1843,7 +1843,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
         await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${groupName}.json`)
       })
 
-      await test.step('Download as reduced HTML', async () => {
+      await test.step('Export as reduced HTML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
@@ -1854,7 +1854,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
       })
     })
 
-  test('[P-MGO-2.2.2-N] Downloading for GraphQL group (Negative)',
+  test('[P-MGO-2.2.2-N] Exporting a GraphQL group (Negative).',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10184` },
@@ -1876,7 +1876,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
 })
 
 test.describe('12.1.4.0 Prefix grouping: CRUD', () => {
-  test('[P-GOP-5] Downloading for REST API prefix group',
+  test('[P-GOP-5] Exporting a REST API prefix group.',
     {
       tag: '@smoke',
       annotation: [
@@ -1896,7 +1896,7 @@ test.describe('12.1.4.0 Prefix grouping: CRUD', () => {
 
       await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
-      await test.step('Download as combined YAML', async () => {
+      await test.step('Export as combined YAML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'yaml' })
 
@@ -1906,7 +1906,7 @@ test.describe('12.1.4.0 Prefix grouping: CRUD', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.yaml`)
       })
 
-      await test.step('Download as combined JSON', async () => {
+      await test.step('Export as combined JSON', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'json' })
 
@@ -1916,7 +1916,7 @@ test.describe('12.1.4.0 Prefix grouping: CRUD', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.json`)
       })
 
-      await test.step('Download as combined HTML', async () => {
+      await test.step('Export as combined HTML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'combined', fileFormat: 'html' })
 
@@ -1926,7 +1926,7 @@ test.describe('12.1.4.0 Prefix grouping: CRUD', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.zip`)
       })
 
-      await test.step('Download as reduced YAML', async () => {
+      await test.step('Export as reduced YAML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'yaml' })
 
@@ -1936,7 +1936,7 @@ test.describe('12.1.4.0 Prefix grouping: CRUD', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.yaml`)
       })
 
-      await test.step('Download as reduced JSON', async () => {
+      await test.step('Export as reduced JSON', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'json' })
 
@@ -1946,7 +1946,7 @@ test.describe('12.1.4.0 Prefix grouping: CRUD', () => {
         await expectFile(file).toHaveName(`${testPackage.packageId}_${testVersion.version}_${groupName}.json`)
       })
 
-      await test.step('Download as reduced HTML', async () => {
+      await test.step('Export as reduced HTML', async () => {
         await groupsTab.getGroupRow(groupName).openExportDialog()
         await exportDialog.fillForm({ specType: 'reduced', fileFormat: 'html' })
 
