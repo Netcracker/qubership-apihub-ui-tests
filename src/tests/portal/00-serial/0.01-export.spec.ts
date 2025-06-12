@@ -257,7 +257,8 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
 
   const testPackage = PKG_P_VIEWER_R
   const testDashboard = DSH_P_VIEWER_R
-  const testVersion = V_P_DSH_UAC_VIEWER_CHANGED_R
+  const testDashboardVersion = V_P_DSH_UAC_VIEWER_CHANGED_R
+  const testPackageVersion = V_P_PKG_UAC_VIEWER_CHANGED_R
   const manualGroupName = OGR_UAC_DSH_REST.groupName
 
   test('[P-ACVD-01.3] Dashboard. Viewer. Download operation groups.',
@@ -273,7 +274,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
       const { exportSettingsDialog: exportDialog } = versionPage
       const { groupsTab } = versionPage.overviewTab
 
-      await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
+      await portalPage.gotoVersion(testDashboardVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Manual group', async () => {
 
@@ -284,7 +285,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           const file = await exportDialog.performExport()
 
           await expect(exportDialog.exportBtn).toBeHidden()
-          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${manualGroupName}.yaml`)
+          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.yaml`)
         })
 
         await test.step('Download as combined JSON', async () => {
@@ -294,7 +295,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           const file = await exportDialog.performExport()
 
           await expect(exportDialog.exportBtn).toBeHidden()
-          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${manualGroupName}.json`)
+          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.json`)
         })
 
         await test.step('Download as combined HTML', async () => {
@@ -304,7 +305,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           const file = await exportDialog.performExport()
 
           await expect(exportDialog.exportBtn).toBeHidden()
-          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${manualGroupName}.zip`)
+          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.zip`)
         })
 
         await test.step('Download as reduced YAML', async () => {
@@ -314,7 +315,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           const file = await exportDialog.performExport()
 
           await expect(exportDialog.exportBtn).toBeHidden()
-          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${manualGroupName}.yaml`)
+          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.yaml`)
         })
 
         await test.step('Download as reduced JSON', async () => {
@@ -324,7 +325,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           const file = await exportDialog.performExport()
 
           await expect(exportDialog.exportBtn).toBeHidden()
-          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${manualGroupName}.json`)
+          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.json`)
         })
 
         await test.step('Download as reduced HTML', async () => {
@@ -334,7 +335,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
           const file = await exportDialog.performExport()
 
           await expect(exportDialog.exportBtn).toBeHidden()
-          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${manualGroupName}.zip`)
+          await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${manualGroupName}.zip`)
         })
       })
     })
@@ -354,7 +355,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
       const { slug } = FILE_P_PETSTORE30_CHANGELOG_BASE
       const { docName } = FILE_P_PETSTORE30.testMeta!
 
-      await portalPage.gotoVersion(testVersion)
+      await portalPage.gotoVersion(testDashboardVersion)
       await documentsTab.click()
       await documentsTab.sidebar.packageFilterAc.click()
       await documentsTab.sidebar.packageFilterAc.getListItem(testPackage.name).click()
@@ -368,7 +369,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.yaml`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.yaml`)
       })
 
       await test.step('Export as JSON', async () => {
@@ -379,7 +380,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.json`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.json`)
       })
 
       await test.step('Export as HTML', async () => {
@@ -390,7 +391,7 @@ test.describe('03.1.2.0 Access Control. Viewer role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.zip`)
       })
     })
 })
@@ -602,7 +603,8 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
 
   const testPackage = PKG_P_EDITOR_N
   const testDashboard = DSH_P_EDITOR_N
-  const testVersion = V_P_DSH_UAC_EDITOR_CHANGED_N
+  const testDashboardVersion = V_P_DSH_UAC_EDITOR_CHANGED_N
+  const testPackageVersion = V_P_PKG_UAC_EDITOR_CHANGED_N
   const downloadingGroupName = OGR_DSH_UAC_EDITOR_REST_DOWNLOADING_N.groupName
 
   test('[P-ACED-01.6] Dashboard. Editor. Download operation group.',
@@ -618,7 +620,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
       const { exportSettingsDialog: exportDialog } = versionPage
       const { groupsTab } = versionPage.overviewTab
 
-      await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
+      await portalPage.gotoVersion(testDashboardVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Download as combined YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
@@ -627,7 +629,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as combined JSON', async () => {
@@ -637,7 +639,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
       await test.step('Download as combined HTML', async () => {
@@ -647,7 +649,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
 
       await test.step('Download as reduced YAML', async () => {
@@ -657,7 +659,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as reduced JSON', async () => {
@@ -667,7 +669,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
       await test.step('Download as reduced HTML', async () => {
@@ -677,7 +679,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
     })
 
@@ -696,7 +698,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
       const { slug } = FILE_P_PETSTORE30_CHANGELOG_BASE
       const { docName } = FILE_P_PETSTORE30.testMeta!
 
-      await portalPage.gotoVersion(testVersion)
+      await portalPage.gotoVersion(testDashboardVersion)
       await documentsTab.click()
       await documentsTab.sidebar.packageFilterAc.set(testPackage.name)
       const docButton = documentsTab.sidebar.getFileButton(docName)
@@ -709,7 +711,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.yaml`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.yaml`)
       })
 
       await test.step('Export as JSON', async () => {
@@ -720,7 +722,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.json`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.json`)
       })
 
       await test.step('Export as HTML', async () => {
@@ -731,7 +733,7 @@ test.describe('03.2.2.0 Access Control. Editor role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.zip`)
       })
     })
 })
@@ -943,7 +945,8 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
 
   const testPackage = PKG_P_OWNER_N
   const testDashboard = DSH_P_OWNER_N
-  const testVersion = V_P_DSH_UAC_OWNER_CHANGED_N
+  const testDashboardVersion = V_P_DSH_UAC_OWNER_CHANGED_N
+  const testPackageVersion = V_P_PKG_UAC_OWNER_CHANGED_N
   const downloadingGroupName = OGR_DSH_UAC_OWNER_REST_DOWNLOADING_N.groupName
 
   test('[P-ACOD-01.6] Dashboard. Owner. Download operation group.',
@@ -959,7 +962,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
       const { exportSettingsDialog: exportDialog } = versionPage
       const { groupsTab } = versionPage.overviewTab
 
-      await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
+      await portalPage.gotoVersion(testDashboardVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Download as combined YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
@@ -968,7 +971,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as combined JSON', async () => {
@@ -978,7 +981,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
       await test.step('Download as combined HTML', async () => {
@@ -988,7 +991,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
 
       await test.step('Download as reduced YAML', async () => {
@@ -998,7 +1001,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as reduced JSON', async () => {
@@ -1008,7 +1011,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
       await test.step('Download as reduced HTML', async () => {
@@ -1018,7 +1021,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
     })
 
@@ -1037,7 +1040,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
       const { slug } = FILE_P_PETSTORE30_CHANGELOG_BASE
       const { docName } = FILE_P_PETSTORE30.testMeta!
 
-      await portalPage.gotoVersion(testVersion)
+      await portalPage.gotoVersion(testDashboardVersion)
       await documentsTab.click()
       await documentsTab.sidebar.packageFilterAc.set(testPackage.name)
       const docButton = documentsTab.sidebar.getFileButton(docName)
@@ -1050,7 +1053,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.yaml`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.yaml`)
       })
 
       await test.step('Export as JSON', async () => {
@@ -1061,7 +1064,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.json`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.json`)
       })
 
       await test.step('Export as HTML', async () => {
@@ -1072,7 +1075,7 @@ test.describe('03.3.2.0 Access Control. Owner role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.zip`)
       })
     })
 })
@@ -1284,7 +1287,8 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
 
   const testPackage = PKG_P_ADMIN_N
   const testDashboard = DSH_P_ADMIN_N
-  const testVersion = V_P_DSH_UAC_ADMIN_CHANGED_N
+  const testDashboardVersion = V_P_DSH_UAC_ADMIN_CHANGED_N
+  const testPackageVersion = V_P_PKG_UAC_ADMIN_CHANGED_N
   const downloadingGroupName = OGR_DSH_UAC_ADMIN_REST_DOWNLOADING_N.groupName
 
   test('[P-ACAD-01.6] Dashboard. Admin. Download operation group.',
@@ -1300,7 +1304,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
       const { exportSettingsDialog: exportDialog } = versionPage
       const { groupsTab } = versionPage.overviewTab
 
-      await portalPage.gotoVersion(testVersion, VERSION_OVERVIEW_TAB_GROUPS)
+      await portalPage.gotoVersion(testDashboardVersion, VERSION_OVERVIEW_TAB_GROUPS)
 
       await test.step('Download as combined YAML', async () => {
         await groupsTab.getGroupRow(downloadingGroupName).openExportDialog()
@@ -1309,7 +1313,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as combined JSON', async () => {
@@ -1319,7 +1323,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
       await test.step('Download as combined HTML', async () => {
@@ -1329,7 +1333,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
 
       await test.step('Download as reduced YAML', async () => {
@@ -1339,7 +1343,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.yaml`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.yaml`)
       })
 
       await test.step('Download as reduced JSON', async () => {
@@ -1349,7 +1353,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.json`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.json`)
       })
 
       await test.step('Download as reduced HTML', async () => {
@@ -1359,7 +1363,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${downloadingGroupName}.zip`)
+        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testDashboardVersion.version}_${downloadingGroupName}.zip`)
       })
     })
 
@@ -1378,7 +1382,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
       const { slug } = FILE_P_PETSTORE30_CHANGELOG_BASE
       const { docName } = FILE_P_PETSTORE30.testMeta!
 
-      await portalPage.gotoVersion(testVersion)
+      await portalPage.gotoVersion(testDashboardVersion)
       await documentsTab.click()
       await documentsTab.sidebar.packageFilterAc.set(testPackage.name)
       const docButton = documentsTab.sidebar.getFileButton(docName)
@@ -1391,7 +1395,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.yaml`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.yaml`)
       })
 
       await test.step('Export as JSON', async () => {
@@ -1402,7 +1406,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile.soft(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.json`)
+        await expectFile.soft(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.json`)
       })
 
       await test.step('Export as HTML', async () => {
@@ -1413,7 +1417,7 @@ test.describe('03.4.2.0 Access Control. Admin role. (Dashboard)', () => {
         const file = await exportDialog.performExport()
 
         await expect(exportDialog.exportBtn).toBeHidden()
-        await expectFile(file).toHaveName(`${testDashboard.packageId}_${testVersion.version}_${slug}.zip`)
+        await expectFile(file).toHaveName(`${testPackage.packageId}_${testPackageVersion.version}_${slug}.zip`)
       })
     })
 })
