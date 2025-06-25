@@ -1,7 +1,7 @@
 import { AgentPage } from '@agent/pages'
 import { test } from '@fixtures'
 import { PortalPage } from '@portal/pages/PortalPage'
-import { expect } from '@services/expect-decorator'
+import { expect, expectText } from '@services/expect-decorator'
 import { FILE_ICON, GRAPHQL_ICON, MARKDOWN_ICON, OPENAPI_ICON, SWAGGER_ICON } from '@shared/entities'
 import {
   CONFIG_PKG_RESTORE_FILE_TOOLTIP,
@@ -23,6 +23,7 @@ import {
   V_P_PKG_EDITING_FOR_NEW_REVISION_N,
   V_P_PKG_EDITING_FOR_NEW_VERSION_N,
   V_P_PKG_EDITING_SEARCH_R,
+  VS_CODE_EXTENSION_URL,
 } from '@test-data/portal'
 import { PUBLISH_TIMEOUT, TICKET_BASE_URL } from '@test-setup'
 import { isDevProxyMode } from '@services/utils'
@@ -60,6 +61,20 @@ test.describe('4.3.2 Package publishing via Portal', () => {
           await expect(agentPage.cloudAc).toBeVisible()
         })
       }
+
+      await test.step('VS Code Extension option', async () => {
+        await portalPage.gotoPackage(testPackage)
+        await versionPage.howToUploadBtn.click()
+
+        const pagePromise = page.context().waitForEvent('page')
+        await methodsForUploadDialog.toVsCodeExtensionBtn.click()
+
+        const newPage = await pagePromise
+
+        await expectText(newPage.url()).toContain(VS_CODE_EXTENSION_URL)
+
+        await newPage.close()
+      })
 
       await test.step('Got it', async () => {
         await portalPage.gotoPackage(testPackage)
