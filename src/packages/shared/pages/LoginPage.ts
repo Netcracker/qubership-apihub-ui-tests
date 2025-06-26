@@ -20,7 +20,7 @@ export class LoginPage extends BasePage {
     if (url) {
       await super.goto(url, options)
     } else {
-      await this.navigationStep('Go to the "Login" page', '/login')
+      await this.navigationStep('Go to the "Login" page', '/login?noAutoLogin=true')
     }
   }
 
@@ -28,6 +28,13 @@ export class LoginPage extends BasePage {
     await this.loginTxtFld.fill(credentials.email)
     await this.passwordTxtFld.fill(credentials.password)
     await this.signInBtn.click()
+    await this.page.waitForLoadState()
+  }
+
+  async signInNotInTest(credentials: Credentials): Promise<void> {
+    await this.loginTxtFld.mainLocator.fill(credentials.email)
+    await this.passwordTxtFld.mainLocator.fill(credentials.password)
+    await this.signInBtn.mainLocator.click()
     await this.page.waitForLoadState()
   }
 }
