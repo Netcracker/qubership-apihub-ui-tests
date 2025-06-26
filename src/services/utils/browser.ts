@@ -50,7 +50,7 @@ export const getPlaygroundCustomServer = (): string => {
     if (!PLAYGROUND_BACKEND_HOST) {
       throw Error(`You run tests on localhost but PLAYGROUND_BACKEND_HOST is ${PLAYGROUND_BACKEND_HOST}`)
     }
-    return `${PLAYGROUND_BACKEND_HOST}/api/v1`
+    return PLAYGROUND_BACKEND_HOST
   }
-  return `${BASE_URL.origin}/api/v1`
+  return BASE_URL.origin
 }

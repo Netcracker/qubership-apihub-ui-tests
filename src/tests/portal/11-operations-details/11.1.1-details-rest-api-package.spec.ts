@@ -266,12 +266,12 @@ test.describe('11.1.1 Operations details REST API (Package)', () => {
 
         await test.step('Add server 1', async () => {
           await operationPage.playgroundPanel.serverSlt.addCustomServerBtn.click() //WA: remove after fix previous step
-          await operationPage.playgroundPanel.addServerDialog.cloudAc.clear()
+
           await operationPage.playgroundPanel.addServerDialog.urlTxtFld.fill('https://api')
           await operationPage.playgroundPanel.addServerDialog.addBtn.click()
           await operationPage.playgroundPanel.serverSlt.click()
 
-          await expect(operationPage.playgroundPanel.serverSlt.getListItem('Custom Server 1', { exact: false })).toBeVisible()
+          await expect(operationPage.playgroundPanel.serverSlt.getListItem('https://api', { exact: false })).toBeVisible()
         })
 
         await test.step('Add server 2 and select it', async () => {
@@ -280,10 +280,10 @@ test.describe('11.1.1 Operations details REST API (Package)', () => {
           await operationPage.playgroundPanel.addServerDialog.addBtn.click()
           await operationPage.playgroundPanel.serverSlt.click()
 
-          await expect(operationPage.playgroundPanel.serverSlt.getListItem('Custom Server 1', { exact: false })).toBeVisible() //Cover TestCase-A-4737
-          await expect(operationPage.playgroundPanel.serverSlt.getListItem('Custom Server 2', { exact: false })).toBeVisible()
+          await expect(operationPage.playgroundPanel.serverSlt.getListItem('https://api', { exact: false })).toBeVisible() //Cover TestCase-A-4737
+          await expect(operationPage.playgroundPanel.serverSlt.getListItem(getPlaygroundCustomServer(), { exact: false })).toBeVisible()
 
-          await operationPage.playgroundPanel.serverSlt.getListItem('Custom Server 2', { exact: false }).click()
+          await operationPage.playgroundPanel.serverSlt.getListItem(getPlaygroundCustomServer(), { exact: false }).click()
         })
       })
 
