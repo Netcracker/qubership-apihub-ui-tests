@@ -55,7 +55,7 @@ test.describe('General', () => {
       await expect(portalPage.tooltip).toHaveText(SYSADMIN.name)
     })
 
-  test('[P-GEN-3] Navigation to the Agent page',
+  test('[P-GEN-2] Navigation to the Agent page',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4279` },
