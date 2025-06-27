@@ -12,6 +12,3 @@ export const INVALID_PREFIX_GROUP = '{group}'
 
 export const PACKAGE_VISIBILITY_PUBLIC = 'Public (default role - Viewer)'
 export const PACKAGE_VISIBILITY_PRIVATE = 'Private'
-
-export const VS_CODE_EXTENSION_URL =
-  'https://marketplace.visualstudio.com/items?itemName=Netcracker.qubership-apihub-vscode'
