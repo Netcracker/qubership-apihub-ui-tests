@@ -1,11 +1,15 @@
 import type { TestCase } from '@playwright/test/reporter'
-import type { ReportRunResult, ReportTemplateContext, ReportTestInfo } from './types'
-import { readFileSync } from 'fs'
 import { TICKET_BASE_URL } from '@test-setup'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import type { ReportRunResult, ReportTemplateContext, ReportTestInfo } from './types'
+
+const reportAssetsDir = join(dirname(fileURLToPath(import.meta.url)), 'reports')
 
 export function getAffectRatio(runResult: ReportRunResult): number {
   const { failedTests, affectedTests, skippedTests, allTests } = runResult.counts
-  return runResult.counts.allTests === 0 ? 0 : Math.round((failedTests + affectedTests + skippedTests) * 100 / allTests)
+  return allTests === 0 ? 0 : Math.round((failedTests + affectedTests + skippedTests) * 100 / allTests)
 }
 
 export function formatDate(date: Date): string {
@@ -23,63 +27,47 @@ export function formatDate(date: Date): string {
   })
 }
 
-export function millisecondsToMinuteSeconds(milliseconds: number): string {
-  const min = Math.floor(milliseconds / 60000)
-  const sec = Math.ceil((milliseconds % 60000) / 1000)
-  const minString = pad(min)
-  const secString = pad(sec)
-
-  if (milliseconds > 0) {
-    if (milliseconds < 1000) {
-      return '00:01 (mm:ss)'
-    }
-    if (sec < 10) {
-      return `${minString}:${secString} (mm:ss)`
-    }
-    return `${minString}:${secString} (mm:ss)`
+export function formatRunDuration(durationMs: number): string {
+  if (durationMs <= 0) {
+    return '00:00 (mm:ss)'
   }
-  return '00:00 (mm:ss)'
+  if (durationMs < 1000) {
+    return '00:01 (mm:ss)'
+  }
+  const totalSeconds = Math.ceil(durationMs / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} (mm:ss)`
 }
 
-function pad(value: number): string {
-  if (value < 10) {
-    return `0${value}`
-  }
-  return value.toString()
-}
-
-export function formatTemplate(template: string, { ...context }: ReportTemplateContext): string {
-  let page = template
-  for (const [key, value] of Object.entries(context)) {
-    const pattern = new RegExp(`{{${key}}}`, 'g')
-    page = page.replace(pattern, value.toString())
-  }
-
-  return page
+export function formatTemplate(template: string, context: ReportTemplateContext): string {
+  return Object.entries(context).reduce((page, [key, value]) => {
+    return page.replace(new RegExp(`{{${key}}}`, 'g'), String(value))
+  }, template)
 }
 
 export function loadFileForReport(file: string): string {
-  const path = `./src/services/custom-reporter/reports/${file}`
-  const fileContent = readFileSync(path, { encoding: 'utf8' })
-  return fileContent.toString()
+  return readFileSync(join(reportAssetsDir, file), 'utf8')
 }
 
 export function getTestInfo(test: TestCase): ReportTestInfo {
-  const testInfo: ReportTestInfo = { project: '', fullTitle: '', issues: new Set() }
   const [, project] = test.titlePath()
-  testInfo.project = project
-  testInfo.fullTitle = `${project} > ${test.parent.title} > ${test.title}`
+  const testInfo: ReportTestInfo = {
+    project: project,
+    fullTitle: `${project} > ${test.parent.title} > ${test.title}`,
+    issues: new Set(),
+    tags: test.tags.length > 0 ? [...test.tags] : [],
+    annotations: test.annotations.length > 0 ? [...test.annotations] : [],
+  }
 
-  if (test.annotations.length > 0) {
-    for (const annotation of test.annotations) {
-      if (annotation.type === 'Test Case' || annotation.type === 'URL') {
-        testInfo.testCaseUrl = annotation.description
-      }
-      if (annotation.type === 'Issue') {
-        const url = annotation.description!.startsWith('https') ? annotation.description : undefined
-        const key = annotation.description!.replace(TICKET_BASE_URL, '')
-        testInfo.issues.add({ key: key, url: url })
-      }
+  for (const annotation of test.annotations) {
+    if (annotation.type === 'Test Case' || annotation.type === 'URL') {
+      testInfo.testCaseUrl = annotation.description
+    }
+    if (annotation.type === 'Issue' && annotation.description) {
+      const url = annotation.description.startsWith('https') ? annotation.description : undefined
+      const key = annotation.description.replace(TICKET_BASE_URL, '')
+      testInfo.issues.add({ key, url })
     }
   }
 

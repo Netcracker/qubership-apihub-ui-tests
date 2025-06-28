@@ -4,10 +4,6 @@ import dayjs from 'dayjs'
 import 'dotenv/config'
 import process from 'node:process'
 
-const formatReportTimestamp = (date: Date): string => {
-  return dayjs(date).locale('en').format('DD MMM YYYY HH:mm')
-}
-
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -16,6 +12,7 @@ const formatReportTimestamp = (date: Date): string => {
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+
 export default defineConfig<Fixtures>({
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: 'temp/test-results',
@@ -48,7 +45,15 @@ export default defineConfig<Fixtures>({
       noCopyPrompt: true,
     }],
     ['list'],
-    ['./src/services/custom-reporter/CustomReporter.ts', { reportType: 'apihub-styled-html' }],
+    [
+      './src/services/custom-reporter/CustomReporter.ts',
+      {
+        html: true,
+        github: process.env.GITHUB_ACTIONS === 'true'
+          ? { title: 'UI E2E tests result', affectRatio: false }
+          : false,
+      },
+    ],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -152,3 +157,7 @@ export default defineConfig<Fixtures>({
   //   port: 3000,
   // },
 })
+
+function formatReportTimestamp(date: Date): string {
+  return dayjs(date).locale('en').format('DD MMM YYYY HH:mm')
+}
