@@ -1,9 +1,6 @@
 body {
   height: 100%;
   font-family: ui-sans-serif, sans-serif, serif;
-  mso-ascii-font-family:  sans-serif;
-  /* mso-ansi-font-size: 17px;
-  mso-bidi-font-size: 17px; */
 }
 
 a {
@@ -74,7 +71,6 @@ td {
   text-align: left;
   color: #626D82;
   width: 120px;
-  /* table-layout: fixed; */
 }
 
 .info-table td {
@@ -87,7 +83,7 @@ td {
 
 .result-table th {
   text-align: left;
-  padding: 6px 12px 6px 12px;
+  padding: 6px 12px;
   font-weight: 500;
   font-size: 13px;
   line-height: 16px;
@@ -97,7 +93,7 @@ td {
 
 .result-table td {
   vertical-align: top;
-  padding: 6px 12px 6px 12px;
+  padding: 6px 12px;
   border-bottom: 1px solid #DEE2E6;
 }
 
