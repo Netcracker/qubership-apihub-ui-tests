@@ -1,7 +1,8 @@
 import type { Fixtures } from '@fixtures'
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig, devices, type ReporterDescription } from '@playwright/test'
 import 'dotenv/config'
 import process from 'node:process'
+import type { GitHubActionOptions } from '@estruyf/github-actions-reporter'
 
 /**
  * Read environment variables from file.
@@ -11,6 +12,31 @@ import process from 'node:process'
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+
+const sharedReporters: ReporterDescription[] = [
+  ['list'],
+  [
+    'html',
+    { open: 'never', outputFolder: 'reports/playwright' },
+  ],
+  [
+    './src/services/custom-reporter/CustomReporter.ts',
+    { reportType: 'apihub-styled-html' },
+  ],
+]
+
+const ciReporters: ReporterDescription[] = [
+  [
+    '@estruyf/github-actions-reporter',
+    <GitHubActionOptions>{
+      title: 'UI tests result',
+      useDetails: true,
+      showError: true,
+      includeResults: ['fail'],
+    },
+  ],
+]
+
 export default defineConfig<Fixtures>({
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: 'temp/test-results',
@@ -36,14 +62,7 @@ export default defineConfig<Fixtures>({
   /* Limit the number of failures on CI to save resources */
   maxFailures: process.env.CI ? 15 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html', {
-      open: 'never',
-      outputFolder: 'reports/playwright',
-    }],
-    ['list'],
-    ['./src/services/custom-reporter/CustomReporter.ts', { reportType: 'apihub-styled-html' }],
-  ],
+  reporter: process.env.CI ? [...sharedReporters, ...ciReporters] : sharedReporters,
   globalSetup: './src/tests/global-setup.ts',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
