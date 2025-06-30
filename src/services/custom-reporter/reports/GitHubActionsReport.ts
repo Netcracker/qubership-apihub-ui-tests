@@ -110,7 +110,7 @@ export default class GitHubActionsReport extends BaseReport {
   private addFailedTestsDetails(): void {
     this.runResult.lists.failedList.forEach((test, fullTitle) => {
 
-      let detailsContent = ''
+      let detailsContent = '<br>\n\n'
 
       // Add tags if available
       if (test.tags && test.tags.length > 0) {
