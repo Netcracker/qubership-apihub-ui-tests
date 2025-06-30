@@ -1,4 +1,5 @@
 import type { GitHubReportOptions, ReportRunResult } from '../types'
+import type { TestError } from 'playwright/types/testReporter'
 import BaseReport from './BaseReport'
 import { getAffectRatio } from '../utils'
 import * as core from '@actions/core'
@@ -72,6 +73,29 @@ ${failedTestsList}`
     return `**Tests:** ${counts.passedTests} passed, ${counts.failedTests} failed, ${counts.flakyTests} flaky, ${counts.skippedTests} skipped`
   }
 
+  private formatTestError(error: TestError): string {
+    const parts: string[] = []
+
+    if (error.message) {
+      parts.push(`Message: ${error.message}`)
+    }
+
+    if (error.stack) {
+      parts.push(`Stack: ${error.stack}`)
+    }
+
+    if (error.value) {
+      parts.push(`Value: ${error.value}`)
+    }
+
+    // If no specific fields are available, fallback to string representation
+    if (parts.length === 0) {
+      return error.toString()
+    }
+
+    return parts.join('\n')
+  }
+
   private getFailedTestsList(): string {
     if (this.runResult.lists.failedList.size === 0) {
       return ''
@@ -84,14 +108,18 @@ ${failedTestsList}`
 
       // Add tags if available
       if (test.tags && test.tags.length > 0) {
-        failedList += `**Tags:** ${test.tags.join(', ')}\n\n`
+        failedList += '**Tags:** '
+        const tags: string[] = []
+        test.tags.forEach(tag => {
+          tags.push(`\`${tag}\``)
+        })
+        failedList += `${tags.join(', ')}\n\n`
       }
 
       // Add annotations if available
       if (test.annotations && test.annotations.length > 0) {
-        failedList += '**Annotations:**\n'
         test.annotations.forEach(annotation => {
-          failedList += `- ${annotation.type}${annotation.description ? `: ${annotation.description}` : ''}\n`
+          failedList += `**${annotation.type}**${annotation.description ? `: ${annotation.description}` : ''}\n`
         })
         failedList += '\n'
       }
@@ -100,7 +128,7 @@ ${failedTestsList}`
       if (test.firstRetryErrors && test.firstRetryErrors.length > 0) {
         failedList += '**Errors:**\n'
         test.firstRetryErrors.forEach(error => {
-          failedList += `\`\`\`\n${error}\n\`\`\`\n\n`
+          failedList += `\`\`\`bash\n${this.formatTestError(error)}\n\`\`\`\n\n`
         })
       }
 
