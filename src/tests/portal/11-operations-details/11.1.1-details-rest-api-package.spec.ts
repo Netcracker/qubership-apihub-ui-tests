@@ -190,10 +190,9 @@ test.describe('11.1.1 Operations details REST API (Package)', () => {
 
   test('[P-ODPVW-5] Operations details: Checking Dependant operations list',
     {
-      tag: ['@smoke', '@second-tag', '@third tag'],
+      tag: ['@smoke'],
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-6422` },
-        { type: 'Issue', description: `${TICKET_BASE_URL}TestCase-B-1221` },
       ],
     },
     async ({ sysadminPage: page }) => {
@@ -229,9 +228,10 @@ test.describe('11.1.1 Operations details REST API (Package)', () => {
 
   test('[P-ODPPG-1] Operations details: Checking Playground',
     {
-      tag: '@smoke',
+      tag: ['@smoke', '@second-tag', '@third tag'],
       annotation: [
         { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4540` },
+        { type: 'Issue', description: `${TICKET_BASE_URL}TestCase-B-1221` },
       ],
     },
     async ({ sysadminPage: page }) => {
