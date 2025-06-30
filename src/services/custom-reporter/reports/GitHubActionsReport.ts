@@ -8,7 +8,7 @@ export default class GitHubActionsReport extends BaseReport {
 
   constructor(
     readonly runResult: ReportRunResult,
-    private readonly options: GitHubReportOptions = {},
+    private readonly options: GitHubReportOptions,
   ) {
     super()
   }
@@ -20,11 +20,9 @@ export default class GitHubActionsReport extends BaseReport {
       return ''
     }
 
-    const title = this.options.githubTitle || 'Playwright tests result'
-
     // Build the summary using @actions/core methods
     core.summary
-      .addHeading(title, 2)
+      .addHeading(this.options.title, 2)
       .addTable(this.getSummaryTable())
       .addSeparator()
 
@@ -70,36 +68,19 @@ export default class GitHubActionsReport extends BaseReport {
     const { counts } = this.runResult
     const status = this.getStatus()
     const affectRatio = this.getAffectRatio()
+    const summaryTable = []
 
-    return [
-      [
-        { data: 'Summary', header: true, colspan: '2' },
-      ],
-      [
-        { data: 'Status' },
-        { data: status },
-      ],
-      [
-        { data: 'Affect Ratio' },
-        { data: affectRatio },
-      ],
-      [
-        { data: 'All' },
-        { data: counts.allTests.toString() },
-      ],
-      [
-        { data: 'Failed' },
-        { data: counts.failedTests.toString() },
-      ],
-      [
-        { data: 'Flaky' },
-        { data: counts.flakyTests.toString() },
-      ],
-      [
-        { data: 'Skipped' },
-        { data: counts.skippedTests.toString() },
-      ],
-    ]
+    summaryTable.push([{ data: 'Summary', header: true, colspan: '2' }])
+    summaryTable.push([{ data: 'Status' }, { data: status }])
+    if (this.options.affectRatio) {
+      summaryTable.push([{ data: 'Affect Ratio' }, { data: affectRatio }])
+    }
+    summaryTable.push([{ data: 'All' }, { data: counts.allTests.toString() }])
+    summaryTable.push([{ data: 'Failed' }, { data: counts.failedTests.toString() }])
+    summaryTable.push([{ data: 'Flaky' }, { data: counts.flakyTests.toString() }])
+    summaryTable.push([{ data: 'Skipped' }, { data: counts.skippedTests.toString() }])
+
+    return summaryTable
   }
 
   private formatTestError(error: TestError): string {
@@ -124,8 +105,6 @@ export default class GitHubActionsReport extends BaseReport {
     return text
       // eslint-disable-next-line no-control-regex
       .replace(/\u001b\[[0-9;]*m/g, '')
-      .replace(/\r\n/g, '\n')
-      .trim()
   }
 
   private addFailedTestsDetails(): void {

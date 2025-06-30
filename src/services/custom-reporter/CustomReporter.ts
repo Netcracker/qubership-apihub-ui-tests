@@ -144,7 +144,12 @@ async function outputReport(
         return new ApihubStyledHtmlReport(runResult).getReport()
       }
       case 'github': {
-        return new GitHubActionsReport(runResult, githubOptions).getReport()
+        const _githubOptions: GitHubReportOptions = {
+          title: 'Playwright tests result',
+          affectRatio: false,
+          ...githubOptions,
+        }
+        return new GitHubActionsReport(runResult, _githubOptions).getReport()
       }
       default: {
         throw new Error(`Invalid report type: "${_reportType}" `)

@@ -78,15 +78,12 @@ export function getTestInfo(test: TestCase): ReportTestInfo {
 
   // Collect tags
   if (test.tags && test.tags.length > 0) {
-    testInfo.tags = [...test.tags]
+    testInfo.tags = test.tags
   }
 
   // Collect annotations
   if (test.annotations.length > 0) {
-    testInfo.annotations = test.annotations.map(annotation => ({
-      type: annotation.type,
-      description: annotation.description,
-    }))
+    testInfo.annotations = test.annotations
 
     for (const annotation of test.annotations) {
       if (annotation.type === 'Test Case' || annotation.type === 'URL') {

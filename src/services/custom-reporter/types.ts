@@ -61,7 +61,8 @@ export type ReportTestIssues = Set<{
 }>
 
 export type GitHubReportOptions = {
-  githubTitle?: string
+  title: string
+  affectRatio: boolean
 }
 
 export type CustomReporterOptions = {

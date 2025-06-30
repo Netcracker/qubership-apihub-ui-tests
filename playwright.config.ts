@@ -12,6 +12,15 @@ import process from 'node:process'
  * See https://playwright.dev/docs/test-configuration.
  */
 
+const customReporterOptions = process.env.CI
+  ? {
+    reportTypes: ['summary-html', 'github'],
+    githubOptions: { title: 'UI E2E tests result' },
+  }
+  : {
+    reportTypes: ['summary-html'],
+  }
+
 export default defineConfig<Fixtures>({
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: 'temp/test-results',
@@ -45,10 +54,7 @@ export default defineConfig<Fixtures>({
     ],
     [
       './src/services/custom-reporter/CustomReporter.ts',
-      {
-        reportTypes: ['summary-html', 'github'],
-        githubOptions: { githubTitle: 'UI E2E tests result' },
-      },
+      customReporterOptions,
     ],
   ],
   globalSetup: './src/tests/global-setup.ts',
