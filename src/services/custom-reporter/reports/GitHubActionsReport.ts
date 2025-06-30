@@ -21,25 +21,23 @@ export default class GitHubActionsReport extends BaseReport {
     }
 
     const title = this.options.githubTitle || 'Playwright tests result'
-    const status = this.getStatus()
-    const affectRatio = this.getAffectRatio()
-    const testCounts = this.getTestCounts()
-    const failedTestsList = this.getFailedTestsList()
 
-    const summary = `## ${title}
+    // Build the summary using @actions/core methods
+    core.summary
+      .addHeading(title, 2)
+      .addTable(this.getSummaryTable())
+      .addSeparator()
 
-${status} ${affectRatio}
-
-${testCounts}
-
-${failedTestsList}`
+    // Add failed tests section if there are any
+    if (this.runResult.lists.failedList.size > 0) {
+      core.summary.addHeading('Failed Tests', 3)
+      this.addFailedTestsDetails()
+    }
 
     // Write to GitHub Actions summary
-    await core.summary
-      .addRaw(summary)
-      .write()
+    await core.summary.write()
 
-    return summary
+    return core.summary.stringify()
   }
 
   private isGitHubCI(): boolean {
@@ -68,9 +66,40 @@ ${failedTestsList}`
     return `${icon} Affect Ratio: ${ratio}%`
   }
 
-  private getTestCounts(): string {
+  private getSummaryTable(): Array<Array<{ data: string; header?: boolean; colspan?: string }>> {
     const { counts } = this.runResult
-    return `**Tests:** ${counts.passedTests} passed, ${counts.failedTests} failed, ${counts.flakyTests} flaky, ${counts.skippedTests} skipped`
+    const status = this.getStatus()
+    const affectRatio = this.getAffectRatio()
+
+    return [
+      [
+        { data: 'Summary', header: true, colspan: '2' },
+      ],
+      [
+        { data: 'Status' },
+        { data: status },
+      ],
+      [
+        { data: 'Affect Ratio' },
+        { data: affectRatio },
+      ],
+      [
+        { data: 'All' },
+        { data: counts.allTests.toString() },
+      ],
+      [
+        { data: 'Failed' },
+        { data: counts.failedTests.toString() },
+      ],
+      [
+        { data: 'Flaky' },
+        { data: counts.flakyTests.toString() },
+      ],
+      [
+        { data: 'Skipped' },
+        { data: counts.skippedTests.toString() },
+      ],
+    ]
   }
 
   private formatTestError(error: TestError): string {
@@ -96,45 +125,36 @@ ${failedTestsList}`
     return parts.join('\n')
   }
 
-  private getFailedTestsList(): string {
-    if (this.runResult.lists.failedList.size === 0) {
-      return ''
-    }
-
-    let failedList = '### Failed Tests\n\n'
-
+  private addFailedTestsDetails(): void {
     this.runResult.lists.failedList.forEach((test, fullTitle) => {
-      failedList += `<details>\n<summary>${fullTitle}</summary>\n\n`
+      // Build details content directly using @actions/core methods
+      let detailsContent = ''
 
       // Add tags if available
       if (test.tags && test.tags.length > 0) {
-        failedList += '**Tags:** '
-        const tags: string[] = []
-        test.tags.forEach(tag => {
-          tags.push(`\`${tag}\``)
-        })
-        failedList += `${tags.join(', ')}\n\n`
+        detailsContent += `**Tags:** ${test.tags.map(tag => `\`${tag}\``).join(' ')}\n\n`
       }
 
       // Add annotations if available
       if (test.annotations && test.annotations.length > 0) {
         test.annotations.forEach(annotation => {
-          failedList += `**${annotation.type}**${annotation.description ? `: ${annotation.description}` : ''}\n`
+          detailsContent += `**${annotation.type}**${annotation.description ? `: ${annotation.description}` : ''}\n`
         })
-        failedList += '\n'
+        detailsContent += '\n'
       }
 
       // Add first retry errors if available
       if (test.firstRetryErrors && test.firstRetryErrors.length > 0) {
-        failedList += '**Errors:**\n'
+        detailsContent += '**Errors:**\n\n'
         test.firstRetryErrors.forEach(error => {
-          failedList += `\`\`\`bash\n${this.formatTestError(error)}\n\`\`\`\n\n`
+          const formattedError = this.formatTestError(error)
+          detailsContent += `\`\`\`bash\n${formattedError}\n\`\`\`\n\n`
         })
       }
 
-      failedList += '</details>\n\n'
+      // Add the details section for this test directly to the main summary
+      core.summary.addDetails(fullTitle, detailsContent)
     })
-
-    return failedList
+    core.summary.addSeparator()
   }
 }
