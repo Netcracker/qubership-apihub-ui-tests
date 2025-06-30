@@ -1,5 +1,5 @@
 import type { FullConfig, Reporter, Suite, TestCase, TestResult } from '@playwright/test/reporter'
-import type { ReportRunResult, ReportType, CustomReporterOptions, GitHubReportOptions } from './types'
+import type { CustomReporterOptions, GitHubReportOptions, ReportRunResult, ReportType } from './types'
 import ApihubStyledHtmlReport from './reports/ApihubStyledHtmlReport'
 import GitHubActionsReport from './reports/GitHubActionsReport'
 import { formatDate, getTestInfo, millisecondsToMinuteSeconds } from './utils'
@@ -8,7 +8,7 @@ import { mkdirSync, writeFileSync } from 'fs'
 import type { FullResult } from 'playwright/types/testReporter'
 
 const initialRunResult = (): ReportRunResult => ({
-  status: '',
+  status: 'Unknown',
   startTime: '',
   duration: '',
   workers: 0,
@@ -55,7 +55,7 @@ class CustomReporter implements Reporter {
 
     // Collect first retry errors
     if (retry === 0 && result.errors.length > 0) {
-      testInfo.firstRetryErrors = result.errors.map(error => error.message || error.toString())
+      testInfo.firstRetryErrors = result.errors
     }
 
     const removeFromFailedList = (): void => {

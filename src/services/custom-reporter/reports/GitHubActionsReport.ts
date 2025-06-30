@@ -1,4 +1,4 @@
-import type { ReportRunResult, ReportTestInfo, GitHubReportOptions } from '../types'
+import type { GitHubReportOptions, ReportRunResult } from '../types'
 import BaseReport from './BaseReport'
 import { getAffectRatio } from '../utils'
 import * as core from '@actions/core'
@@ -51,8 +51,9 @@ ${failedTestsList}`
       'Failed': '❌ Failed',
       'Timed out': '⏰ Timed out',
       'Interrupted': '⚠️ Interrupted',
+      'Unknown': '❓ Unknown',
     }
-    return statusMap[this.runResult.status as keyof typeof statusMap] || '❓ Unknown'
+    return statusMap[this.runResult.status]
   }
 
   private getAffectRatio(): string {

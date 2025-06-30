@@ -1,13 +1,17 @@
+import type { TestError } from 'playwright/types/testReporter'
+
 export type ReportType = 'summary-html' | 'github'
 
 export type ReportRunResult = {
-  status: string
+  status: ReportRunResultStatuses
   startTime: string
   duration: string
   workers: number
   counts: ReportRunResultCounts
   lists: ReportRunResultLists
 }
+
+export type ReportRunResultStatuses = 'Passed' | 'Failed' | 'Timed out' | 'Interrupted' | 'Unknown'
 
 export type ReportRunResultCounts = {
   allTests: number
@@ -46,7 +50,7 @@ export type ReportTestInfo = {
   fullTitle: string
   testCaseUrl?: string
   issues: ReportTestIssues
-  firstRetryErrors?: string[]
+  firstRetryErrors?: TestError[]
   tags?: string[]
   annotations?: Array<{ type: string; description?: string }>
 }
