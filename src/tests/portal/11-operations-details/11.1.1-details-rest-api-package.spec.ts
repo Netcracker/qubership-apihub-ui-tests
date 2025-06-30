@@ -190,8 +190,11 @@ test.describe('11.1.1 Operations details REST API (Package)', () => {
 
   test('[P-ODPVW-5] Operations details: Checking Dependant operations list',
     {
-      tag: '@smoke',
-      annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-6422` },
+      tag: ['@smoke', '@second-tag', '@third tag'],
+      annotation: [
+        { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-6422` },
+        { type: 'Issue', description: `${TICKET_BASE_URL}TestCase-B-1221` },
+      ],
     },
     async ({ sysadminPage: page }) => {
 

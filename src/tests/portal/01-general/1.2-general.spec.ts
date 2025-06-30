@@ -28,7 +28,7 @@ test.describe('General', () => {
       await expect.soft(portalPage.sidebar.favoritesBtn).toBeVisible()
       await expect.soft(portalPage.sidebar.sharedBtn).toBeVisible()
       await expect.soft(portalPage.sidebar.privateBtn).toBeVisible()
-      await expect.soft(portalPage.sidebar.workspacesBtn).toBeVisible()
+      await expect.soft(portalPage.sidebar.workspacesBtn).not.toBeVisible()
     })
 
   test('[P-GEN-3] Navigation to the Agent page',
