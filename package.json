@@ -17,7 +17,7 @@
     "release-finish": "release-finish"
   },
   "devDependencies": {
-    "@estruyf/github-actions-reporter": "1.10.0",
+    "@actions/core": "1.11.1",
     "@netcracker/qubership-apihub-npm-gitflow": "dev",
     "@playwright/test": "1.50.1",
     "@types/node": "22.13.1",

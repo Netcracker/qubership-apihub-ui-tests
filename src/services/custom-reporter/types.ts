@@ -1,4 +1,4 @@
-export type ReportType = 'apihub-styled-html'
+export type ReportType = 'summary-html' | 'github'
 
 export type ReportRunResult = {
   status: string
@@ -46,9 +46,22 @@ export type ReportTestInfo = {
   fullTitle: string
   testCaseUrl?: string
   issues: ReportTestIssues
+  firstRetryErrors?: string[]
+  tags?: string[]
+  annotations?: Array<{ type: string; description?: string }>
 }
 
 export type ReportTestIssues = Set<{
   key: string
   url?: string
 }>
+
+export type GitHubReportOptions = {
+  githubTitle?: string
+}
+
+export type CustomReporterOptions = {
+  reportTypes: ReportType[]
+  outputFolder?: string
+  githubOptions?: GitHubReportOptions
+}

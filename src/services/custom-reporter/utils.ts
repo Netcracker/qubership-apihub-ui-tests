@@ -65,12 +65,29 @@ export function loadFileForReport(file: string): string {
 }
 
 export function getTestInfo(test: TestCase): ReportTestInfo {
-  const testInfo: ReportTestInfo = { project: '', fullTitle: '', issues: new Set() }
+  const testInfo: ReportTestInfo = {
+    project: '',
+    fullTitle: '',
+    issues: new Set(),
+    tags: [],
+    annotations: [],
+  }
   const [, project] = test.titlePath()
   testInfo.project = project
   testInfo.fullTitle = `${project} > ${test.parent.title} > ${test.title}`
 
+  // Collect tags
+  if (test.tags && test.tags.length > 0) {
+    testInfo.tags = [...test.tags]
+  }
+
+  // Collect annotations
   if (test.annotations.length > 0) {
+    testInfo.annotations = test.annotations.map(annotation => ({
+      type: annotation.type,
+      description: annotation.description,
+    }))
+
     for (const annotation of test.annotations) {
       if (annotation.type === 'Test Case' || annotation.type === 'URL') {
         testInfo.testCaseUrl = annotation.description

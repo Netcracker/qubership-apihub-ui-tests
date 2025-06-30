@@ -1,6 +1,7 @@
 import type { FullConfig, Reporter, Suite, TestCase, TestResult } from '@playwright/test/reporter'
-import type { ReportRunResult, ReportType } from './types'
+import type { ReportRunResult, ReportType, CustomReporterOptions, GitHubReportOptions } from './types'
 import ApihubStyledHtmlReport from './reports/ApihubStyledHtmlReport'
+import GitHubActionsReport from './reports/GitHubActionsReport'
 import { formatDate, getTestInfo, millisecondsToMinuteSeconds } from './utils'
 import { SETUP_PROJECTS } from './consts'
 import { mkdirSync, writeFileSync } from 'fs'
@@ -30,14 +31,15 @@ const initialRunResult = (): ReportRunResult => ({
 
 class CustomReporter implements Reporter {
 
-  readonly reportType = this.options.reportType
+  readonly reportTypes = this.options.reportTypes
   readonly outputFolder = this.options.outputFolder
+  readonly githubOptions = this.options.githubOptions
 
   private setupTests = 0
 
   private runResult!: ReportRunResult
 
-  constructor(readonly options: { reportType: ReportType; outputFolder?: string }) { }
+  constructor(readonly options: CustomReporterOptions) { }
 
   async onBegin(config: FullConfig, suite: Suite): Promise<void> {
     this.runResult = initialRunResult()
@@ -50,6 +52,11 @@ class CustomReporter implements Reporter {
     const { retry } = result
     const testInfo = getTestInfo(test)
     const isSetupTest = SETUP_PROJECTS.includes(testInfo.project)
+
+    // Collect first retry errors
+    if (retry === 0 && result.errors.length > 0) {
+      testInfo.firstRetryErrors = result.errors.map(error => error.message || error.toString())
+    }
 
     const removeFromFailedList = (): void => {
       this.runResult.lists.failedList.delete(testInfo.fullTitle)
@@ -120,25 +127,43 @@ class CustomReporter implements Reporter {
         break
       }
     }
-    await outputReport(this.runResult, this.reportType, this.outputFolder)
+    await outputReport(this.runResult, this.reportTypes, this.outputFolder, this.githubOptions)
   }
 }
 
-async function outputReport(runResult: ReportRunResult, reportType: ReportType, outputFolder = 'reports/summary'): Promise<void> {
+async function outputReport(
+  runResult: ReportRunResult,
+  reportTypes: ReportType[],
+  outputFolder = 'reports/summary',
+  githubOptions?: GitHubReportOptions,
+): Promise<void> {
 
   const getReportByType = async (_reportType: ReportType): Promise<string> => {
     switch (_reportType) {
-      case 'apihub-styled-html': {
+      case 'summary-html': {
         return new ApihubStyledHtmlReport(runResult).getReport()
       }
+      case 'github': {
+        return new GitHubActionsReport(runResult, githubOptions).getReport()
+      }
       default: {
-        throw new Error(`Invalid report type: "${reportType}" `)
+        throw new Error(`Invalid report type: "${_reportType}" `)
       }
     }
   }
 
   mkdirSync(outputFolder, { recursive: true })
-  writeFileSync(`${outputFolder}/summary-report.html`, await getReportByType(reportType))
+
+  // Generate reports for each type
+  for (const reportType of reportTypes) {
+    if (reportType === 'summary-html') {
+      writeFileSync(`${outputFolder}/summary-report.html`, await getReportByType(reportType))
+    } else if (reportType === 'github') {
+      // GitHub report writes directly to GitHub Actions summary
+      await getReportByType(reportType)
+    }
+  }
+
   writeFileSync(`${outputFolder}/status`, runResult.status)
 }
 
