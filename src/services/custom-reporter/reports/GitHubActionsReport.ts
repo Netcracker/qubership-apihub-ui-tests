@@ -63,7 +63,7 @@ export default class GitHubActionsReport extends BaseReport {
     } else if (ratio > 20) {
       icon = '⚠️'
     }
-    return `${icon} Affect Ratio: ${ratio}%`
+    return `${icon} ${ratio}%`
   }
 
   private getSummaryTable(): Array<Array<{ data: string; header?: boolean; colspan?: string }>> {
@@ -105,42 +105,45 @@ export default class GitHubActionsReport extends BaseReport {
   private formatTestError(error: TestError): string {
     const parts: string[] = []
 
-    if (error.message) {
-      parts.push(`Message: ${error.message}`)
-    }
-
     if (error.stack) {
-      parts.push(`Stack: ${error.stack}`)
+      parts.push(this.cleanAnsiCodes(error.stack))
     }
 
     if (error.value) {
-      parts.push(`Value: ${error.value}`)
+      parts.push(this.cleanAnsiCodes(error.value))
     }
 
-    // If no specific fields are available, fallback to string representation
     if (parts.length === 0) {
-      return error.toString()
+      return this.cleanAnsiCodes(error.toString())
     }
 
     return parts.join('\n')
   }
 
+  private cleanAnsiCodes(text: string): string {
+    return text
+      // eslint-disable-next-line no-control-regex
+      .replace(/\u001b\[[0-9;]*m/g, '')
+      .replace(/\r\n/g, '\n')
+      .trim()
+  }
+
   private addFailedTestsDetails(): void {
     this.runResult.lists.failedList.forEach((test, fullTitle) => {
       // Build details content directly using @actions/core methods
-      let detailsContent = ''
+      let detailsContent = '\n\n'
 
       // Add tags if available
       if (test.tags && test.tags.length > 0) {
-        detailsContent += `**Tags:** ${test.tags.map(tag => `\`${tag}\``).join(' ')}\n\n`
+        const tagsFormatted = test.tags.map(tag => `\`${tag}\``).join(' ')
+        detailsContent += `**Tags:** ${tagsFormatted}\n\n`
       }
 
       // Add annotations if available
       if (test.annotations && test.annotations.length > 0) {
         test.annotations.forEach(annotation => {
-          detailsContent += `**${annotation.type}**${annotation.description ? `: ${annotation.description}` : ''}\n`
+          detailsContent += `**${annotation.type}**${annotation.description ? `: ${annotation.description}` : ''}\n\n`
         })
-        detailsContent += '\n'
       }
 
       // Add first retry errors if available
@@ -148,7 +151,7 @@ export default class GitHubActionsReport extends BaseReport {
         detailsContent += '**Errors:**\n\n'
         test.firstRetryErrors.forEach(error => {
           const formattedError = this.formatTestError(error)
-          detailsContent += `\`\`\`bash\n${formattedError}\n\`\`\`\n\n`
+          detailsContent += `\`\`\`\n${formattedError}\n\`\`\`\n\n`
         })
       }
 
