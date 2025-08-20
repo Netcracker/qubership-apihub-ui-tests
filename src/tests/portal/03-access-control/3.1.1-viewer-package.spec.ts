@@ -273,7 +273,6 @@ test.describe('03.1.1 Access Control. Viewer role. (Package)', () => {
         await expect(portalPage.tooltip).toHaveCount(1)
         await expect(portalPage.tooltip).toHaveText(NO_PERM_GEN_TOKEN)
 
-        //Удолить так как не отображаются теперь токены для этой табы
         // await accessTokensTab.getTokenRow(1).hover()
         //
         // await expect(accessTokensTab.getTokenRow(1).deleteBtn).toBeDisabled()
