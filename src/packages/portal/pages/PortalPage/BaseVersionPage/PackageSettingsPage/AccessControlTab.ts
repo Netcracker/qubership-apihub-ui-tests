@@ -1,10 +1,11 @@
 import type { Page } from '@playwright/test'
 import { BaseSettingsTab } from './BaseSettingsTab'
-import { Button, SearchBar } from '@shared/components/base'
+import { Button, SearchBar, Title } from '@shared/components/base'
 import { AcUserRow } from './AccessControlTab/AcUserRow'
 import { AcAddUserDialog } from './AccessTokensTab/AcAddUserDialog'
 import { BaseRemoveDialog } from '@shared/components/custom'
 import { nthPostfix } from '@services/utils'
+import { NO_PERMISSION_PAGE } from '@test-data/portal'
 
 export class AccessControlTab extends BaseSettingsTab {
 
@@ -13,6 +14,7 @@ export class AccessControlTab extends BaseSettingsTab {
   readonly searchbar = new SearchBar(this.page.getByTestId('SearchUser'), 'Search User')
   readonly addUserDialog = new AcAddUserDialog(this.page)
   readonly deleteUserDialog = new BaseRemoveDialog(this.page)
+  readonly notHavePermission  = new Title(this.page.getByTestId('NotPermissionSettingsPackage'), NO_PERMISSION_PAGE)
 
   constructor(page: Page) {
     super(page.getByTestId('TabButton-members'), 'Access Control')

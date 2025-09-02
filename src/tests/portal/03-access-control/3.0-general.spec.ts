@@ -3,7 +3,7 @@ import { expect, expectText } from '@services/expect-decorator'
 import { PortalPage } from '@portal/pages/PortalPage'
 import {
   GRP_P_UAC_G1_N,
-  GRP_P_UAC_G2_N,
+  GRP_P_UAC_G2_N, NO_PERMISSION_PAGE,
   PKG_P_UAC_G_ASSIGN_N,
   PKG_P_UAC_G_INHER_N,
   PKG_P_UAC_G_MULT1_N,
@@ -303,25 +303,13 @@ test.describe('03.0 Access Control. General.', () => {
       const { versionPackagePage: versionPage } = portalPage
       const { accessControlTab } = versionPage.packageSettingsPage
       const testUserName = TEST_USER_1.name
-      const tooltipMsg = 'You do not have permission to manage user roles in current package'
 
       await portalPage.gotoPackage(PKG_P_UAC_G_MULT2_N, SETTINGS_TAB_USERS)
-
       await expect(accessControlTab.getUserRow(testUserName).adminChx).toBeEnabled()
-
       await accessControlTab.getUserRow(testUserName).adminChx.click()
 
-      await expect(accessControlTab.getUserRow(testUserName).adminChx).toBeDisabled()
-
-      await accessControlTab.getUserRow(testUserName).adminChx.hover({ force: true })
-
-      await expect(portalPage.tooltip).toHaveCount(1)
-      await expect(portalPage.tooltip).toHaveText(tooltipMsg)
-
-      await accessControlTab.getUserRow(testUserName).deleteBtn.hover({ force: true })
-
-      await expect(portalPage.tooltip).toHaveCount(1)
-      await expect(portalPage.tooltip).toHaveText(tooltipMsg)
+      await expect(accessControlTab).toHaveCount(0)
+      await expect(accessControlTab.notHavePermission).toHaveText(NO_PERMISSION_PAGE)
     })
 
   test('[P-ACG-03.7] Deleting a user by checkbox clicking',

@@ -7,13 +7,11 @@ import {
   GRP_P_OWNER_EDITING_N,
   GRP_P_OWNER_N,
   GRP_P_OWNER_ROOT_N,
-  NO_PERM_ADD_MEMBER,
-  NO_PERM_GEN_TOKEN,
-  NO_PERM_MANAGE_ROLES,
+  NO_PERMISSION_PAGE,
   RV_PATTERN_DEF,
   RV_PATTERN_NEW,
 } from '@test-data/portal'
-import { SETTINGS_TAB_GENERAL } from '@portal/entities'
+import { SETTINGS_TAB_GENERAL, SETTINGS_TAB_TOKENS, SETTINGS_TAB_USERS } from '@portal/entities'
 import { EMPTY_VALUE } from '@test-data/shared'
 import { TICKET_BASE_URL } from '@test-setup'
 
@@ -43,31 +41,15 @@ test.describe('03.3.3 Access Control. Owner role. (Group)', () => {
       await portalPage.table.getRow(testGroup).openSettings()
 
       await test.step('View "Access Tokens" tab', async () => {
-        await accessTokensTab.click()
-
-        await expect(accessTokensTab.nameTxtFld).toBeDisabled()
-        await expect(accessTokensTab.rolesAc).toBeDisabled()
-        await expect(accessTokensTab.createdForAc).toBeDisabled()
-        await expect(accessTokensTab.generateBtn).toBeDisabled()
-
-        await accessTokensTab.generateBtn.hover({ force: true })
-
-        await expect(portalPage.tooltip).toHaveCount(1)
-        await expect(portalPage.tooltip).toHaveText(NO_PERM_GEN_TOKEN)
-
-        await expect(portalPage.tooltip).toHaveCount(1)
-        //! await expect(portalPage.tooltip).toHaveText(NO_PERM_REVOKE_TOKEN) //Issue: TestCase-B-1019
+        await expect(accessTokensTab).toHaveCount(0)
+        await portalPage.gotoGroup(testGroup, SETTINGS_TAB_TOKENS)
+        await expect(accessTokensTab.notHavePermission).toHaveText(NO_PERMISSION_PAGE)
       })
 
       await test.step('View "User Access Control" tab', async () => {
-        await accessControlTab.click()
-
-        await expect(accessControlTab.addUserBtn).toBeDisabled()
-
-        await accessControlTab.addUserBtn.hover({ force: true })
-
-        await expect(portalPage.tooltip).toHaveCount(1)
-        await expect(portalPage.tooltip).toHaveText(NO_PERM_ADD_MEMBER)
+        await expect(accessControlTab).toHaveCount(0)
+        await portalPage.gotoGroup(testGroup, SETTINGS_TAB_USERS)
+        await expect(accessControlTab.notHavePermission).toHaveText(NO_PERMISSION_PAGE)
       })
     })
 
