@@ -3,7 +3,8 @@ import { expect, expectText } from '@services/expect-decorator'
 import { PortalPage } from '@portal/pages/PortalPage'
 import {
   GRP_P_UAC_G1_N,
-  GRP_P_UAC_G2_N, NO_PERMISSION_PAGE,
+  GRP_P_UAC_G2_N,
+  NO_PERM_SEE_PAGE,
   PKG_P_UAC_G_ASSIGN_N,
   PKG_P_UAC_G_INHER_N,
   PKG_P_UAC_G_MULT1_N,
@@ -309,7 +310,7 @@ test.describe('03.0 Access Control. General.', () => {
       await accessControlTab.getUserRow(testUserName).adminChx.click()
 
       await expect(accessControlTab).toHaveCount(0)
-      await expect(accessControlTab.notHavePermission).toHaveText(NO_PERMISSION_PAGE)
+      await expect(accessControlTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
     })
 
   test('[P-ACG-03.7] Deleting a user by checkbox clicking',

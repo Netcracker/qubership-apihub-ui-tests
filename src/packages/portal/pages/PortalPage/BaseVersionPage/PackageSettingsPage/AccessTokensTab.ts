@@ -1,10 +1,10 @@
 import { type Page, test as report } from '@playwright/test'
 import { BaseSettingsTab } from './BaseSettingsTab'
-import { Autocomplete, Button, TextField, Title } from '@shared/components/base'
+import { Autocomplete, Button, Placeholder, TextField } from '@shared/components/base'
 import { TokenValueTextField } from './AccessTokensTab/TokenValueTextField'
 import { AccessTokenRow } from './AccessTokensTab/AccessTokenRow'
 import { nthPostfix } from '@services/utils'
-import { NO_PERMISSION_PAGE } from '@test-data/portal'
+import { NO_PERM_SEE_PAGE } from '@test-data/portal'
 
 export class AccessTokensTab extends BaseSettingsTab {
 
@@ -14,7 +14,7 @@ export class AccessTokensTab extends BaseSettingsTab {
   readonly generateBtn = new Button(this.page.getByTestId('GenerateButton'), 'Generate')
   readonly tokenValueTxtFld = new TokenValueTextField(this.page)
   readonly tokenWarning = new Button(this.page.getByTestId('TokenWarning'), 'Token Warning')
-  readonly notHavePermission  = new Title(this.page.getByTestId('NotPermissionSettingsPackage'), NO_PERMISSION_PAGE)
+  readonly notHavePermission  = new Placeholder(this.page.getByTestId('NotPermissionSettingsPackage'), NO_PERM_SEE_PAGE)
 
   constructor(page: Page) {
     super(page.getByTestId('TabButton-tokens'), 'Access Tokens')

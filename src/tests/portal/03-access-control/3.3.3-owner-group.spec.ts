@@ -7,7 +7,7 @@ import {
   GRP_P_OWNER_EDITING_N,
   GRP_P_OWNER_N,
   GRP_P_OWNER_ROOT_N,
-  NO_PERMISSION_PAGE,
+  NO_PERM_SEE_PAGE,
   RV_PATTERN_DEF,
   RV_PATTERN_NEW,
 } from '@test-data/portal'
@@ -43,13 +43,13 @@ test.describe('03.3.3 Access Control. Owner role. (Group)', () => {
       await test.step('View "Access Tokens" tab', async () => {
         await expect(accessTokensTab).toHaveCount(0)
         await portalPage.gotoGroup(testGroup, SETTINGS_TAB_TOKENS)
-        await expect(accessTokensTab.notHavePermission).toHaveText(NO_PERMISSION_PAGE)
+        await expect(accessTokensTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
       })
 
       await test.step('View "User Access Control" tab', async () => {
         await expect(accessControlTab).toHaveCount(0)
         await portalPage.gotoGroup(testGroup, SETTINGS_TAB_USERS)
-        await expect(accessControlTab.notHavePermission).toHaveText(NO_PERMISSION_PAGE)
+        await expect(accessControlTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
       })
     })
 
