@@ -1,10 +1,11 @@
 import type { Page } from '@playwright/test'
-import { Breadcrumbs, Button, Title } from '@shared/components/base'
+import { Breadcrumbs, Button, Placeholder, Title } from '@shared/components/base'
 import { GeneralSettingsTab } from './PackageSettingsPage/GeneralSettingsTab'
 import { ApiSpecConfigTab } from './PackageSettingsPage/ApiSpecConfigTab'
 import { VersionsTab } from './PackageSettingsPage/VersionsTab'
 import { AccessControlTab } from './PackageSettingsPage/AccessControlTab'
 import { AccessTokensTab } from './PackageSettingsPage/AccessTokensTab'
+import { NO_PERM_SEE_PAGE } from '@test-data/portal'
 
 export class PackageSettingsPage {
 
@@ -16,6 +17,7 @@ export class PackageSettingsPage {
   readonly versionsTab = new VersionsTab(this.page)
   readonly accessTokensTab = new AccessTokensTab(this.page)
   readonly accessControlTab = new AccessControlTab(this.page)
+  readonly noPermissionPlaceholder  = new Placeholder(this.page.getByTestId('NoPermissionPlaceholder'), NO_PERM_SEE_PAGE)
 
   constructor(private readonly page: Page) { }
 }

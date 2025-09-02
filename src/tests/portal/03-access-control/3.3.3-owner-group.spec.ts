@@ -35,21 +35,22 @@ test.describe('03.3.3 Access Control. Owner role. (Group)', () => {
       const {
         accessTokensTab,
         accessControlTab,
+        noPermissionPlaceholder
       } = versionPage.packageSettingsPage
 
       await portalPage.gotoGroup(rootGroup)
       await portalPage.table.getRow(testGroup).openSettings()
 
       await test.step('View "Access Tokens" tab', async () => {
-        await expect(accessTokensTab).toHaveCount(0)
+        await expect(accessTokensTab).not.toBeVisible()
         await portalPage.gotoGroup(testGroup, SETTINGS_TAB_TOKENS)
-        await expect(accessTokensTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
+        await expect(noPermissionPlaceholder).toHaveText(NO_PERM_SEE_PAGE)
       })
 
       await test.step('View "User Access Control" tab', async () => {
-        await expect(accessControlTab).toHaveCount(0)
+        await expect(accessControlTab).not.toBeVisible()
         await portalPage.gotoGroup(testGroup, SETTINGS_TAB_USERS)
-        await expect(accessControlTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
+        await expect(noPermissionPlaceholder).toHaveText(NO_PERM_SEE_PAGE)
       })
     })
 

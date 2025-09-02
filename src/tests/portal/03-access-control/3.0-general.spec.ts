@@ -302,15 +302,15 @@ test.describe('03.0 Access Control. General.', () => {
 
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
-      const { accessControlTab } = versionPage.packageSettingsPage
+      const { accessControlTab, noPermissionPlaceholder } = versionPage.packageSettingsPage
       const testUserName = TEST_USER_1.name
 
       await portalPage.gotoPackage(PKG_P_UAC_G_MULT2_N, SETTINGS_TAB_USERS)
       await expect(accessControlTab.getUserRow(testUserName).adminChx).toBeEnabled()
       await accessControlTab.getUserRow(testUserName).adminChx.click()
 
-      await expect(accessControlTab).toHaveCount(0)
-      await expect(accessControlTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
+      await expect(accessControlTab).not.toBeVisible()
+      await expect(noPermissionPlaceholder).toHaveText(NO_PERM_SEE_PAGE)
     })
 
   test('[P-ACG-03.7] Deleting a user by checkbox clicking',

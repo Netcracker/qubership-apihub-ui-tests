@@ -26,7 +26,7 @@ test.describe('03.2.3 Access Control. Editor role. (Group)', () => {
 
       const portalPage = new PortalPage(page)
       const { versionPackagePage: versionPage } = portalPage
-      const { generalTab, accessTokensTab, accessControlTab } = versionPage.packageSettingsPage
+      const { generalTab, accessTokensTab, accessControlTab, noPermissionPlaceholder } = versionPage.packageSettingsPage
 
       await test.step('Navigate to a group', async () => {
         await portalPage.gotoGroup(testGroup)
@@ -57,15 +57,15 @@ test.describe('03.2.3 Access Control. Editor role. (Group)', () => {
       })
 
       await test.step('View "Access Tokens" tab', async () => {
-        await expect(accessTokensTab).toHaveCount(0)
+        await expect(accessTokensTab).not.toBeVisible()
         await portalPage.gotoGroup(testGroup, SETTINGS_TAB_TOKENS)
-        await expect(accessTokensTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
+        await expect(noPermissionPlaceholder).toHaveText(NO_PERM_SEE_PAGE)
       })
 
       await test.step('View "User Access Control" tab', async () => {
-        await expect(accessControlTab).toHaveCount(0)
+        await expect(accessControlTab).not.toBeVisible()
         await portalPage.gotoGroup(testGroup, SETTINGS_TAB_USERS)
-        await expect(accessControlTab.notHavePermission).toHaveText(NO_PERM_SEE_PAGE)
+        await expect(noPermissionPlaceholder).toHaveText(NO_PERM_SEE_PAGE)
       })
     })
 })
