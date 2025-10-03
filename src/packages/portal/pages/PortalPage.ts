@@ -15,6 +15,7 @@ import { PortalPageTable } from './PortalPage/PortalPageTable'
 import { PortalPageToolbar } from './PortalPage/PortalPageToolbar'
 import { VersionDashboardPage } from './PortalPage/VersionPage/VersionDashboardPage'
 import { VersionPackagePage } from './PortalPage/VersionPage/VersionPackagePage'
+import { PortalSettingsPage } from './PortalPage/PortalSettingsPage/PortalSettingsPage'
 import type { GotoOptions, OperationsApiType } from '@shared/entities'
 
 export class PortalPage extends MainPage {
@@ -26,6 +27,7 @@ export class PortalPage extends MainPage {
   readonly globalSearchPanel = new GlobalSearchPanel(this.page)
   readonly versionPackagePage = new VersionPackagePage(this.page)
   readonly versionDashboardPage = new VersionDashboardPage(this.page)
+  readonly portalSettingsPage = new PortalSettingsPage(this.page)
   readonly createPackageDialog = new PortalCreatePackageDialog(this.page)
 
   constructor(protected readonly page: Page) {
