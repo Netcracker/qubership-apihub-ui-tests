@@ -16,7 +16,7 @@ This document provides a comprehensive guide to the coding standards and best pr
 - [Documentation & Maintainability](#documentation--maintainability)
 - [Project-Specific Patterns](#project-specific-patterns)
 
-### Naming Conventions
+## Naming Conventions
 
 - **Test files:** `[feature-number].[feature-name].spec.ts`
 - **Page objects:** `[PageName].ts` (PascalCase)
@@ -27,7 +27,7 @@ This document provides a comprehensive guide to the coding standards and best pr
 - **Classes:** `PascalCase`
 - **Test IDs:** `P-FEATURE-1` format (note: when adding new tests, always ensure the test ID is unique)
 
-### Code Organization
+## Code Organization
 
 - **Import from project-specific paths:**
   - `@fixtures` for test fixtures
@@ -37,7 +37,7 @@ This document provides a comprehensive guide to the coding standards and best pr
   - `@test-data` for constants
 - **Implement base classes for common functionality**
 
-### Test Structure & Organization
+## Test Structure & Organization
 
 - **Use `test.describe()` for logical test grouping with descriptive names**
 - **Follow test naming pattern:** `[TEST-ID] Action/Behavior being tested`
@@ -59,7 +59,7 @@ test.describe('Feature: Version Management', () => {
 })
 ```
 
-### Page Object Model (POM) Implementation
+## Page Object Model (POM) Implementation
 
 - Extend base components for maximum reusability
 - Use descriptive element names, such as `elementTypeDescription` (e.g., `addVersionBtn`)
@@ -94,7 +94,7 @@ export class PackageSettingsPage {
 }
 ```
 
-#### Using POM in Tests
+### Using POM in Tests
 
 The following example demonstrates how to use the created page objects and components within a test.
 
@@ -134,7 +134,7 @@ test('[P-MGOP-1.1] Create an empty group - REST API', async ({ sysadminPage: pag
 
 For practical examples of how to implement the Page Object Model, please refer to the [Page Object Model (POM) in Practice](pom-in-practice.md) document.
 
-### Locator Strategy
+## Locator Strategy
 
 - **Primary:** `getByTestId()`
 - **Semantic:** `getByRole()`, `getByLabel()`, `getByText()`
@@ -155,7 +155,7 @@ const activeUserRow = page.getByRole('row').filter({ hasText: 'Active' })
 const requiredField = page.getByRole('textbox').and(page.getByTestId('Required'))
 ```
 
-### Assertions & Expectations
+## Assertions & Expectations
 
 - Use `expect.soft()` for non-blocking assertions that do not stop test execution on failure. This is useful for checking multiple UI elements at once
 - Use auto-waiting assertions like `toBeVisible()`, `toHaveText()`, and `toBeEnabled()`
@@ -180,7 +180,7 @@ const file = await exportDialog.performExport()
 await expectFile(file).toHaveName('exported-file.yaml')
 ```
 
-### Test Data Management
+## Test Data Management
 
 - Create typed interfaces for test data validation
 - Use descriptive constant names (e.g., `CREATE_USER_ADMIN_ROLE`)
@@ -190,7 +190,7 @@ await expectFile(file).toHaveName('exported-file.yaml')
 - Use the `test-data-manager` service for creating test data via API. This is not a single class, but a set of specialized classes like `ApihubTestDataManager`, `UsersTestDataManager`, etc., which are provided through fixtures.
 - Strive for localized and optimized test data management. While some test data is currently stored separately from the tests, the goal is to create, manage, and clean up data at the most appropriate level (global, suite, or test-specific) to ensure test independence and performance.
 
-#### Test Data Types
+### Test Data Types
 
 Test data is categorized into two types based on reusability:
 
@@ -223,12 +223,12 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 })
 ```
 
-### Error Handling & Debugging
+## Error Handling & Debugging
 
 - **Interactive Debugging:** Use the `--debug` flag.
 - **Flakiness:** Implement retry logic for unstable operations.
 
-### Performance & Reliability
+## Performance & Reliability
 
 - Run tests in parallel by default
 - Use auto-waiting instead of explicit waits
@@ -249,14 +249,14 @@ await page.route('**/api/users', route => {
 await expect(page.getByTestId('loading')).toBeHidden()
 ```
 
-### Documentation & Maintainability
+## Documentation & Maintainability
 
 - Add JSDoc comments for complex components
 - Use descriptive variable names
 - Keep tests focused on single responsibility
 - Reference tickets for known issues
 
-### Project-Specific Patterns
+## Project-Specific Patterns
 
 - **Fixtures:** Use custom fixtures from `@fixtures`.
 - **Decorators:** Implement decorators for enhanced assertions.

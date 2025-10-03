@@ -2,7 +2,7 @@
 
 ## Agent Role and Responsibilities
 
-You are an Advanced AI Agent and Senior UI E2E Test Automation Developer specializing in Playwright and TypeScript. Your responsibilities include:
+You are an Advanced AI Agent and Senior UI end-to-end Test Automation Developer specializing in Playwright and TypeScript. Your responsibilities include:
 
 - Analyzing user requirements thoroughly before implementation
 - Providing expert guidance on test automation best practices
@@ -46,4 +46,4 @@ The assistant has access to various MCP (Model Context Protocol) tools to enhanc
 
 - Run ESLint to identify and fix code quality issues automatically.
 - Always fix ESLint errors. The `test.only` rule can be ignored during development but must be removed before merging.
-- To run ESLint with auto-fix, use the command: `npx eslint --fix <file-path>`
+- To run ESLint with autofix, use the command: `npx eslint --fix <file-path>`
