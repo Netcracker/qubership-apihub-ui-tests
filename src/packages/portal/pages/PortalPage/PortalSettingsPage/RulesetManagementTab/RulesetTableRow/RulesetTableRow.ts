@@ -2,7 +2,7 @@ import { type Locator, test as report } from '@playwright/test'
 import { getDownloadedFile } from '@services/utils'
 import { Button, Icon, TableCell, TableRow } from '@shared/components/base'
 import type { DownloadedTestFile } from '@shared/entities'
-import { ActivationHistoryTooltip } from './RulesetTableRow/ActivationHistoryTooltip'
+import { ActivationHistoryTooltip } from './ActivationHistoryTooltip'
 
 export class RulesetTableRow extends TableRow {
   readonly nameCell = new TableCell(

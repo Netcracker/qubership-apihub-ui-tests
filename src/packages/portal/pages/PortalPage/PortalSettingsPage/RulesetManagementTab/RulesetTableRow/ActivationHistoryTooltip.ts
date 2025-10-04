@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
-import { nthPostfix } from '@services/utils'
-import { Content, Title, Tooltip } from '@shared/components/base'
+import { createItemGetter, type ItemGetterConfig } from '@services/utils'
+import { Title, Tooltip, BaseComponent } from '@shared/components/base'
 
 export class ActivationHistoryTooltip extends Tooltip {
   readonly title = new Title(
@@ -8,15 +8,19 @@ export class ActivationHistoryTooltip extends Tooltip {
     'Activation History tooltip',
   )
 
-  constructor(protected readonly page: Page, componentName?: string) {
-    super(page.getByRole('tooltip'), componentName, 'activation history tooltip')
+  private readonly activationRecordConfig: ItemGetterConfig<BaseComponent> = {
+    constructor: (locator, componentName, componentType) =>
+      new BaseComponent(locator, componentName, componentType),
+    rootLocator: this.rootLocator.getByTestId('ActivationHistoryTooltipRecord'),
+    componentTypes: {
+      singular: 'activation record',
+      plural: 'activation records',
+    },
   }
 
-  getActivationRecord(nth?: number): Content {
-    if (nth !== undefined) {
-      const recordLocator = this.rootLocator.getByTestId('ActivationHistoryTooltipRecord').nth(nth - 1)
-      return new Content(recordLocator, '', `${nth}${nthPostfix(nth)} activation record`)
-    }
-    return new Content(this.rootLocator, '', 'All activation records')
+  readonly getActivationRecord = createItemGetter(this.activationRecordConfig)
+
+  constructor(protected readonly page: Page, componentName?: string) {
+    super(page.getByRole('tooltip'), componentName, 'activation history tooltip')
   }
 }
