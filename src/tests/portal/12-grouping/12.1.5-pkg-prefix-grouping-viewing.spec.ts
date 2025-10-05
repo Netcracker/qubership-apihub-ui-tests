@@ -210,8 +210,8 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
         await expect.soft(createListV1Row.rightSummary.changes.breaking).toHaveText('Breaking: 1')
         await expect.soft(createListV1Row.rightSummary.changes.risky).toBeHidden
         await expect.soft(createListV1Row.rightSummary.changes.deprecated).toHaveText('Deprecated: 1')
-        //! await expect.soft(createListV1Row.rightSummary.changes.nonBreaking).toHaveText('Non-breaking: 1') //Issue TestCase-B-1442
-        await expect.soft(createListV1Row.rightSummary.changes.annotation).toHaveText('Annotation: 2')
+        await expect.soft(createListV1Row.rightSummary.changes.nonBreaking).toHaveText('Non-breaking: 1') //Issue TestCase-B-1442
+        await expect.soft(createListV1Row.rightSummary.changes.annotation).toHaveText('Annotation: 1')
         await expect.soft(createListV1Row.rightSummary.changes.unclassified).toHaveText('Unclassified: 1')
       })
 
