@@ -29,7 +29,6 @@ export default defineConfig<Fixtures>({
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: 2,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 10 : 3,
@@ -44,7 +43,6 @@ export default defineConfig<Fixtures>({
     ['list'],
     ['./src/services/custom-reporter/CustomReporter.ts', { reportType: 'apihub-styled-html' }],
   ],
-  globalSetup: './src/tests/global-setup.ts',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
@@ -73,10 +71,17 @@ export default defineConfig<Fixtures>({
       dependencies: ['Portal-Setup'],
     },
     {
+      name: 'Apihub-Setup',
+      testDir: './src/tests',
+      testMatch: /apihub-setup\.ts/,
+    },
+    {
       name: 'Portal-Setup',
       testDir: './src/tests/portal',
       testMatch: /setup\.ts/,
       timeout: 1200_000,
+      retries: 0,
+      dependencies: ['Apihub-Setup'],
       teardown: 'Portal-Teardown',
     },
     {
@@ -89,6 +94,19 @@ export default defineConfig<Fixtures>({
       name: 'Utils',
       testDir: './src/tests/utils',
       testMatch: [/tools\.ts/, /cleanup\.ts/, /debug\.spec\.ts/],
+    },
+    {
+      name: 'Component',
+      testDir: './src',
+      testMatch: [/spec\.component\.ts/],
+      retries: 0,
+      dependencies: ['Apihub-Setup'],
+    },
+    {
+      name: 'Unit',
+      testDir: './src',
+      testMatch: [/spec\.unit\.ts/],
+      retries: 0,
     },
     {
       name: 'Cleanup',
@@ -124,7 +142,6 @@ export default defineConfig<Fixtures>({
       },
     },
   ],
-
   /* Run your local dev server before starting the tests */
   // webServer: {
   //   command: 'npm run start',

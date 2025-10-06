@@ -8,6 +8,8 @@
     "debug": "playwright test --project=Portal --debug",
     "test-e2e-portal": "playwright test --project=Portal",
     "test-e2e-portal-last-failed": "playwright test --project=Portal --last-failed",
+    "test-component": "playwright test --project=Component",
+    "test-unit": "playwright test --project=Unit",
     "cleanup": "playwright test --project=Cleanup",
     "lint": "eslint . --ext .ts,.tsx,.json --ignore-path .gitignore --max-warnings 0 --report-unused-disable-directives",
     "format": "npm run lint --fix"

@@ -362,7 +362,7 @@ import {
 } from '@test-data/portal'
 import { TEST_USER_1, TEST_USER_2, TEST_USER_3, TEST_USER_4, TEST_USER_AUTH } from '@test-data'
 
-test.describe.configure({ mode: 'serial', retries: 0 })
+test.describe.configure({ mode: 'serial' })
 
 test.describe('Users', async () => {
 

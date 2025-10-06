@@ -1,12 +1,12 @@
-import { SYSADMIN, TEST_PREFIX } from '@test-data'
-import { mkdir } from 'fs/promises'
+import { test } from '@fixtures'
+import { createUsersTDM } from '@services/test-data-manager'
 import { logEnvVars, setNonReusableTestId, setReusableTestId, stringifyError } from '@services/utils'
 import { ROOT_DOWNLOADS } from '@shared/entities'
-import path from 'node:path'
-import { createUsersTDM } from '@services/test-data-manager'
+import { SYSADMIN, TEST_PREFIX } from '@test-data'
+import { mkdir } from 'fs/promises'
+import path from 'path'
 
-async function globalSetup(): Promise<void> {
-
+test('APIHUB Global Setup', async () => {
   // Print environment variables
   logEnvVars([
     'BASE_URL',
@@ -22,7 +22,7 @@ async function globalSetup(): Promise<void> {
   ])
 
   // Verify Test Prefix
-  if (!/^[a-z0-9]+[-]$/ig.test(TEST_PREFIX)) {
+  if (!/^[a-z0-9]+-$/ig.test(TEST_PREFIX)) {
     throw new Error(`Test Prefix is "${TEST_PREFIX}"\nBut must contain only letters, numbers and end with "-".`)
   }
 
@@ -40,6 +40,4 @@ async function globalSetup(): Promise<void> {
   // Create system User
   const tdm = await createUsersTDM()
   await tdm.createSysadmin(SYSADMIN)
-}
-
-export default globalSetup
+})

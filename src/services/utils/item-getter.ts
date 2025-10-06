@@ -72,7 +72,7 @@ export function createItemGetter<T>(config: ItemGetterConfig<T>): ItemGetter<T> 
     }
 
     // Return all matching elements
-    return config.constructor(filterLocator, `${nameStr}`, `all ${config.componentTypes.plural}`)
+    return config.constructor(filterLocator, `${nameStr}`, config.componentTypes.singular)
   }
 
   return getItem
