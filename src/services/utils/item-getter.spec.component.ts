@@ -2,22 +2,23 @@ import { test } from '@fixtures'
 import { PortalPage } from '@portal/pages/PortalPage'
 import { PortalTableRow } from '@portal/pages/PortalPage/PortalTableRow'
 import { expect } from '@services/expect-decorator'
-import { ALIAS_PREFIX } from '@test-data'
-import { Group, Package, Workspace } from '@test-data/props'
+import { IMM_GR } from '@test-data/portal'
+import { Group, Package } from '@test-data/props'
 import type { ItemGetterConfig } from './item-getter'
 import { createItemGetter } from './item-getter'
 
 test.describe('Item Getter tests', { tag: '@external' }, () => {
-  const P_WS_DEBUG_R = new Workspace({
-    name: 'debug',
-    alias: `${ALIAS_PREFIX}D1-${process.env.TEST_ID_R}`,
-    description: 'Reusable. Debug.',
-  }, { testPrefix: true, testId: 'reusable' })
+  const GRP_CMPT_MAIN_R = new Group({
+    name: 'Component',
+    alias: 'GCOMP',
+    parent: IMM_GR,
+    description: 'Reusable. Component tests.',
+  })
 
-  const P_GR_ITEM_GETTER = new Group({
+  const GRP_CMPT_ITEM_GETTER_R = new Group({
     name: 'Item Getter',
     alias: 'GRITGET',
-    parent: P_WS_DEBUG_R,
+    parent: GRP_CMPT_MAIN_R,
   })
 
   const genPackageParams = (count: number): Package[] => {
@@ -26,7 +27,7 @@ test.describe('Item Getter tests', { tag: '@external' }, () => {
       return new Package({
         name: `package-${num}`,
         alias: `PKG-${num}`,
-        parent: P_GR_ITEM_GETTER,
+        parent: GRP_CMPT_ITEM_GETTER_R,
       })
     })
   }
@@ -34,13 +35,13 @@ test.describe('Item Getter tests', { tag: '@external' }, () => {
   const packages = genPackageParams(4)
 
   test.beforeAll('Create test data', async ({ apihubTDM }) => {
-    const allPackages = [P_WS_DEBUG_R, P_GR_ITEM_GETTER, ...packages]
+    const allPackages = [
+      GRP_CMPT_MAIN_R,
+      GRP_CMPT_ITEM_GETTER_R,
+      ...packages,
+    ]
 
-    for (const pkg of allPackages) {
-      await test.step(`Create package "${pkg.name}"`, async () => {
-        await apihubTDM.createPackage(pkg)
-      })
-    }
+    await apihubTDM.createPackage(allPackages)
   })
 
   test('Check table rows', async ({ sysadminPage: page }) => {
@@ -59,7 +60,7 @@ test.describe('Item Getter tests', { tag: '@external' }, () => {
 
     const getRow = createItemGetter(rulesetRowConfig)
 
-    await portalPage.gotoGroup(P_GR_ITEM_GETTER)
+    await portalPage.gotoGroup(GRP_CMPT_ITEM_GETTER_R)
 
     await expect(getRow()).toHaveCount(4)
     await expect(getRow('package', undefined, { exact: false })).toHaveCount(4)

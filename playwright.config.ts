@@ -74,6 +74,12 @@ export default defineConfig<Fixtures>({
       name: 'Apihub-Setup',
       testDir: './src/tests',
       testMatch: /apihub-setup\.ts/,
+      teardown: 'Apihub-Teardown',
+    },
+    {
+      name: 'Apihub-Teardown',
+      testDir: './src/tests',
+      testMatch: /apihub-teardown\.ts/,
     },
     {
       name: 'Portal-Setup',

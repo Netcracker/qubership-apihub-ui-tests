@@ -6,38 +6,54 @@ import { SYSADMIN, TEST_PREFIX } from '@test-data'
 import { mkdir } from 'fs/promises'
 import path from 'path'
 
-test('APIHUB Global Setup', async () => {
-  // Print environment variables
-  logEnvVars([
-    'BASE_URL',
-    'PLAYGROUND_BACKEND_HOST',
-    'DEV_PROXY_MODE',
-    'TICKET_SYSTEM_URL',
-    'AUTH',
-    'CREATE_TD',
-    'CLEAR_TD',
-    'TEST_ID_R',
-    'TEST_ID_N',
-    'ADV_FILE',
-  ])
+test('APIHUB Global Setup', async ({ apihubTDM: tdm }) => {
+  await test.step('Print environment variables', async () => {
+    logEnvVars([
+      'BASE_URL',
+      'PLAYGROUND_BACKEND_HOST',
+      'DEV_PROXY_MODE',
+      'TICKET_SYSTEM_URL',
+      'AUTH',
+      'CREATE_TD',
+      'CLEAR_TD',
+      'TEST_ID_R',
+      'TEST_ID_N',
+      'ADV_FILE',
+    ])
+  })
 
-  // Verify Test Prefix
-  if (!/^[a-z0-9]+-$/ig.test(TEST_PREFIX)) {
-    throw new Error(`Test Prefix is "${TEST_PREFIX}"\nBut must contain only letters, numbers and end with "-".`)
-  }
+  await test.step('Verify Test Prefix', async () => {
+    if (!/^[a-z0-9]+-$/ig.test(TEST_PREFIX)) {
+      throw new Error(`Test Prefix is "${TEST_PREFIX}"\nBut must contain only letters, numbers and end with "-".`)
+    }
+  })
 
-  // Set test IDs
-  process.env.TEST_ID_R = setReusableTestId()
-  process.env.TEST_ID_N = setNonReusableTestId()
+  await test.step('Set test IDs', async () => {
+    await setReusableTestId()
+    await setNonReusableTestId()
+  })
 
-  // Create temp directories
-  try {
-    await mkdir(path.resolve(ROOT_DOWNLOADS), { recursive: true })
-  } catch (e) {
-    throw Error(stringifyError(e))
-  }
+  await test.step('Create temp directories', async () => {
+    try {
+      await mkdir(path.resolve(ROOT_DOWNLOADS), { recursive: true })
+    } catch (e) {
+      throw Error(stringifyError(e))
+    }
+  })
 
-  // Create system User
-  const tdm = await createUsersTDM()
-  await tdm.createSysadmin(SYSADMIN)
+  await test.step('Create system User', async () => {
+    const tdm = await createUsersTDM()
+    await tdm.createSysadmin(SYSADMIN)
+  })
+
+  // Create Main Workspace, Reusable and Non-Reusable Groups
+  await test.step('Create Main Packages', async () => {
+    const { IMM_GR, P_WS_MAIN_R, VAR_GR } = await import('@test-data/portal')
+
+    await tdm.createPackage([
+      P_WS_MAIN_R,
+      IMM_GR,
+      VAR_GR,
+    ])
+  })
 })

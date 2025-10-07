@@ -6,6 +6,5 @@ test.describe('Portal Tests Teardown', async () => {
 
   test('Test Entities deletion', async ({ apihubTdmLongTimeout: cleaner }) => {
     CLEAR_TD === 'all' && await cleaner.deleteTestEntities(process.env.TEST_ID_R!)
-    await cleaner.deleteTestEntities(process.env.TEST_ID_N!)
   })
 })
