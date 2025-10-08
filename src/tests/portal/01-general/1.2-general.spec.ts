@@ -58,7 +58,7 @@ test.describe('General', () => {
     })
 
   /*TODO: Fix it after migrating tests for the agent and configuring tests*/
-  test.skip('[P-GEN-2] Navigation to the Agent page',
+  test('[P-GEN-2] Navigation to the Agent page',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4279` },
