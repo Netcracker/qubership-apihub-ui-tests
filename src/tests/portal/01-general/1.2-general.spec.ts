@@ -57,25 +57,24 @@ test.describe('General', () => {
       await expect(portalPage.tooltip).toHaveText(SYSADMIN.name)
     })
 
-  /*TODO: TODO: Fix it after migrating tests for the agent and configuring tests*/
+  /*TODO: Fix it after migrating tests for the agent and configuring tests*/
+  test.skip('[P-GEN-2] Navigation to the Agent page',
+    {
+      tag: '@smoke',
+      annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4279` },
+    },
+    async ({ sysadminPage: page }) => {
+      test.skip(true,'Fix it after migrating tests for the agent and configuring tests')
+      test.skip(isDevProxyMode(), 'Does not support dev proxy mode')
+      const portalPage = new PortalPage(page)
+      const agentPage = new AgentPage(page)
 
-  // test('[P-GEN-2] Navigation to the Agent page',
-  //   {
-  //     tag: '@smoke',
-  //     annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4279` },
-  //   },
-  //   async ({ sysadminPage: page }) => {
-  //     test.skip(isDevProxyMode(), 'Does not support dev proxy mode')
-  //
-  //     const portalPage = new PortalPage(page)
-  //     const agentPage = new AgentPage(page)
-  //
-  //     await portalPage.goto()
-  //     await portalPage.header.agentBtn.click()
-  //
-  //     await expect(agentPage.header.userMenu).toBeVisible({ timeout: MIDDLE_EXPECT })
-  //     await expect.soft(agentPage.cloudAc).toBeVisible()
-  //   })
+      await portalPage.goto()
+      await portalPage.header.agentBtn.click()
+
+      await expect(agentPage.header.userMenu).toBeVisible({ timeout: MIDDLE_EXPECT })
+      await expect.soft(agentPage.cloudAc).toBeVisible()
+    })
 
   test('[P-GEN-4] Check System Information about APIHUB',
     {
