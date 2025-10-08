@@ -452,8 +452,11 @@ POM Implementation (`CreateUpdateOperationGroupDialog.ts`)
 This example shows how `BaseCreateDialog` is extended to create a dialog for managing operation groups. It includes custom fields and logic while reusing the base dialog's structure. If a dialog has input fields, it should have a default `fillForm` method.
 
 ```typescript
-import { BaseCreateDialog } from '@shared/components/custom'
 import { type Page, test as report } from '@playwright/test'
+import { ApiTypeAutocomplete } from '@portal/components'
+import { getDownloadedFile } from '@services/utils'
+import { Button, FilesUploader, Icon, TextField } from '@shared/components/base'
+import { BaseCreateDialog } from '@shared/components/custom'
 import {
   type DownloadedTestFile,
   GRAPHQL_API_TYPE,
@@ -461,13 +464,10 @@ import {
   REST_API_TYPE,
   type TestFile,
 } from '@shared/entities'
-import { Button, FilesUploader, Icon, TextField } from '@shared/components/base'
-import { ApiTypeAutocomplete } from '@portal/components'
 import {
   DownloadableFilePreview,
   NotDownloadableFilePreview,
 } from './CreateUpdateOperationGroupDialog/UploadedFilePreview'
-import { getDownloadedFile } from '@services/utils'
 
 export class CreateUpdateOperationGroupDialog extends BaseCreateDialog {
   readonly groupNameTxtFld = new TextField(this.rootLocator.getByTestId('GroupNameTextField'), 'Group Name')
@@ -526,25 +526,24 @@ export class CreateUpdateOperationGroupDialog extends BaseCreateDialog {
 }
 ```
 
-### Components with tables
+### Components with lists
 
-Tables are managed using a compositional approach where a table component is composed of row and cell components. This allows for flexible and reusable code.
+The previous approach of using function overloads for each component to get items from a list is outdated and leads to code duplication. Instead, a new factory function `createItemGetter` should be used.
 
-- **`TableRow`**: Represents a single row. It can contain methods for interacting with the row or accessing individual cells.
-- **`TableCell`**: Represents a single cell.
+This utility function creates a getter that can retrieve items from any list (tables, simple lists, etc.) by various criteria (e.g., by name, by index) and provides consistent logging and error handling.
 
-Function overloading is used to provide different ways of obtaining a table row, either by name or by index. This approach also helps in generating descriptive component names for reporting purposes.
+#### Example of an **outdated and deprecated** approach (do not use)
 
-POM Implementation (`OverviewGroupsTab.ts`)
+`OverviewGroupsTab.ts`
 
 ```typescript
 import type { Locator } from '@playwright/test'
+import { nthPostfix } from '@services/utils'
 import { Button, Tab } from '@shared/components/base'
 import { BaseDeleteDialog } from '@shared/components/custom'
-import { OverviewGroupRow } from './OverviewGroupsTab/OverviewGroupRow'
 import { CreateUpdateOperationGroupDialog } from './OverviewGroupsTab/CreateUpdateOperationGroupDialog'
 import { EditOperationGroupDialog } from './OverviewGroupsTab/EditOperationGroupDialog'
-import { nthPostfix } from '@services/utils'
+import { OverviewGroupRow } from './OverviewGroupsTab/OverviewGroupRow'
 
 export class OverviewGroupsTab extends Tab {
   readonly createGroupBtn = new Button(this.rootLocator.getByTestId('CreateGroupButton'), 'Create Group')
@@ -588,9 +587,83 @@ export class OverviewGroupsTab extends Tab {
 }
 ```
 
-TableRow with Action Buttons (`OverviewGroupRow.ts`)
+#### Example of a component with a table
+
+`RulesetManagementTab.ts`
+
+```typescript
+import type { Page } from '@playwright/test'
+import { createItemGetter, type ItemGetterConfig } from '@services/utils'
+import { Button, Select, Tab, Title } from '@shared/components/base'
+import { BaseDeleteDialog } from '@shared/components/custom'
+import { ActivateRulesetDialog } from './ActivateRulesetDialog'
+import { CreateRulesetDialog } from './CreateRulesetDialog'
+import { RulesetTableRow } from './RulesetTableRow/RulesetTableRow'
+
+export class RulesetManagementTab extends Tab {
+  readonly title = new Title(this.page.getByTestId('CardHeaderTitle'), 'API Quality Ruleset Management')
+  readonly rulesetTypeSlt = new Select(this.page.getByTestId('RulesetTypeSelect'), 'Ruleset API Type')
+  readonly addRulesetBtn = new Button(this.page.getByTestId('AddRulesetButton'), 'Add Ruleset')
+
+  readonly createRulesetDialog = new CreateRulesetDialog(this.page)
+  readonly activateRulesetDialog = new ActivateRulesetDialog(this.page)
+  readonly deleteRulesetDialog = new BaseDeleteDialog(this.page)
+
+  private readonly rulesetRowConfig: ItemGetterConfig<RulesetTableRow> = {
+    constructor: (locator, componentName, componentType) => new RulesetTableRow(locator, componentName, componentType),
+    rootLocator: this.page.getByTestId('Cell-ruleset-name'),
+    navigateToParent: true,
+    componentTypes: {
+      singular: 'ruleset row',
+      plural: 'ruleset rows',
+    },
+  }
+
+  readonly getRulesetRow = createItemGetter(this.rulesetRowConfig)
+
+  constructor(protected readonly page: Page) {
+    super(page.getByTestId('RulesetManagementTabButton'), 'API Quality Ruleset Management')
+  }
+}
+```
+
+#### Example of a component with a simple list
+
+`ActivationHistoryTooltip.ts`
+
+```typescript
+import type { Page } from '@playwright/test'
+import { createItemGetter, type ItemGetterConfig } from '@services/utils'
+import { BaseComponent, Title, Tooltip } from '@shared/components/base'
+
+export class ActivationHistoryTooltip extends Tooltip {
+  readonly title = new Title(
+    this.rootLocator.getByTestId('ActivationHistoryTooltipTitle'),
+    'Activation History tooltip',
+  )
+
+  private readonly activationRecordConfig: ItemGetterConfig<BaseComponent> = {
+    constructor: (locator, componentName, componentType) => new BaseComponent(locator, componentName, componentType),
+    rootLocator: this.rootLocator.getByTestId('ActivationHistoryTooltipRecord'),
+    componentTypes: {
+      singular: 'activation record',
+      plural: 'activation records',
+    },
+  }
+
+  readonly getActivationRecord = createItemGetter(this.activationRecordConfig)
+
+  constructor(protected readonly page: Page, componentName?: string) {
+    super(page.getByRole('tooltip'), componentName, 'activation history tooltip')
+  }
+}
+```
+
+### TableRow with Action Buttons
 
 If a `TableRow` contains action buttons, they should be included as properties in the `TableRow` component.
+
+`OverviewGroupRow.ts`
 
 ```typescript
 import type { Locator } from '@playwright/test'
@@ -650,17 +723,19 @@ File downloads can be handled by waiting for the `download` event.
 POM Implementation (`CreateUpdateOperationGroupDialog.ts`)
 
 ```typescript
+export class DownloadTab extends BaseSettingsTab {
 // ... existing code ...
-async downloadTemplate(): Promise<DownloadedTestFile> {
-  let file!: DownloadedTestFile
-  await report.step('Download OAS Template file', async () => {
-    const downloadPromise = this.page.waitForEvent('download')
-    await this.downloadableFilePreview.fileName.click()
-    const download = await downloadPromise
-    file = await getDownloadedFile(download)
-  })
-  return file
+  async downloadTemplate(): Promise<DownloadedTestFile> {
+    let file!: DownloadedTestFile
+    await report.step('Download OAS Template file', async () => {
+      const downloadPromise = this.page.waitForEvent('download')
+      await this.downloadableFilePreview.fileName.click()
+      const download = await downloadPromise
+      file = await getDownloadedFile(download)
+    })
+    return file
 // ... existing code ...
+  }
 }
 ```
 
