@@ -1,0 +1,57 @@
+import type { APIRequestContext, APIResponse } from '@playwright/test'
+import type { LintRulesetApiType, LintRulesetLinter, LintRulesetStatus } from '@portal/entities'
+import type { IdRestParams } from '@services/rest/rest.types'
+import type { TestFile } from '@shared/entities'
+
+const API_LINTER_API_V1 = '/api-linter/api/v1'
+
+export type LintRulesetRestDto = Readonly<{
+  id: string
+  name: string
+  fileName: string
+  status: LintRulesetStatus
+  apiType: LintRulesetApiType
+  linter: LintRulesetLinter
+  createdAt: string
+  canBeDeleted: boolean
+}>
+
+export type CreateLintRulesetRestParams = Readonly<{
+  rulesetName: string
+  apiType: LintRulesetApiType
+  linter: LintRulesetLinter
+  rulesetFile: TestFile
+}>
+
+export async function rGetRulesets(rc: APIRequestContext): Promise<APIResponse> {
+  return await rc.get(`${API_LINTER_API_V1}/rulesets`)
+}
+
+export async function rGetRuleset(rc: APIRequestContext, { id }: IdRestParams): Promise<APIResponse> {
+  const rulesetId = encodeURIComponent(id)
+  return await rc.get(`${API_LINTER_API_V1}/rulesets/${rulesetId}`)
+}
+
+export async function rCreateRuleset(rc: APIRequestContext, params: CreateLintRulesetRestParams): Promise<APIResponse> {
+  const { rulesetFile, apiType, rulesetName, linter } = params
+  const blob = await rulesetFile.blob()
+
+  const formData = new FormData()
+  formData.append('rulesetName', rulesetName)
+  formData.append('apiType', apiType)
+  formData.append('linter', linter)
+  formData.append('rulesetFile', blob, rulesetFile.name)
+
+  return await rc.post(`${API_LINTER_API_V1}/rulesets`, {
+    multipart: formData,
+  })
+}
+
+export async function rActivateRuleset(rc: APIRequestContext, { id }: IdRestParams): Promise<APIResponse> {
+  const rulesetId = encodeURIComponent(id)
+  return await rc.post(`${API_LINTER_API_V1}/rulesets/${rulesetId}/activation`)
+}
+export async function rDeleteRuleset(rc: APIRequestContext, { id }: IdRestParams): Promise<APIResponse> {
+  const rulesetId = encodeURIComponent(id)
+  return await rc.delete(`${API_LINTER_API_V1}/rulesets/${rulesetId}`)
+}

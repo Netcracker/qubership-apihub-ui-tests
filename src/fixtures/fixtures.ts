@@ -1,18 +1,27 @@
 /* eslint-disable no-empty-pattern */
 import { type Page, test as base } from '@playwright/test'
 import { createRestWithCredentials, type Rest } from '@services/rest'
-import { type AgentTestDataManager, type ApihubTestDataManager, createAgentTDM, createApihubTDM, createUsersTDM, type UsersTestDataManager } from '@services/test-data-manager'
-import { BASE_URL } from '@test-setup'
-import { SYSADMIN, TEST_USER_1 } from '@test-data'
 import { createUserStorageStateWithAuthCookieFromApi } from '@services/storage-state/save'
+import {
+  type AgentTestDataManager,
+  type ApihubTestDataManager,
+  createAgentTDM,
+  createApihubTDM,
+  createRulesetsTDM,
+  createUsersTDM,
+  type LintRulesetsTestDataManager,
+  type UsersTestDataManager,
+} from '@services/test-data-manager'
+import { SYSADMIN, TEST_USER_1 } from '@test-data'
+import { BASE_URL } from '@test-setup'
 
 export type Fixtures = {
-
   restApihub: Rest
 
   usersTDM: UsersTestDataManager
   apihubTDM: ApihubTestDataManager
   apihubTdmLongTimeout: ApihubTestDataManager
+  lintRulesetTdm: LintRulesetsTestDataManager
   agentTDM: AgentTestDataManager
 
   sysadminPage: Page
@@ -20,7 +29,6 @@ export type Fixtures = {
 }
 
 export const test = base.extend<Fixtures>({
-
   restApihub: async ({}, use) => {
     const rest = await createRestWithCredentials(BASE_URL, SYSADMIN)
     await use(rest)
@@ -41,20 +49,29 @@ export const test = base.extend<Fixtures>({
     await use(creator)
   },
 
+  lintRulesetTdm: async ({}, use) => {
+    const creator = await createRulesetsTDM(SYSADMIN)
+    await use(creator)
+  },
+
   agentTDM: async ({}, use) => {
     const creator = await createAgentTDM()
     await use(creator)
   },
 
   sysadminPage: async ({ browser }, use) => {
-    const context = await browser.newContext({ storageState: await createUserStorageStateWithAuthCookieFromApi(SYSADMIN) })
+    const context = await browser.newContext({
+      storageState: await createUserStorageStateWithAuthCookieFromApi(SYSADMIN),
+    })
     const page = await context.newPage()
     await use(page)
     await context.close()
   },
 
   user1Page: async ({ browser }, use) => {
-    const context = await browser.newContext({ storageState: await createUserStorageStateWithAuthCookieFromApi(TEST_USER_1) })
+    const context = await browser.newContext({
+      storageState: await createUserStorageStateWithAuthCookieFromApi(TEST_USER_1),
+    })
     const page = await context.newPage()
     await use(page)
     await context.close()
