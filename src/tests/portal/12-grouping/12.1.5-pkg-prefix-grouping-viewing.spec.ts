@@ -222,11 +222,9 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
         await expect(compareOperationsPage.docView).toBeVisible()
         await expect(compareOperationsPage.swapper.leftTitle).toHaveText('path prefix: /api/v2/')
         await expect(compareOperationsPage.swapper.rightTitle).toHaveText('path prefix: /api/v1/')
-
-        //todo: add check that OperationView is shown
-
-        //todo: add check of operation comparisonfor added or removed operation, e.g. getUserV1Row
       })
+
+      //todo: add check of navigating to operation comparison for added or removed operation, e.g. getUserV1Row
     })
 
   test('[P-GOP-6.2-N] Compare operations grouped by prefix - GraphQL',
