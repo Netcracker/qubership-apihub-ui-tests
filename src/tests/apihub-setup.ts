@@ -1,12 +1,12 @@
 import { test } from '@fixtures'
-import { createUsersTDM } from '@services/test-data-manager'
+import { createApihubTDM, createUsersTDM } from '@services/test-data-manager'
 import { logEnvVars, setNonReusableTestId, setReusableTestId, stringifyError } from '@services/utils'
 import { ROOT_DOWNLOADS } from '@shared/entities'
 import { SYSADMIN, TEST_PREFIX } from '@test-data'
 import { mkdir } from 'fs/promises'
 import path from 'path'
 
-test('APIHUB Global Setup', async ({ apihubTDM: tdm }) => {
+test('APIHUB Global Setup', async () => {
   await test.step('Print environment variables', async () => {
     logEnvVars([
       'BASE_URL',
@@ -49,6 +49,7 @@ test('APIHUB Global Setup', async ({ apihubTDM: tdm }) => {
   // Create Main Workspace, Reusable and Non-Reusable Groups
   await test.step('Create Main Packages', async () => {
     const { IMM_GR, P_WS_MAIN_R, VAR_GR } = await import('@test-data/portal')
+    const tdm = await createApihubTDM(SYSADMIN)
 
     await tdm.createPackage([
       P_WS_MAIN_R,
