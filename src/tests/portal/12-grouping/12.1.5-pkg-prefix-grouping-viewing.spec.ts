@@ -216,7 +216,7 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
       })
 
       //Cover TestCase-A-10265 defect - operation comparison opening
-      await test.step('Open operation comparison', async () => {
+      await test.step('Open operation comparison for modified operation', async () => {
         await comparePage.compareContent.getOperationRow(CREATE_LIST_OF_USERS_V1_UPDATED).click()
 
         await expect(compareOperationsPage.docView).toBeVisible()
@@ -224,7 +224,19 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
         await expect(compareOperationsPage.swapper.rightTitle).toHaveText('path prefix: /api/v1/')
       })
 
-      //todo: add check of navigating to operation comparison for added or removed operation, e.g. getUserV1Row
+      await test.step('Navigate back', async () => {
+        await compareOperationsPage.toolbar.backBtn.click()
+
+        await expect(comparePage.compareContent.getOperationRow()).toBeVisible()
+      })
+
+      await test.step('Open operation comparison for added operation', async () => {
+        await comparePage.compareContent.getOperationRow(GET_USER_BY_NAME_V1).click()
+
+        await expect(compareOperationsPage.docView).toBeVisible()
+        await expect(compareOperationsPage.swapper.leftTitle).toHaveText('path prefix: /api/v2/')
+        await expect(compareOperationsPage.swapper.rightTitle).toHaveText('path prefix: /api/v1/')
+      })
     })
 
   test('[P-GOP-6.2-N] Compare operations grouped by prefix - GraphQL',
