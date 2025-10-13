@@ -16,8 +16,7 @@ export class RulesetManagementTab extends Tab {
   readonly deleteRulesetDialog = new BaseDeleteDialog(this.page)
 
   private readonly rulesetRowConfig: ItemGetterConfig<RulesetTableRow> = {
-    constructor: (locator, componentName, componentType) =>
-      new RulesetTableRow(locator, componentName, componentType),
+    constructor: RulesetTableRow,
     rootLocator: this.page.getByTestId('Cell-ruleset-name'),
     navigateToParent: true,
     componentTypes: {

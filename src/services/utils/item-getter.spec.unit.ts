@@ -33,7 +33,7 @@ test.describe('item-getter unit tests', () => {
   test.beforeEach(() => {
     mockRootLocator = new MockLocator() as unknown as Locator
     config = {
-      constructor: (locator, componentName, componentType) => new MockComponent(locator, componentName, componentType),
+      constructor: MockComponent,
       rootLocator: mockRootLocator,
       componentTypes: {
         singular: 'row',

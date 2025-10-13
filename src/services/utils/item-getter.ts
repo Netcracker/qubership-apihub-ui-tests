@@ -5,8 +5,8 @@ import { nthPostfix } from './strings'
  * Configuration for creating an item getter function
  */
 export interface ItemGetterConfig<T> {
-  /** Function that creates the item from a locator */
-  constructor: (locator: Locator, componentName?: string, componentType?: string) => T
+  /** Class constructor for the item */
+  constructor: new(locator: Locator, componentName?: string, componentType?: string) => T
   /** Root locator to search within */
   rootLocator: Locator
   /** Use exact text matching by default */
@@ -52,13 +52,13 @@ export function createItemGetter<T>(config: ItemGetterConfig<T>): ItemGetter<T> 
   ): T {
     // No arguments - return all items
     if (nameOrNth === undefined) {
-      return config.constructor(config.rootLocator, '', `all ${config.componentTypes.plural}`)
+      return new config.constructor(config.rootLocator, '', `all ${config.componentTypes.plural}`)
     }
 
     // First argument is number - get by index
     if (typeof nameOrNth === 'number') {
       const locator = config.rootLocator.nth(nameOrNth - 1)
-      return config.constructor(locator, '', `${nameOrNth}${nthPostfix(nameOrNth)} ${config.componentTypes.singular}`)
+      return new config.constructor(locator, '', `${nameOrNth}${nthPostfix(nameOrNth)} ${config.componentTypes.singular}`)
     }
 
     // First argument is string or RegExp - get by name
@@ -68,11 +68,11 @@ export function createItemGetter<T>(config: ItemGetterConfig<T>): ItemGetter<T> 
     // If nth is specified, get the nth match
     if (nth !== undefined) {
       const locator = filterLocator.nth(nth - 1)
-      return config.constructor(locator, `${nameStr}`, `${nth}${nthPostfix(nth)} ${config.componentTypes.singular}`)
+      return new config.constructor(locator, `${nameStr}`, `${nth}${nthPostfix(nth)} ${config.componentTypes.singular}`)
     }
 
     // Return all matching elements
-    return config.constructor(filterLocator, `${nameStr}`, config.componentTypes.singular)
+    return new config.constructor(filterLocator, `${nameStr}`, config.componentTypes.singular)
   }
 
   return getItem

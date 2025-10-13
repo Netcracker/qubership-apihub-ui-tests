@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { createItemGetter, type ItemGetterConfig } from '@services/utils'
-import { Title, Tooltip, BaseComponent } from '@shared/components/base'
+import { BaseComponent, Title, Tooltip } from '@shared/components/base'
 
 export class ActivationHistoryTooltip extends Tooltip {
   readonly title = new Title(
@@ -9,8 +9,7 @@ export class ActivationHistoryTooltip extends Tooltip {
   )
 
   private readonly activationRecordConfig: ItemGetterConfig<BaseComponent> = {
-    constructor: (locator, componentName, componentType) =>
-      new BaseComponent(locator, componentName, componentType),
+    constructor: BaseComponent,
     rootLocator: this.rootLocator.getByTestId('ActivationHistoryTooltipRecord'),
     componentTypes: {
       singular: 'activation record',

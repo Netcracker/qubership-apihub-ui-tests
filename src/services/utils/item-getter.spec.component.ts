@@ -48,7 +48,7 @@ test.describe('Item Getter tests', { tag: '@external' }, () => {
     const portalPage = new PortalPage(page)
 
     const rulesetRowConfig: ItemGetterConfig<PortalTableRow> = {
-      constructor: (locator, componentName, componentType) => new PortalTableRow(locator, componentName, componentType),
+      constructor: PortalTableRow,
       // eslint-disable-next-line ui-testing/no-browser-commands-in-tests
       rootLocator: page.getByTestId('Cell-name'),
       navigateToParent: true,
