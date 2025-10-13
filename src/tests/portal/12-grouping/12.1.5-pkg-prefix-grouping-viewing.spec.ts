@@ -227,7 +227,7 @@ test.describe('12.1.4 Prefix grouping: Viewing', () => {
       await test.step('Navigate back', async () => {
         await compareOperationsPage.toolbar.backBtn.click()
 
-        await expect(comparePage.compareContent.getOperationRow()).toBeVisible()
+        await expect(comparePage.compareContent.getOperationRow()).toHaveCount(6)
       })
 
       await test.step('Open operation comparison for added operation', async () => {
