@@ -92,3 +92,7 @@ export type RestPackageApiKey = PackageApiKey & {
 export type IdRestParams = Readonly<{
   id: string
 }>
+
+export type TestIdRestParams = Readonly<{
+  testId: string
+}>

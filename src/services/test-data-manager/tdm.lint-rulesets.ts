@@ -2,10 +2,12 @@ import { expect, test } from '@playwright/test'
 import type { LintRulesetApiType } from '@portal/entities'
 import { LintRulesetLinters, LintRulesetStatuses } from '@portal/entities'
 import { getAuthDataFromApi } from '@services/auth'
-import type { CreateLintRulesetRestParams, LintRulesetRestDto } from '@services/rest'
 import {
+  type CreateLintRulesetRestParams,
   createRestWithToken,
+  type LintRulesetRestDto,
   rActivateRuleset,
+  rClearLinterTestData,
   rCreateRuleset,
   rDeleteRuleset,
   type Rest,
@@ -144,5 +146,33 @@ export class LintRulesetsTestDataManager {
     const rulesets: LintRulesetRestDto[] = await response.json()
 
     return rulesets.find((r) => r.name === rulesetName && r.apiType === apiType)
+  }
+
+  async deleteTestRulesets(testId: string | string[]): Promise<void> {
+    const testIds = Array.isArray(testId) ? testId : [testId]
+    const testIdsStr = testIds.join(', ')
+    const message = `"${testIdsStr}" test ruleset deletion`
+
+    await test.step(message, async () => {
+      for (const id of testIds) {
+        const response = await this.rest.send(rClearLinterTestData, [204], { testId: id })
+        if (response.status() !== 204) {
+          throw Error(await getRestFailMsg(message, response))
+        }
+      }
+    }, { box: true })
+
+    await test.step(`Checking ${message}`, async () => {
+      const response = await this.rest.send(rGetRulesets, [200])
+
+      if (response.status() !== 200) {
+        throw Error(await getRestFailMsg(message, response))
+      }
+
+      const rulesets: LintRulesetRestDto[] = await response.json()
+
+      // Verify that no ruleset names contain any of the test IDs after deletion.
+      expect(rulesets.every((r) => !testIds.some((id) => r.name.includes(id)))).toBeTruthy()
+    }, { box: true })
   }
 }

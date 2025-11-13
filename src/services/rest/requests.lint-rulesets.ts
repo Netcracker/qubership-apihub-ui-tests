@@ -1,6 +1,6 @@
 import type { APIRequestContext, APIResponse } from '@playwright/test'
 import type { LintRulesetApiType, LintRulesetLinter, LintRulesetStatus } from '@portal/entities'
-import type { IdRestParams } from '@services/rest/rest.types'
+import type { IdRestParams, TestIdRestParams } from '@services/rest/rest.types'
 import type { TestFile } from '@shared/entities'
 
 const API_LINTER_API_V1 = '/api-linter/api/v1'
@@ -51,7 +51,12 @@ export async function rActivateRuleset(rc: APIRequestContext, { id }: IdRestPara
   const rulesetId = encodeURIComponent(id)
   return await rc.post(`${API_LINTER_API_V1}/rulesets/${rulesetId}/activation`)
 }
+
 export async function rDeleteRuleset(rc: APIRequestContext, { id }: IdRestParams): Promise<APIResponse> {
   const rulesetId = encodeURIComponent(id)
   return await rc.delete(`${API_LINTER_API_V1}/rulesets/${rulesetId}`)
+}
+
+export async function rClearLinterTestData(rc: APIRequestContext, { testId }: TestIdRestParams): Promise<APIResponse> {
+  return await rc.delete(`${API_LINTER_API_V1}/api/internal/clear/${testId}`)
 }
