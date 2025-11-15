@@ -23,3 +23,7 @@
 /temp/
 /.env
 debug.spec.ts
+
+# AI agent local artifacts
+ai-agent-local/*
+!ai-agent-local/.gitkeep

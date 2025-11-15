@@ -7,6 +7,7 @@ This document provides a comprehensive guide to the coding standards and best pr
 - [Naming Conventions](#naming-conventions)
 - [Code Organization](#code-organization)
 - [Test Structure & Organization](#test-structure--organization)
+- [Using `test.step()`](#using-teststep)
 - [Page Object Model (POM)](#page-object-model-pom-implementation)
 - [Locator Strategy](#locator-strategy)
 - [Assertions & Expectations](#assertions--expectations)
@@ -36,17 +37,77 @@ This document provides a comprehensive guide to the coding standards and best pr
   - `@portal`/`@agent` for specific components
   - `@test-data` for constants
 - **Implement base classes for common functionality**
+- **Import Optimization:** Always review and optimize imports after implementing any code. Remove unused imports to keep code clean and avoid linting warnings.
 
 ## Test Structure & Organization
 
 - **Use `test.describe()` for logical test grouping with descriptive names**
-- **Follow test naming pattern:** `[TEST-ID] Action/Behavior being tested`
+- **Follow test naming pattern:** `TEST-ID Action/Behavior being tested`
 - **Structure tests using Given-When-Then or Arrange-Act-Assert patterns**
-- **Implement `test.step()` for complex scenarios to improve readability**
 - **Add tags (`@smoke`, `@flaky`, `@<feature-name>`) for test categorization**
 - **Include ticket references:** `{ annotation: { type: 'Test Case', description: 'URL' } }`
 - **Ensure test independence through proper isolation**
 - **Group related scenarios within the same describe block**
+
+### Using `test.step()`
+
+Use `test.step()` to group related actions or assertions separately, and to provide context and meaning beyond what the code itself expresses. The same principles apply to both actions and assertions: do **not** wrap them if `test.step()` would just duplicate the action/assertion name, but it is **preferred** to wrap them when the step provides additional context, explains the purpose, or groups related operations together.
+
+**Key principles:**
+
+- **Separate grouping:** Group actions separately from assertions. Do **not** mix actions and assertions in the same `test.step()` unless it's a high-level grouping in a large test that already has separate groupings at lower levels.
+- **Grouping actions:** Use `test.step()` to group multiple related actions that form a logical unit (e.g., navigation steps, form filling).
+- **Grouping assertions:** Use `test.step()` to group multiple related assertions that verify a logical unit (e.g., verification groups, state checks).
+- **Context over duplication:** Do **not** wrap actions/assertions if `test.step()` would just duplicate the action name (e.g., "Click Add Ruleset button" for `addRulesetBtn.click()`). Do wrap them if `test.step()` describes the **purpose**, **context**, or **reason** (e.g., "Open dialog to verify its title" or "Verify dialog is closed to ensure we remain on correct page").
+- **Preference for context:** While simple actions/assertions can be written without `test.step()`, it is **preferred** to wrap them when doing so adds meaningful context or improves test readability.
+
+```typescript
+// ✅ Correct: test.step() for grouping multiple related actions
+await test.step('Navigate to Ruleset Management tab', async () => {
+  await portalPage.goto()
+  await portalPage.header.portalSettingsBtn.click()
+  await rulesetManagementTab.click()
+})
+
+// ✅ Correct: grouping multiple related assertions with context
+await test.step('Verify dialog is closed and we remain on Ruleset Management tab', async () => {
+  await expect(createRulesetDialog.title).toBeHidden()
+  await expect(rulesetManagementTab.title).toBeVisible()
+  await expect(rulesetManagementTab.addRulesetBtn).toBeVisible()
+})
+
+// ✅ Correct: action wrapped in test.step() when step describes purpose/context
+await test.step('Open dialog to verify its title', async () => {
+  await rulesetManagementTab.addRulesetBtn.click()
+})
+
+// ✅ Correct: assertion wrapped in test.step() providing context
+await test.step('Verify dialog title matches expected format', async () => {
+  await expect(createRulesetDialog.title).toHaveText('Create Ruleset for OAS 3.0')
+})
+
+// ✅ Acceptable: simple action without test.step() if it's obvious from context
+await createRulesetDialog.cancelBtn.click()
+
+// ✅ Acceptable: simple assertion without test.step() if it's obvious from context
+await expect(rulesetManagementTab.title).toBeVisible()
+
+// ❌ Incorrect: mixing actions and assertions in the same step (unless high-level grouping)
+await test.step('Open dialog and verify its title', async () => {
+  await rulesetManagementTab.addRulesetBtn.click()
+  await expect(createRulesetDialog.title).toHaveText('Create Ruleset for OAS 3.0')
+})
+
+// ❌ Incorrect: wrapping action when step just duplicates action name
+await test.step('Click Add Ruleset button', async () => {
+  await rulesetManagementTab.addRulesetBtn.click()
+})
+
+// ❌ Incorrect: wrapping assertion when step just duplicates assertion
+await test.step('Expect dialog title to have text', async () => {
+  await expect(createRulesetDialog.title).toHaveText('Create Ruleset for OAS 3.0')
+})
+```
 
 ```typescript
 test.describe('Feature: Version Management', () => {
@@ -73,11 +134,11 @@ test.describe('Feature: Version Management', () => {
 ```typescript
 import type { Page } from '@playwright/test'
 import { Breadcrumbs, Button, Placeholder, Title } from '@shared/components/base'
-import { GeneralSettingsTab } from './PackageSettingsPage/GeneralSettingsTab'
-import { ApiSpecConfigTab } from './PackageSettingsPage/ApiSpecConfigTab'
-import { VersionsTab } from './PackageSettingsPage/VersionsTab'
 import { AccessControlTab } from './PackageSettingsPage/AccessControlTab'
 import { AccessTokensTab } from './PackageSettingsPage/AccessTokensTab'
+import { ApiSpecConfigTab } from './PackageSettingsPage/ApiSpecConfigTab'
+import { GeneralSettingsTab } from './PackageSettingsPage/GeneralSettingsTab'
+import { VersionsTab } from './PackageSettingsPage/VersionsTab'
 
 export class PackageSettingsPage {
   readonly breadcrumbs = new Breadcrumbs(this.page.getByTestId('PackageBreadcrumbs'), 'Package settings')
@@ -102,9 +163,9 @@ The following example demonstrates how to use the created page objects and compo
 
 ```typescript
 import { test } from '@fixtures'
+import { PortalPage } from '@portal/pages/PortalPage'
 import { expect, expectFile } from '@services/expect-decorator'
 import { OGR_PMGR_CREATE_EMPTY_N } from '@test-data/portal'
-import { PortalPage } from '@portal/pages/PortalPage'
 
 test('[P-MGOP-1.1] Create an empty group - REST API', async ({ sysadminPage: page }) => {
   // 1. Instantiate the main page object
@@ -164,6 +225,8 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
 - Implement custom assertions for domain-specific validations
 - Use the `expectFile` helper for file-based assertions. It requires a `DownloadedTestFile` object returned from a download action
 - Use `toHaveCount()` to verify the number of elements
+- **Robust Assertions:** When asserting that an element is **hidden**, always add a complementary assertion to verify that the page or component has loaded correctly. This prevents false positives where the entire page fails to load. Check for a stable, always-present element, like a page title or another tab. When verifying that a dialog is closed, also verify that you remain on the correct page with the expected content visible.
+- **Tooltips:** Surface every tooltip through the shared `portalPage.tooltip` (or the equivalent page-level component). Hover the interactive element to trigger the tooltip, then assert the text via `portalPage.tooltip` instead of introducing ad-hoc tooltip locators.
 
 ```typescript
 // Non-blocking assertions
@@ -184,18 +247,33 @@ await expectFile(file).toHaveName('exported-file.yaml')
 
 - Create typed interfaces for test data validation
 - Use descriptive constant names (e.g., `CREATE_USER_ADMIN_ROLE`)
-- Create entity files for reusable test objects
+- Keep data as close to the consuming spec as possible; create shared entity files only when multiple suites rely on the same structure
 - Follow consistent naming patterns
 - Separate test data from test logic
 - Use the `test-data-manager` service for creating test data via API. This is not a single class, but a set of specialized classes like `ApihubTestDataManager`, `UsersTestDataManager`, etc., which are provided through fixtures.
-- Strive for localized and optimized test data management. While some test data is currently stored separately from the tests, the goal is to create, manage, and clean up data at the most appropriate level (global, suite, or test-specific) to ensure test independence and performance.
+- Strive for localized and optimized test data management. Treat colocated file-level data as the default, promote it to higher levels only after confirming reuse, and always pair it with Playwright hooks (`beforeAll`, `beforeEach`, `afterEach`, `afterAll`) for creation/cleanup.
 
 ### Test Data Types
 
-Test data is categorized into two types based on reusability:
+Test data is categorized into two types based on reusability and lifecycle:
 
-- **Reusable Test Data**: Constants with names ending in `_R` (e.g., `V_P_PKG_OVERVIEW_R`, `WSP_P_BASE_R`). These can be used across multiple tests without conflicts.
-- **Non-reusable Test Data**: Constants with names ending in `_N` (e.g., `V_P_PKG_UAC_OWNER_EDIT_PKG_DEF_RELEASE_N`, `WSP_P_UAC_GENERAL_N`). These are intended for single-use scenarios and may cause conflicts if reused.
+- **Non-Reusable Test Data (`_N`)**: Constants with names ending in `_N` (e.g., `V_P_PKG_UAC_OWNER_EDIT_PKG_DEF_RELEASE_N`, `WSP_P_UAC_GENERAL_N`). This data is created at the start of a test suite run (e.g., in `globalSetup` or `test.beforeAll`). It can be reused across multiple tests within the _same run_ to improve performance. However, it is considered transient and is **always deleted** at the end of the run in `apihub-teardown.ts` (unless `CLEAR_TD === 'skip'`). Use this type for test-specific data that should not persist between test runs.
+
+- **Reusable Test Data (`_R`)**: Constants with names ending in `_R` (e.g., `V_P_PKG_OVERVIEW_R`, `WSP_P_BASE_R`). This data is persistent across multiple, independent test suite runs. It is created once (often manually or via a separate setup script) and is only deleted if `CLEAR_TD === 'all'` is explicitly set. These can be used across multiple tests without conflicts. Use this type for shared test data that can be reused across different test runs.
+
+**Cleanup and Management:**
+
+- Non-reusable data (`_N`) is automatically cleaned up after each test run via `apihub-teardown.ts`
+- Reusable data (`_R`) persists unless explicitly cleared with `CLEAR_TD === 'all'`
+- Ensure all non-reusable test data includes `process.env.TEST_ID_N!` in its name/identifier for proper cleanup identification
+
+### Placement & Hooks
+
+- Start by defining data inside the spec (or its `tests/<feature>` folder). Only extract it to `src/test-data/**` when multiple suites genuinely need it.
+- Use Playwright lifecycle hooks to control data scope:
+  - `beforeEach`/`afterEach` → per-test setup/cleanup
+  - `beforeAll`/`afterAll` → suite-level fixtures
+- When using API-based managers, wrap the calls in these hooks so that failures are easier to trace and cleanup always runs, even if the test fails early.
 
 ```typescript
 // Test data interface
@@ -227,6 +305,8 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 
 - **Interactive Debugging:** Use the `--debug` flag.
 - **Flakiness:** Implement retry logic for unstable operations.
+- **Root Cause Analysis Over Assumptions:** If a test fails, **do not** make assumptions about the cause (e.g., "the content is not loading"). Instead, you **must** use available debugging tools to investigate the precise state of the application at the point of failure. Masking failures with workarounds like arbitrary timeouts is strictly forbidden. The primary goal is to identify and fix the root cause.
+- **Mandatory Use of Debugging Tools (MCP):** To comply with the root cause analysis principle, you **must** utilize the powerful debugging tools at your disposal, particularly the Playwright MCP tools. When a test fails because an element is not found or visible, use tools like `browser_snapshot` to capture the accessibility tree or `take_screenshot` to visually inspect the UI. Interacting with the live browser session via MCP tools is the required method for diagnosing UI-related test failures, not guessing or assuming.
 
 ## Performance & Reliability
 
@@ -235,9 +315,27 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 - Avoid `page.waitForTimeout()` except when absolutely necessary
 - Implement API mocking with `page.route()` when appropriate
 - Create efficient test data cleanup strategies
+- **API Mocking for Specific States:** If a test case requires a specific backend state that is not the default (e.g., a feature being disabled), use `page.route()` to mock the relevant API response. Do not skip the test or work around the state. For example, to test UI when the linter is disabled, intercept `**/api/v2/system/configuration` and provide a response where the `api-linter` is removed from the `extensions` array.
 
 ```typescript
-// API mocking
+// API mocking for specific states
+await page.route('**/api/v2/system/configuration', async (route) => {
+  const response = await route.fetch()
+  const json = await response.json()
+  const filteredExtensions = json.extensions.filter(
+    (ext: { name: string }) => ext.name !== 'api-linter',
+  )
+  await route.fulfill({
+    status: response.status(),
+    headers: response.headers(),
+    body: JSON.stringify({
+      ...json,
+      extensions: filteredExtensions,
+    }),
+  })
+})
+
+// General API mocking
 await page.route('**/api/users', route => {
   route.fulfill({
     status: 200,
@@ -255,6 +353,8 @@ await expect(page.getByTestId('loading')).toBeHidden()
 - Use descriptive variable names
 - Keep tests focused on single responsibility
 - Reference tickets for known issues
+- **Code Comments for Temporary Additions:** If you need to add a temporary element or method to a Page Object Model to support a specific test, clearly mark it with a `// TODO:` comment explaining why it's temporary and when it should be removed.
+- **Documentation freshness:** whenever behavior, workflows, or tooling expectations change, update the relevant docs (`README`, guides, onboarding notes) in the same change set. Never leave the knowledge base outdated.
 
 ## Project-Specific Patterns
 
