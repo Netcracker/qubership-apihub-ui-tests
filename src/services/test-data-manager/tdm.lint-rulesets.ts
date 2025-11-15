@@ -82,9 +82,9 @@ export class LintRulesetsTestDataManager {
     const message = `"${name || id}" ruleset activation`
 
     await test.step(message, async () => {
-      const response = await this.rest.send(rActivateRuleset, [200], { id })
+      const response = await this.rest.send(rActivateRuleset, [204], { id })
 
-      if (response.status() !== 200) {
+      if (response.status() !== 204) {
         throw Error(await getRestFailMsg(message, response))
       }
     }, { box: true })

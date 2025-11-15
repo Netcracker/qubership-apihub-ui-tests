@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { Button, FilesUploader, TextField } from '@shared/components/base'
+import { Button, Content, FilesUploader, TextField } from '@shared/components/base'
 import { BaseCancelDialog } from '@shared/components/custom'
 import type { UploadedTestFile } from '@shared/entities'
 
@@ -11,6 +11,7 @@ type CreateRulesetDialogParams = Partial<{
 export class CreateRulesetDialog extends BaseCancelDialog {
   readonly nameTxtFld = new TextField(this.rootLocator.getByTestId('NameTextField'), 'Name')
   readonly filesUploader = new FilesUploader(this.rootLocator.getByTestId('UploadButtonInput'), 'Ruleset')
+  readonly fileUploadError = new Content(this.rootLocator.getByRole('alert'), 'Ruleset file validation message')
   readonly browseBtn = new Button(this.rootLocator.getByTestId('BrowseButton'), 'Browse')
   readonly createBtn = new Button(this.rootLocator.getByTestId('CreateButton'), 'Create')
 

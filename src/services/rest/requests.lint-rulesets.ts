@@ -58,5 +58,5 @@ export async function rDeleteRuleset(rc: APIRequestContext, { id }: IdRestParams
 }
 
 export async function rClearLinterTestData(rc: APIRequestContext, { testId }: TestIdRestParams): Promise<APIResponse> {
-  return await rc.delete(`${API_LINTER_API_V1}/api/internal/clear/${testId}`)
+  return await rc.delete(`/api-linter/api/internal/clear/${testId}`)
 }
