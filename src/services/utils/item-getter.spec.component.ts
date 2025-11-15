@@ -65,6 +65,7 @@ test.describe('Item Getter tests', { tag: '@external' }, () => {
     await expect(getRow()).toHaveCount(4)
     await expect(getRow('package', undefined, { exact: false })).toHaveCount(4)
     await expect(getRow(1)).toBeVisible()
+    await expect(getRow(1).nameCell).toBeVisible() // This assertion ensures that 'getRow()' returns a 'TableRow' object and not just the cell itself.
     await expect(getRow(2)).toBeVisible()
     await expect(getRow(3)).toBeVisible()
     await expect(getRow(4)).toBeVisible()

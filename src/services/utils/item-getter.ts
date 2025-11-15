@@ -52,12 +52,19 @@ export function createItemGetter<T>(config: ItemGetterConfig<T>): ItemGetter<T> 
   ): T {
     // No arguments - return all items
     if (nameOrNth === undefined) {
-      return new config.constructor(config.rootLocator, '', `all ${config.componentTypes.plural}`)
+      let locator = config.rootLocator
+      if (config.navigateToParent) {
+        locator = locator.locator('..')
+      }
+      return new config.constructor(locator, '', `all ${config.componentTypes.plural}`)
     }
 
     // First argument is number - get by index
     if (typeof nameOrNth === 'number') {
-      const locator = config.rootLocator.nth(nameOrNth - 1)
+      let locator = config.rootLocator.nth(nameOrNth - 1)
+      if (config.navigateToParent) {
+        locator = locator.locator('..')
+      }
       return new config.constructor(locator, '', `${nameOrNth}${nthPostfix(nameOrNth)} ${config.componentTypes.singular}`)
     }
 
