@@ -47,7 +47,7 @@ Only include the section that matches the selected playbook.
 ### Documentation
 
 - [ ] List every document/section/table you need to touch so no outdated guidance remains.
-- [ ] Validate fenced code blocks: for TS/JS snippets run a quick lint (e.g., `npx eslint --stdin --ext .ts` via copy-paste or temporary file) to ensure they stay error-free.
+- [ ] Validate fenced code blocks: for TS/JS snippets run a quick lint (e.g., `npx eslint --stdin --ext .ts` via copypaste or temporary file) to ensure they stay error-free.
 - [ ] Check whether diagrams, tables, or external links also need updates and note the plan.
 
 ### Misc / Utility

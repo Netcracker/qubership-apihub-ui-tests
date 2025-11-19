@@ -11,11 +11,11 @@ Centralized reference for every AI-specific rule. Use this hub together with `AG
 | `docs/ai-instructions/task-playbooks.md`                                 | Task classification and scoped obligations                                                                         |
 | `docs/ai-instructions/preflight-checklists.md`                           | Complete PRE-FLIGHT / POST-FLIGHT steps (global + per-type)                                                        |
 | `docs/ai-instructions/*.guide.md` (e.g., `test-implementation-guide.md`) | Task-specific deep dives. Always cite the guide that matches the current task instead of hardcoding the test guide |
-| `.eslintrc.json`                                                         | Canonical lint rules (always read first)                                                                           |
+| `.eslintrc.json`                                                         | Canonical linter rules (always read first)                                                                         |
 | `docs/CODING_GUIDELINES.md`                                              | General engineering standards (naming, structure, assertions, test data, etc.)                                     |
 | `docs/pom-in-practice.md`                                                | Required reference when touching POM components                                                                    |
 | `docs/localhost-run.md`                                                  | Env-specific notes for local/dev-proxy runs                                                                        |
-| `ai-agent-local/ai-compliance-log.md`                                    | Evidence log (untracked, must exist locally; `.gitkeep` keeps the folder in git)                                   |
+| `ai-agent-local/ai-compliance-log.md`                                    | Evidence log (untracked, must exist locally; `.gitkeep` keeps the folder in Git)                                   |
 
 > Use this table instead of duplicating requirements everywhere: pick the playbook + matching guide so you load only the rules that matter for the current task.
 
@@ -42,7 +42,7 @@ Refer to `docs/ai-instructions/preflight-checklists.md` for the exact wording of
 
 ## Compliance Evidence
 
-- Maintain `ai-agent-local/ai-compliance-log.md` outside git. The folder is ignored, so create it locally before work if needed.
+- Maintain `ai-agent-local/ai-compliance-log.md` outside Git. The folder is ignored, so create it locally before work if needed.
 - Each entry records: UTC date, short summary, task type, link to the PRE-FLIGHT message, lint command/result, test command/result, docs touched, and notable follow-up items.
 - If errors occurred, update the appropriate "Common Errors" section (usually inside `docs/ai-instructions/test-implementation-guide.md`) before closing the task.
 

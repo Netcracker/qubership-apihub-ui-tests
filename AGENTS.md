@@ -2,7 +2,7 @@
 
 ## 1. Role & Responsibilities
 
-You operate as a senior UI E2E automation engineer (Playwright + TypeScript). Expectations:
+You operate as a senior UI end-to-end automation engineer (Playwright + TypeScript). Expectations:
 
 - Analyze requirements fully before touching the codebase
 - Provide exact, actionable guidance instead of vague suggestions
@@ -15,7 +15,7 @@ You operate as a senior UI E2E automation engineer (Playwright + TypeScript). Ex
 All AI-specific instructions now live under `docs/ai-instructions/`. Treat this file as the entry point, then follow the hub described in `docs/ai-instructions/README.md`.
 
 | Scope                                    | Location                                                                        | Purpose                                                                                  |
-|------------------------------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| ---------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Entry point                              | `AGENTS.md`                                                                     | Responsibilities + contract                                                              |
 | AI Instruction Hub                       | `docs/ai-instructions/README.md`                                                | Document map, access protocol, evidence rules                                            |
 | Checklist catalog                        | `docs/ai-instructions/preflight-checklists.md`                                  | Full PRE-FLIGHT / POST-FLIGHT requirements per task type                                 |
@@ -38,7 +38,7 @@ Requirement: print **every** checklist item that applies to the task, not just a
 
 **PRE-FLIGHT block format**
 
-```
+```text
 ### PRE-FLIGHT
 - [ ] Step description (doc link)
 ...
@@ -54,7 +54,7 @@ Mark the checkbox only after the action is complete. Include:
 
 **POST-FLIGHT block format**
 
-```
+```text
 ### POST-FLIGHT
 - lint: `npx eslint path/to/file` ✅/❌ (attach failure logs)
 - tests: `npx playwright test ... --headed --trace=on` ✅/n/a
@@ -67,7 +67,7 @@ Never omit any required line, even if something is `n/a`.
 ## 5. Compliance Evidence & Logging
 
 - Mirror the full checklist in the session todo list so reviewers can monitor progress mid-task.
-- After finishing, append an entry to `ai-agent-local/ai-compliance-log.md`. This folder lives at the repo root but is ignored by git, so keep it locally. The `.gitkeep` file simply forces Git to track the otherwise-empty directory—leave it in place and store the actual log file alongside it before closing the task.
+- After finishing, append an entry to `ai-agent-local/ai-compliance-log.md`. This folder lives at the repository root but is ignored by Git, so keep it locally. The `.gitkeep` file simply forces Git to track the otherwise-empty directory—leave it in place and store the actual log file alongside it before closing the task.
 - Include: UTC date, task summary, task type, link to checklist message, lint command + result, test command + result, and doc update summary.
 
 ## 6. Task-Type Playbooks
@@ -96,25 +96,25 @@ When instructions reference these files, you must state explicitly that you loca
 ## 9. Linting, Formatting & Line Endings
 
 - **Primary lint command:** after finishing edits (and again after formatting), run `npx eslint --fix <file1> <file2> ...` covering every created/modified file in one go. Capture the exact CLI and result in POST-FLIGHT.
-- **dprint formatting:** run `npx dprint fmt <file1> <file2> ...` on all changed files before the final eslint pass. If `dprint` or its config is missing, state that explicitly and continue.
+- **dprint formatting:** run `npx dprint fmt <file1> <file2> ...` on all changed files before the final ESLint pass. If `dprint` or its config is missing, state that explicitly and continue.
 - **LF endings:** save every new file with Unix line endings (LF). When copying content from Windows tools, normalize it before committing (most editors expose this in the status bar).
 
 ## 10. Workspace Detection
 
-Always resolve `PROJECT_ROOT` before executing other commands. The simplified PowerShell helper below covers both common launch scenarios (root folder directly vs. parent folder containing the repo):
+Always resolve `PROJECT_ROOT` before executing other commands. The simplified PowerShell helper below covers both common launch scenarios (root folder directly vs. parent folder containing the repository):
 
 ```pwsh
 $start = Get-Location
 if (Test-Path (Join-Path $start 'qubership-apihub-ui-tests')) {
   Set-Location (Join-Path $start 'qubership-apihub-ui-tests')
 } else {
-  # Already inside the repo; stay put so we can reach sibling projects if needed
+  # Already inside the repository; stay put so we can reach sibling projects if needed
   Set-Location $start
 }
 Write-Host \"Detected project root: $((Get-Location).Path)\"
 ```
 
-If you work in Bash/zsh, use the same logic:
+If you work in Bash/Zsh, use the same logic:
 
 ```bash
 if [ -d "$PWD/qubership-apihub-ui-tests" ]; then
@@ -129,8 +129,8 @@ Print the detected root in your first response and execute every command from th
 
 ## 11. Documentation Upkeep
 
-- Every time you change behavior, config, or workflows, review the relevant documentation (README, guides, onboarding notes) and update them in the same PR.
-- When instructions in `docs/ai-instructions/**` become outdated, fix them as part of the task instead of leaving TODOs.
+- Every time you change behavior, config, or workflows, review the relevant documentation (readme, guides, onboarding notes) and update them in the same PR.
+- When instructions in `docs/ai-instructions/**` become outdated, fix them as part of the task instead of leaving todos.
 - Mention doc updates (or confirm no changes were needed) in POST-FLIGHT so reviewers know the knowledge base stays fresh.
 
 ## 12. Continuous Improvement

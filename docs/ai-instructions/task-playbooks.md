@@ -5,12 +5,12 @@ Pick exactly one playbook that best matches the incoming request. Use it togethe
 ## Task Matrix
 
 | Task type                 | Typical triggers                                               | Mandatory docs (in addition to global set)                                                                                     | Focus areas                                                                                  |
-| ------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| **Test Implementation**   | Playwright specs, fixtures, hooks, assertions                  | `docs/ai-instructions/test-implementation-guide.md`, `docs/CODING_GUIDELINES.md` (§ _Test Structure_)                                | `test.step()` usage, tags/annotations, run spec `--headed --trace=on`                        |
+|---------------------------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| **Test Implementation**   | Playwright specs, fixtures, hooks, assertions                  | `docs/ai-instructions/test-implementation-guide.md`, `docs/CODING_GUIDELINES.md` (§ _Test Structure_)                          | `test.step()` usage, tags/annotations, run spec `--headed --trace=on`                        |
 | **POM**                   | Create/update page objects or shared components                | `docs/CODING_GUIDELINES.md` (§ _Page Object Model_, _Locator Strategy_), `docs/pom-in-practice.md` (matching component family) | Component taxonomy, constructor signatures, base component reuse                             |
 | **Test Data Management**  | Introduce/adjust data used by tests, move data closer to specs | `docs/CODING_GUIDELINES.md` (§ _Test Data Management_), relevant `src/tests/**` folders, existing data helpers                 | Keep data near consumers, decide `_N` vs `_R`, use hooks for setup/cleanup                   |
-| **Test Support Services** | Edits inside `src/services/**`, shared utilities used by tests | Service-specific docs/README (if any), existing service implementations, `docs/CODING_GUIDELINES.md` (§ Code Organization)     | Avoid duplication, follow established service APIs, document side effects                    |
-| **Documentation**         | Updates to Markdown/MDX/ADR/README/etc.                        | Target docs, embedded code standards (`docs/CODING_GUIDELINES.md`), lint/format policies                                       | Keep docs synced with behavior, validate fenced code samples with linters, ensure LF endings |
+| **Test Support Services** | Edits inside `src/services/**`, shared utilities used by tests | Service-specific docs/readme (if any), existing service implementations, `docs/CODING_GUIDELINES.md` (§ Code Organization)     | Avoid duplication, follow established service APIs, document side effects                    |
+| **Documentation**         | Updates to Markdown/MDX/ADR/readme/etc.                        | Target docs, embedded code standards (`docs/CODING_GUIDELINES.md`), lint/format policies                                       | Keep docs synced with behavior, validate fenced code samples with linters, ensure LF endings |
 | **Misc / Utility**        | Config tweaks, doc-only edits, small refactors                 | `.eslintrc.json`, impacted files/config docs                                                                                   | Scope clarity, avoid collateral changes                                                      |
 
 ## Playbook Details
@@ -37,7 +37,7 @@ Pick exactly one playbook that best matches the incoming request. Use it togethe
 
 - **PRE-FLIGHT:** review the relevant files under `src/services/**`, note existing patterns (naming, error handling), and confirm no overlapping utilities already exist.
 - **Implementation:** keep APIs small and composable, reuse shared helpers, and document side effects or required environment variables directly in the service file.
-- **Verification:** lint the touched service files in the same aggregate command, describe any required unit/E2E verification, and mention downstream consumers that were impacted or tested.
+- **Verification:** lint the touched service files in the same aggregate command, describe any required unit/end-to-end verification, and mention downstream consumers that were impacted or tested.
 
 ### Documentation
 
@@ -47,9 +47,9 @@ Pick exactly one playbook that best matches the incoming request. Use it togethe
 
 ### Misc / Utility
 
-- **PRE-FLIGHT:** define the precise scope and cite every doc/config reviewed (e.g., ESLint rules, README sections, deployment notes).
+- **PRE-FLIGHT:** define the precise scope and cite every doc/config reviewed (e.g., ESLint rules, readme sections, deployment notes).
 - **Implementation:** keep the change minimal and isolated; document rationale for any behavioral adjustments.
-- **Verification:** lint the modified files (even docs, when markdownlint/eslint applies). Tests are usually `n/a`—state why if so.
+- **Verification:** lint the modified files (even docs, when markdownlint/ESLint applies). Tests are usually `n/a`—state why if so.
 
 ## Using the Playbooks
 

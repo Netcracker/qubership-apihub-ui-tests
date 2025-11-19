@@ -51,7 +51,8 @@ This document provides a comprehensive guide to the coding standards and best pr
 
 ### Using `test.step()`
 
-Use `test.step()` to group related actions or assertions separately, and to provide context and meaning beyond what the code itself expresses. The same principles apply to both actions and assertions: do **not** wrap them if `test.step()` would just duplicate the action/assertion name, but it is **preferred** to wrap them when the step provides additional context, explains the purpose, or groups related operations together.
+Use `test.step()` to group related actions or assertions separately, and to provide context and meaning beyond what the code itself expresses.
+The same principles apply to both actions and assertions: do **not** wrap them if `test.step()` would just duplicate the action/assertion name, but it is **preferred** to wrap them when the step provides additional context, explains the purpose, or groups related operations together.
 
 **Key principles:**
 
@@ -225,7 +226,9 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
 - Implement custom assertions for domain-specific validations
 - Use the `expectFile` helper for file-based assertions. It requires a `DownloadedTestFile` object returned from a download action
 - Use `toHaveCount()` to verify the number of elements
-- **Robust Assertions:** When asserting that an element is **hidden**, always add a complementary assertion to verify that the page or component has loaded correctly. This prevents false positives where the entire page fails to load. Check for a stable, always-present element, like a page title or another tab. When verifying that a dialog is closed, also verify that you remain on the correct page with the expected content visible.
+- **Robust Assertions:** When asserting that an element is **hidden**, always add a complementary assertion to verify that the page or component has loaded correctly.
+  This prevents false positives where the entire page fails to load. Check for a stable, always-present element, like a page title or another tab.
+  When verifying that a dialog is closed, also verify that you remain on the correct page with the expected content visible.
 - **Tooltips:** Surface every tooltip through the shared `portalPage.tooltip` (or the equivalent page-level component). Hover the interactive element to trigger the tooltip, then assert the text via `portalPage.tooltip` instead of introducing ad-hoc tooltip locators.
 
 ```typescript
@@ -257,9 +260,13 @@ await expectFile(file).toHaveName('exported-file.yaml')
 
 Test data is categorized into two types based on reusability and lifecycle:
 
-- **Non-Reusable Test Data (`_N`)**: Constants with names ending in `_N` (e.g., `V_P_PKG_UAC_OWNER_EDIT_PKG_DEF_RELEASE_N`, `WSP_P_UAC_GENERAL_N`). This data is created at the start of a test suite run (e.g., in `globalSetup` or `test.beforeAll`). It can be reused across multiple tests within the _same run_ to improve performance. However, it is considered transient and is **always deleted** at the end of the run in `apihub-teardown.ts` (unless `CLEAR_TD === 'skip'`). Use this type for test-specific data that should not persist between test runs.
+- **Non-Reusable Test Data (`_N`)**: Constants with names ending in `_N` (e.g., `V_P_PKG_UAC_OWNER_EDIT_PKG_DEF_RELEASE_N`, `WSP_P_UAC_GENERAL_N`).
+  This data is created at the start of a test suite run (e.g., in `globalSetup` or `test.beforeAll`). It can be reused across multiple tests within the _same run_ to improve performance.
+  However, it is considered transient and is **always deleted** at the end of the run in `apihub-teardown.ts` (unless `CLEAR_TD === 'skip'`). Use this type for test-specific data that should not persist between test runs.
 
-- **Reusable Test Data (`_R`)**: Constants with names ending in `_R` (e.g., `V_P_PKG_OVERVIEW_R`, `WSP_P_BASE_R`). This data is persistent across multiple, independent test suite runs. It is created once (often manually or via a separate setup script) and is only deleted if `CLEAR_TD === 'all'` is explicitly set. These can be used across multiple tests without conflicts. Use this type for shared test data that can be reused across different test runs.
+- **Reusable Test Data (`_R`)**: Constants with names ending in `_R` (e.g., `V_P_PKG_OVERVIEW_R`, `WSP_P_BASE_R`).
+  This data is persistent across multiple, independent test suite runs. It is created once (often manually or via a separate setup script) and is only deleted if `CLEAR_TD === 'all'` is explicitly set.
+  These can be used across multiple tests without conflicts. Use this type for shared test data that can be reused across different test runs.
 
 **Cleanup and Management:**
 
@@ -305,8 +312,12 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 
 - **Interactive Debugging:** Use the `--debug` flag.
 - **Flakiness:** Implement retry logic for unstable operations.
-- **Root Cause Analysis Over Assumptions:** If a test fails, **do not** make assumptions about the cause (e.g., "the content is not loading"). Instead, you **must** use available debugging tools to investigate the precise state of the application at the point of failure. Masking failures with workarounds like arbitrary timeouts is strictly forbidden. The primary goal is to identify and fix the root cause.
-- **Mandatory Use of Debugging Tools (MCP):** To comply with the root cause analysis principle, you **must** utilize the powerful debugging tools at your disposal, particularly the Playwright MCP tools. When a test fails because an element is not found or visible, use tools like `browser_snapshot` to capture the accessibility tree or `take_screenshot` to visually inspect the UI. Interacting with the live browser session via MCP tools is the required method for diagnosing UI-related test failures, not guessing or assuming.
+- **Root Cause Analysis Over Assumptions:** If a test fails, **do not** make assumptions about the cause (e.g., "the content is not loading").
+  Instead, you **must** use available debugging tools to investigate the precise state of the application at the point of failure.
+  Masking failures with workarounds like arbitrary timeouts is strictly forbidden. The primary goal is to identify and fix the root cause.
+- **Mandatory Use of Debugging Tools (MCP):** To comply with the root cause analysis principle, you **must** utilize the powerful debugging tools at your disposal, particularly the Playwright MCP tools.
+  When a test fails because an element is not found or visible, use tools like `browser_snapshot` to capture the accessibility tree or `take_screenshot` to visually inspect the UI.
+  Interacting with the live browser session via MCP tools is the required method for diagnosing UI-related test failures, not guessing or assuming.
 
 ## Performance & Reliability
 
@@ -315,7 +326,8 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 - Avoid `page.waitForTimeout()` except when absolutely necessary
 - Implement API mocking with `page.route()` when appropriate
 - Create efficient test data cleanup strategies
-- **API Mocking for Specific States:** If a test case requires a specific backend state that is not the default (e.g., a feature being disabled), use `page.route()` to mock the relevant API response. Do not skip the test or work around the state. For example, to test UI when the linter is disabled, intercept `**/api/v2/system/configuration` and provide a response where the `api-linter` is removed from the `extensions` array.
+- **API Mocking for Specific States:** If a test case requires a specific backend state that is not the default (e.g., a feature being disabled), use `page.route()` to mock the relevant API response.
+  Do not skip the test or work around the state. For example, to test UI when the linter is disabled, intercept `**/api/v2/system/configuration` and provide a response where the `api-linter` is removed from the `extensions` array.
 
 ```typescript
 // API mocking for specific states
