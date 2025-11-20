@@ -11,7 +11,7 @@ type CreateRulesetDialogParams = Partial<{
 export class CreateRulesetDialog extends BaseCancelDialog {
   readonly nameTxtFld = new TextField(this.rootLocator.getByTestId('NameTextField'), 'Name')
   readonly filesUploader = new FilesUploader(this.rootLocator.getByTestId('UploadButtonInput'), 'Ruleset')
-  readonly fileUploadError = new Content(this.rootLocator.getByRole('alert'), 'Ruleset file validation message')
+  readonly fileUploadAlert = new Content(this.rootLocator.getByRole('alert'), 'File Upload Alert')
   readonly browseBtn = new Button(this.rootLocator.getByTestId('BrowseButton'), 'Browse')
   readonly createBtn = new Button(this.rootLocator.getByTestId('CreateButton'), 'Create')
 
