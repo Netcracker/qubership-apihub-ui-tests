@@ -1,25 +1,77 @@
 import { test } from '@fixtures'
-import { expect as playwrightExpect } from '@playwright/test'
-import { LintRulesetApiTypes, LintRulesetLinters, RULESET_API_TYPE_TITLE_MAP } from '@portal/entities'
+import type { Page } from '@playwright/test'
+import {
+  LINT_RULESET_STATUS_DISPLAY,
+  LintRulesetApiTypes,
+  LintRulesetLinters,
+  RULESET_API_TYPE_TITLE_MAP,
+  SERVER_DEFAULT_RULESETS,
+} from '@portal/entities'
 import { PortalPage } from '@portal/pages'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
-import { TestFile } from '@shared/entities'
-import { SERVER_DEFAULT_RULESETS } from '@test-data/portal/lint-rulesets'
+import { ROOT_RESOURCES, TestFile } from '@shared/entities'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
-import path from 'path'
 
 const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
-const RULESET_MANAGEMENT_URL = '/portal/settings/rulesets'
+const RULESET_MANAGEMENT_PATH = '/portal/settings/rulesets'
 
-// Test resource files - instantiated locally as per spec
+// Test resource files
 const SIMPLE_RULESET_FILE = new TestFile(
-  path.join('resources', 'portal', 'api-quality', 'rulesets', 'simple-ruleset.yaml'),
+  `${ROOT_RESOURCES}/portal/api-quality/rulesets/simple-ruleset.yaml`,
 )
 const INVALID_EXTENSION_FILE = new TestFile(
-  path.join('resources', 'portal', 'api-quality', 'rulesets', 'invalid-extension.txt'),
+  `${ROOT_RESOURCES}/portal/api-quality/rulesets/invalid-extension.txt`,
 )
 
+// Notification messages
+const RULESET_CREATED_SUCCESS_MSG = (rulesetName: string): string => `${rulesetName} ruleset has been created`
+const RULESET_DELETED_SUCCESS_MSG = (rulesetName: string): string => `${rulesetName} ruleset has been deleted`
+const PUBLIC_URL_COPIED_SUCCESS_MSG = 'Public URL copied'
+
+// Error messages
+const DUPLICATE_NAME_ERROR_MSG = (rulesetName: string, apiType: string): string =>
+  `Ruleset name ${rulesetName} is not unique for API type ${apiType}`
+const INVALID_FILE_FORMAT_ERROR_MSG = 'File format must be YAML'
+
+// Tooltip messages
+const CANNOT_DELETE_ACTIVE_TOOLTIP = 'Cannot delete active ruleset'
+const CANNOT_DELETE_WITH_HISTORY_TOOLTIP =
+  'The ruleset cannot be deleted due to existing versions that have been validated against this ruleset'
+
+// Helper functions
+async function mockSystemConfigurationToDisableLinter(page: Page): Promise<void> {
+  await page.route('**/api/v2/system/configuration', async (route) => {
+    const response = await route.fetch()
+    const json = await response.json()
+
+    const filteredExtensions = json.extensions.filter(
+      (ext: { name: string }) => ext.name !== 'api-linter',
+    )
+
+    await route.fulfill({
+      status: response.status(),
+      headers: response.headers(),
+      body: JSON.stringify({
+        ...json,
+        extensions: filteredExtensions,
+      }),
+    })
+  })
+}
+
+async function navigateToRulesetManagement(portalPage: PortalPage): Promise<void> {
+  await portalPage.goto(RULESET_MANAGEMENT_PATH)
+}
+
+async function openCreateRulesetDialog(portalPage: PortalPage): Promise<void> {
+  const { portalSettingsPage } = portalPage
+  const { rulesetManagementTab } = portalSettingsPage
+  await rulesetManagementTab.addRulesetBtn.click()
+}
+
 test.describe('API Quality Validation', () => {
+  const testIdN = process.env.TEST_ID_N!
+
   test.describe('Ruleset Management', () => {
     // Suite-level reusable data (_N rulesets)
     let INACTIVE_RULESET_OAS30_N: { id: string; name: string }
@@ -28,7 +80,6 @@ test.describe('API Quality Validation', () => {
     let GENERAL_RULESET_OAS30_N: { id: string; name: string }
 
     test.beforeAll(async ({ lintRulesetTdm }) => {
-      const testIdN = process.env.TEST_ID_N!
       const rulesetNamePrefix = `${ALIAS_PREFIX}-`
 
       // Create INACTIVE_RULESET_OAS30_N, INACTIVE_RULESET_OAS31_N, and GENERAL_RULESET_OAS30_N
@@ -65,30 +116,19 @@ test.describe('API Quality Validation', () => {
       })
       PREVIOUSLY_ACTIVE_RULESET_OAS30_N = { id: previouslyActive.id, name: previouslyActive.name }
 
-      // Establish History:
-      // Activate PREVIOUSLY_ACTIVE... (History count: 1)
-      await lintRulesetTdm.activateRuleset({
-        id: PREVIOUSLY_ACTIVE_RULESET_OAS30_N.id,
-        name: PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name,
-      })
-
-      // Activate GENERAL... (Deactivates Previous)
-      await lintRulesetTdm.activateRuleset({ id: GENERAL_RULESET_OAS30_N.id, name: GENERAL_RULESET_OAS30_N.name })
-
-      // Activate PREVIOUSLY_ACTIVE... (History count: 2)
-      await lintRulesetTdm.activateRuleset({
-        id: PREVIOUSLY_ACTIVE_RULESET_OAS30_N.id,
-        name: PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name,
-      })
-
-      // Activate GENERAL... (Deactivates Previous)
-      await lintRulesetTdm.activateRuleset({ id: GENERAL_RULESET_OAS30_N.id, name: GENERAL_RULESET_OAS30_N.name })
-      // Result: GENERAL... happens to be active, and PREVIOUSLY_ACTIVE... has history
+      // Establish activation history for PREVIOUSLY_ACTIVE_RULESET_OAS30_N
+      // Activate PREVIOUSLY_ACTIVE_RULESET_OAS30_N first time
+      await lintRulesetTdm.activateRuleset(PREVIOUSLY_ACTIVE_RULESET_OAS30_N)
+      // Activate GENERAL_RULESET_OAS30_N to deactivate PREVIOUSLY_ACTIVE_RULESET_OAS30_N (creates first activation record with ActiveTo)
+      await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
+      // Activate PREVIOUSLY_ACTIVE_RULESET_OAS30_N second time (creates second activation record)
+      await lintRulesetTdm.activateRuleset(PREVIOUSLY_ACTIVE_RULESET_OAS30_N)
+      // Activate GENERAL_RULESET_OAS30_N again to ensure it's active at the end
+      await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
+      // Result: GENERAL_RULESET_OAS30_N is active, PREVIOUSLY_ACTIVE_RULESET_OAS30_N has 2 activation records
     })
 
     test.afterAll(async ({ lintRulesetTdm }) => {
-      const testIdN = process.env.TEST_ID_N!
-
       // Activate the default server ruleset (necessary because an active ruleset cannot be deleted)
       const defaultRuleset = await lintRulesetTdm.getRulesetByName({
         rulesetName: SERVER_DEFAULT_RULESETS[LintRulesetApiTypes.OAS_3_0],
@@ -113,24 +153,7 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
 
         await test.step('Mock system configuration API to disable linter', async () => {
-          await page.route('**/api/v2/system/configuration', async (route) => {
-            const response = await route.fetch()
-            const json = await response.json()
-
-            // Remove api-linter extension from the response
-            const filteredExtensions = json.extensions.filter(
-              (ext: { name: string }) => ext.name !== 'api-linter',
-            )
-
-            await route.fulfill({
-              status: response.status(),
-              headers: response.headers(),
-              body: JSON.stringify({
-                ...json,
-                extensions: filteredExtensions,
-              }),
-            })
-          })
+          await mockSystemConfigurationToDisableLinter(page)
         })
 
         await test.step('Navigate to Portal Settings', async () => {
@@ -175,7 +198,6 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Verify ruleset table with correct columns is visible', async () => {
-          // Get the first ruleset row from the table (default rulesets should exist)
           const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
 
           await expect(firstRulesetRow.nameCell).toBeVisible()
@@ -193,12 +215,10 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Open Create Ruleset dialog', async () => {
-          await rulesetManagementTab.addRulesetBtn.click()
+          await openCreateRulesetDialog(portalPage)
         })
 
         await test.step('Verify dialog title matches expected format', async () => {
@@ -224,16 +244,13 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
-        const testIdN = process.env.TEST_ID_N!
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Create-New-${retryIndex}-${testIdN}`
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Open Create Ruleset dialog', async () => {
-          await rulesetManagementTab.addRulesetBtn.click()
+          await openCreateRulesetDialog(portalPage)
         })
 
         await test.step('Fill in unique name and upload file', async () => {
@@ -244,18 +261,16 @@ test.describe('API Quality Validation', () => {
           })
         })
 
-        await test.step('Click Create button', async () => {
-          await createRulesetDialog.createBtn.click()
-        })
+        await createRulesetDialog.createBtn.click()
 
         await test.step('Verify success notification appears', async () => {
-          await expect(portalPage.snackbar).toContainText(/success/i)
+          await expect(portalPage.snackbar).toContainText(RULESET_CREATED_SUCCESS_MSG(rulesetName))
         })
 
         await test.step('Verify new Inactive ruleset is in the table', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await expect(rulesetRow.nameCell).toHaveText(rulesetName)
-          await expect(rulesetRow.statusCell).toHaveText('Inactive')
+          await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.INACTIVE)
         })
       })
 
@@ -267,12 +282,10 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Open Create Ruleset dialog', async () => {
-          await rulesetManagementTab.addRulesetBtn.click()
+          await openCreateRulesetDialog(portalPage)
         })
 
         await test.step('Fill in duplicate name and upload file', async () => {
@@ -284,13 +297,13 @@ test.describe('API Quality Validation', () => {
           })
         })
 
-        await test.step('Click Create button', async () => {
-          await createRulesetDialog.createBtn.click()
-        })
+        await createRulesetDialog.createBtn.click()
 
         await test.step('Verify error message appears in the dialog', async () => {
           await expect(createRulesetDialog.nameTxtFld.errorMsg).toBeVisible()
-          await expect(createRulesetDialog.nameTxtFld.errorMsg).toContainText(/name|duplicate/i)
+          await expect(createRulesetDialog.nameTxtFld.errorMsg).toContainText(
+            DUPLICATE_NAME_ERROR_MSG(GENERAL_RULESET_OAS30_N.name, LintRulesetApiTypes.OAS_3_0),
+          )
         })
       })
 
@@ -300,12 +313,10 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Open Create Ruleset dialog', async () => {
-          await rulesetManagementTab.addRulesetBtn.click()
+          await openCreateRulesetDialog(portalPage)
         })
 
         await test.step('Upload a file but leave name field blank', async () => {
@@ -326,17 +337,16 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Open Create Ruleset dialog', async () => {
-          await rulesetManagementTab.addRulesetBtn.click()
+          await openCreateRulesetDialog(portalPage)
         })
 
         await test.step('Fill in a name but do not upload a file', async () => {
+          const rulesetName = `${ALIAS_PREFIX}-Test-Name-${testIdN}`
           await createRulesetDialog.fillForm({
-            rulesetName: 'Test-Ruleset-Name',
+            rulesetName,
           })
         })
 
@@ -351,16 +361,13 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
-        const testIdN = process.env.TEST_ID_N!
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Invalid-File-${retryIndex}-${testIdN}`
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Open Create Ruleset dialog', async () => {
-          await rulesetManagementTab.addRulesetBtn.click()
+          await openCreateRulesetDialog(portalPage)
         })
 
         await test.step('Fill in a unique name', async () => {
@@ -377,13 +384,11 @@ test.describe('API Quality Validation', () => {
           })
         })
 
-        await test.step('Click Create button', async () => {
-          await createRulesetDialog.createBtn.click()
-        })
+        await createRulesetDialog.createBtn.click()
 
         await test.step('Verify error message is displayed within the dialog', async () => {
           await expect(createRulesetDialog.fileUploadAlert).toBeVisible()
-          await expect(createRulesetDialog.fileUploadAlert).toContainText(/yaml|file format/i)
+          await expect(createRulesetDialog.fileUploadAlert).toContainText(INVALID_FILE_FORMAT_ERROR_MSG)
         })
 
         await test.step('Verify dialog remains open', async () => {
@@ -401,23 +406,28 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { activateRulesetDialog } = rulesetManagementTab
 
-        const testIdN = process.env.TEST_ID_N!
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Activate-New-${retryIndex}-${testIdN}`
 
-        // Create a new inactive ruleset
+        // Create a new ruleset for activation
         const apiType = LintRulesetApiTypes.OAS_3_0
         const linter = LintRulesetLinters.SPECTRAL
         const rulesetFile = SIMPLE_RULESET_FILE
-        const newRuleset = await lintRulesetTdm.createRuleset({
+        await lintRulesetTdm.createRuleset({
           rulesetName,
           apiType,
           linter,
           rulesetFile,
         })
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
+        // Activate GENERAL_RULESET_OAS30_N to ensure it's active before test
+        await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
+
+        await navigateToRulesetManagement(portalPage)
+
+        const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+        await test.step('Verify previously active ruleset is active', async () => {
+          await expect(previouslyActiveRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
         })
 
         await test.step('Click the Activate button for the inactive ruleset', async () => {
@@ -431,7 +441,7 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify the status of the target ruleset changes to Active', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
-          await expect(rulesetRow.statusCell).toHaveText('Active')
+          await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
         })
 
         await test.step('Verify its activation history is updated', async () => {
@@ -441,7 +451,7 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify the status of the previously active ruleset changes to Inactive', async () => {
           const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
-          await expect(previouslyActiveRow.statusCell).toHaveText('Inactive')
+          await expect(previouslyActiveRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.INACTIVE)
         })
       })
 
@@ -450,22 +460,17 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
+        await navigateToRulesetManagement(portalPage)
+
+        const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
+
+        await test.step('Verify first ruleset row is active', async () => {
+          await expect(firstRulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
         })
 
-        await test.step('Get the first active ruleset row', async () => {
-          const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
-          await expect(firstRulesetRow.statusCell).toHaveText('Active')
-        })
-
-        await test.step('Hover over the active ruleset row', async () => {
-          const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
-          await firstRulesetRow.hover()
-        })
+        await firstRulesetRow.hover()
 
         await test.step('Verify Activate button is disabled', async () => {
-          const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
           await expect(firstRulesetRow.activateBtn).toBeDisabled()
         })
       })
@@ -477,9 +482,7 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Hover over the info icon in the Activation History column', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
@@ -491,17 +494,12 @@ test.describe('API Quality Validation', () => {
           const tooltip = rulesetRow.activationHistoryTooltip
           await expect(tooltip.title).toBeVisible()
 
-          // Verify at least one activation record exists and is visible
+          // Wait for tooltip to fully load and verify at least two activation records exist
           const firstRecord = tooltip.getActivationRecord(1)
           await expect(firstRecord).toBeVisible()
 
-          // Try to verify second record exists (if history was properly recorded)
-          const recordsLocator = tooltip.rootLocator.getByTestId('ActivationHistoryTooltipRecord')
-          const count = await recordsLocator.count()
-          // Note: The test verifies that activation history tooltip appears.
-          // The actual count may vary based on backend implementation.
-          // At minimum, we verify that the tooltip shows at least one record.
-          playwrightExpect(count).toBeGreaterThanOrEqual(1)
+          const secondRecord = tooltip.getActivationRecord(2)
+          await expect(secondRecord).toBeVisible()
         })
       })
     })
@@ -514,26 +512,20 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
+        await navigateToRulesetManagement(portalPage)
+
+        const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
+
+        await test.step('Verify first ruleset row is active', async () => {
+          await expect(firstRulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
         })
 
-        await test.step('Get the first active ruleset row (default should be active)', async () => {
-          const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
-          await expect(firstRulesetRow.statusCell).toHaveText('Active')
-        })
+        await firstRulesetRow.hover()
 
-        await test.step('Hover over the active ruleset row', async () => {
-          const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
-          await firstRulesetRow.hover()
-        })
+        await firstRulesetRow.deleteBtn.hover({ force: true })
 
         await test.step('Verify tooltip reads Cannot delete active ruleset', async () => {
-          // Tooltip is shown via a wrapper element when hovering over disabled button
-          const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
-          // Hover over the delete button area to trigger tooltip
-          await firstRulesetRow.deleteBtn.mainLocator.hover({ force: true })
-          await expect(portalPage.tooltip).toHaveText('Cannot delete active ruleset')
+          await expect(portalPage.tooltip).toHaveText(CANNOT_DELETE_ACTIVE_TOOLTIP)
         })
       })
 
@@ -544,23 +536,20 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
+        await navigateToRulesetManagement(portalPage)
+
+        const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
+
+        await test.step('Verify ruleset is inactive', async () => {
+          await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.INACTIVE)
         })
 
-        await test.step('Hover over the relevant inactive ruleset row', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
-          await expect(rulesetRow.statusCell).toHaveText('Inactive')
-          await rulesetRow.hover()
-        })
+        await rulesetRow.hover()
+
+        await rulesetRow.deleteBtn.hover({ force: true })
 
         await test.step('Verify tooltip reads The ruleset cannot be deleted due to existing versions', async () => {
-          // Tooltip is shown via a wrapper element when hovering over disabled button
-          const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
-          // Hover over the delete button area to trigger tooltip
-          await rulesetRow.deleteBtn.mainLocator.hover({ force: true })
-          await expect(portalPage.tooltip).toContainText('cannot be deleted')
-          await expect(portalPage.tooltip).toContainText('existing versions')
+          await expect(portalPage.tooltip).toHaveText(CANNOT_DELETE_WITH_HISTORY_TOOLTIP)
         })
       })
 
@@ -570,7 +559,6 @@ test.describe('API Quality Validation', () => {
         const { rulesetManagementTab } = portalSettingsPage
         const { deleteRulesetDialog } = rulesetManagementTab
 
-        const testIdN = process.env.TEST_ID_N!
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Delete-NeverActivated-${retryIndex}-${testIdN}`
 
@@ -585,25 +573,20 @@ test.describe('API Quality Validation', () => {
           rulesetFile,
         })
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
-        await test.step('Click the Delete button for this ruleset', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
-          await rulesetRow.openDeleteRulesetDialog()
-        })
+        const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
+        await rulesetRow.openDeleteRulesetDialog()
 
         await test.step('Confirm deletion', async () => {
           await deleteRulesetDialog.deleteBtn.click()
         })
 
         await test.step('Verify success notification appears', async () => {
-          await expect(portalPage.snackbar).toContainText(/success/i)
+          await expect(portalPage.snackbar).toContainText(RULESET_DELETED_SUCCESS_MSG(rulesetName))
         })
 
         await test.step('Verify the ruleset is removed from the table', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await expect(rulesetRow.nameCell).toBeHidden()
         })
       })
@@ -615,17 +598,16 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Click the Download action for a ruleset', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
           const downloadedFile = await rulesetRow.downloadRuleset()
 
           await test.step('Verify the browser initiates a download of the correct ruleset file', async () => {
-            // The downloaded file name is based on the original file name, not the ruleset name
-            await expectFile(downloadedFile).toHaveName('simple-ruleset.yaml')
+            await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
+            await expectFile(downloadedFile).toContainText('rules:')
+            await expectFile(downloadedFile).toContainText('info-contact:')
           })
         })
       })
@@ -635,21 +617,20 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Click the Copy Link action', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
           const copiedUrl = await rulesetRow.copyPublicUrl()
 
           await test.step('Verify success notification appears', async () => {
-            await expect(portalPage.snackbar).toContainText(/success/i)
+            await expect(portalPage.snackbar).toContainText(PUBLIC_URL_COPIED_SUCCESS_MSG)
           })
 
           await test.step('Verify clipboard contains a valid, direct URL', async () => {
-            await expectText(copiedUrl).toMatch(/^https?:\/\//)
-            await expectText(copiedUrl).toContain('rulesets')
+            await expectText(copiedUrl).toContain('/api-linter/api/v1/rulesets/')
+            await expectText(copiedUrl).toContain('/data')
+            await expectText(copiedUrl).toContain(GENERAL_RULESET_OAS30_N.id)
           })
         })
       })
@@ -663,9 +644,7 @@ test.describe('API Quality Validation', () => {
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
 
-        await test.step('Navigate directly to Ruleset Management tab', async () => {
-          await portalPage.goto(RULESET_MANAGEMENT_URL)
-        })
+        await navigateToRulesetManagement(portalPage)
 
         await test.step('Verify OAS 3.0 rulesets are visible', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(INACTIVE_RULESET_OAS30_N.name)

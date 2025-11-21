@@ -98,6 +98,175 @@ path.join(ROOT_PORTAL, 'api-quality', 'rulesets')
 
 Skipping `--headed --trace=on` runs violates the playbook. Execute the spec you touched and note the command/result in POST-FLIGHT; attach failure evidence if needed.
 
+### Using Generic Assertions Instead of Specific Messages
+
+```typescript
+// ❌ Incorrect: generic regex check
+await expect(portalPage.snackbar).toContainText(/success/i)
+
+// ✅ Correct: specific message with ruleset name
+const RULESET_CREATED_SUCCESS_MSG = (rulesetName: string): string => `${rulesetName} ruleset has been created`
+await expect(portalPage.snackbar).toContainText(RULESET_CREATED_SUCCESS_MSG(rulesetName))
+```
+
+**Prevention:** Always check the actual UI code or API hooks to find the exact success/error messages. Extract them as constants at the top of the file.
+
+### Hardcoding Status Values Instead of Using Constants
+
+```typescript
+// ❌ Incorrect: hardcoded text
+await expect(rulesetRow.statusCell).toHaveText('Active')
+
+// ❌ Incorrect: defining local constants when they exist in project
+const STATUS_ACTIVE = 'Active'
+const STATUS_INACTIVE = 'Inactive'
+
+// ✅ Correct: import display constants from entities
+import { LINT_RULESET_STATUS_DISPLAY } from '@portal/entities'
+await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
+```
+
+**Prevention:** All UI text values (statuses, error messages, tooltips) must be extracted as constants. Check the UI code to see how values are displayed (e.g., `capitalize(status)` means lowercase values become capitalized in UI). Always check if display constants already exist in `@portal/entities` before defining local ones.
+
+### Wrapping Simple Actions in test.step()
+
+```typescript
+// ❌ Incorrect: wrapping action that duplicates step name
+await test.step('Click Create button', async () => {
+  await createRulesetDialog.createBtn.click()
+})
+
+// ✅ Correct: direct action call
+await createRulesetDialog.createBtn.click()
+```
+
+**Prevention:** Only wrap actions/assertions in `test.step()` when the step provides additional context or groups related operations. Simple actions that duplicate the step name should be called directly.
+
+### Not Extracting Repeated Steps into Helper Functions
+
+```typescript
+// ❌ Incorrect: repeated navigation code
+await test.step('Navigate directly to Ruleset Management tab', async () => {
+  await portalPage.goto(RULESET_MANAGEMENT_PATH)
+})
+// ... repeated 10+ times
+
+// ✅ Correct: extract to helper function
+async function navigateToRulesetManagement(portalPage: PortalPage): Promise<void> {
+  await portalPage.goto(RULESET_MANAGEMENT_PATH)
+}
+// Use: await navigateToRulesetManagement(portalPage)
+```
+
+**Prevention:** If a step appears more than 2 times, extract it to a helper function. Common candidates: navigation, opening dialogs, common setup actions.
+
+### Mixing Actions and Assertions in Same Step
+
+```typescript
+// ❌ Incorrect: mixing action and assertion
+await test.step('Hover over the relevant inactive ruleset row', async () => {
+  const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
+  await expect(rulesetRow.statusCell).toHaveText('Inactive')
+  await rulesetRow.hover()
+})
+
+// ✅ Correct: separate action and assertion
+const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
+await test.step('Verify ruleset is inactive', async () => {
+  await expect(rulesetRow.statusCell).toHaveText(STATUS_INACTIVE)
+})
+await rulesetRow.hover()
+```
+
+**Prevention:** Always separate actions and assertions into different steps. Extract common variables (like `rulesetRow`) above the steps for reuse.
+
+### Not Verifying File Content When Downloading
+
+```typescript
+// ❌ Incorrect: only checking file name
+await expectFile(downloadedFile).toHaveName('simple-ruleset.yaml')
+
+// ✅ Correct: verify both name and content
+await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
+await expectFile(downloadedFile).toContainText('rules:')
+await expectFile(downloadedFile).toContainText('info-contact:')
+```
+
+**Prevention:** When testing file downloads, always verify both the file name (using the original TestFile object) and key content to ensure the correct file was downloaded.
+
+### Using Generic URL Checks Instead of Specific Format
+
+```typescript
+// ❌ Incorrect: generic checks
+await expectText(copiedUrl).toMatch(/^https?:\/\//)
+await expectText(copiedUrl).toContain('rulesets')
+
+// ❌ Incorrect: regex-only check without verifying specific data
+await expectText(copiedUrl).toMatch(/^https?:\/\/.+\/api\/v1\/api-linter\/rulesets\/.+\/data$/)
+
+// ✅ Correct: use containText with specific URL parts and verify ruleset ID
+await expectText(copiedUrl).toContainText('/api-linter/api/v1/rulesets/')
+await expectText(copiedUrl).toContainText('/data')
+await expectText(copiedUrl).toContainText(ruleset.id)
+```
+
+**Prevention:** Check the actual URL format in the UI code (e.g., `getPublicLink` function). Use `containText` with specific URL parts and verify that the URL contains the actual ruleset ID or other specific data from the test context, rather than relying solely on regex patterns.
+
+### Not Activating Test Data Before Asserting State
+
+```typescript
+// ❌ Incorrect: assuming state without setup
+await test.step('Verify the status of the previously active ruleset changes to Inactive', async () => {
+  const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+  await expect(previouslyActiveRow.statusCell).toHaveText('Inactive')
+})
+
+// ✅ Correct: activate ruleset first, then verify
+await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
+await navigateToRulesetManagement(portalPage)
+await test.step('Verify GENERAL_RULESET_OAS30_N is active', async () => {
+  const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+  await expect(previouslyActiveRow.statusCell).toHaveText(STATUS_ACTIVE)
+})
+```
+
+**Prevention:** Never assume the state of test data. Always set up the required state via API before testing UI behavior.
+
+### Not Using Test ID Pattern for All Ruleset Names
+
+```typescript
+// ❌ Incorrect: missing test ID in negative test
+const rulesetName = 'Test-Ruleset-Name'
+
+// ✅ Correct: always use prefix and test ID
+const rulesetName = `${ALIAS_PREFIX}-Test-Name-${testIdN}`
+```
+
+**Prevention:** All ruleset names (even for negative tests) must follow the pattern `${ALIAS_PREFIX}-<Name>-${testIdN}` to ensure proper cleanup in case of bugs.
+
+### Not Moving Cleanup to Correct Location
+
+```typescript
+// ❌ Incorrect: cleanup in nested describe
+test.describe('Ruleset Management', () => {
+  test.afterAll(async ({ lintRulesetTdm }) => {
+    // cleanup
+  })
+})
+
+// ✅ Correct: cleanup at suite level
+test.describe('API Quality Validation', () => {
+  const testIdN = process.env.TEST_ID_N!
+  test.describe('Ruleset Management', () => {
+    test.afterAll(async ({ lintRulesetTdm }) => {
+      // cleanup using testIdN from parent scope
+    })
+  })
+})
+```
+
+**Prevention:** Move `testIdN` and cleanup (`afterAll`) to the outermost `test.describe` level where they can be shared across all nested suites.
+
 ## Compliance Workflow
 
 Follow the evidence workflow defined in `docs/ai-instructions/README.md`, with these test-specific notes:
