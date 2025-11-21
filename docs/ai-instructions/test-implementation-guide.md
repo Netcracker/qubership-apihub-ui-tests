@@ -121,9 +121,10 @@ await expect(rulesetRow.statusCell).toHaveText('Active')
 const STATUS_ACTIVE = 'Active'
 const STATUS_INACTIVE = 'Inactive'
 
-// ✅ Correct: import display constants from entities
-import { LINT_RULESET_STATUS_DISPLAY } from '@portal/entities'
-await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
+// ✅ Correct: use destructuring for status constants
+import { LintRulesetStatuses } from '@portal/entities'
+const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
+await expect(rulesetRow.statusCell).toHaveText(STATUS_ACTIVE)
 ```
 
 **Prevention:** All UI text values (statuses, error messages, tooltips) must be extracted as constants. Check the UI code to see how values are displayed (e.g., `capitalize(status)` means lowercase values become capitalized in UI). Always check if display constants already exist in `@portal/entities` before defining local ones.
@@ -186,13 +187,20 @@ await rulesetRow.hover()
 // ❌ Incorrect: only checking file name
 await expectFile(downloadedFile).toHaveName('simple-ruleset.yaml')
 
-// ✅ Correct: verify both name and content
+// ❌ Incorrect: hardcoding content strings instead of using testMeta
 await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
 await expectFile(downloadedFile).toContainText('rules:')
 await expectFile(downloadedFile).toContainText('info-contact:')
+
+// ✅ Correct: verify both name and content using testMeta
+const SIMPLE_RULESET_FILE = new TestFile('path/to/file.yaml', {
+  yamlString: 'rules:',
+})
+await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
+await expectFile(downloadedFile).toContainText(SIMPLE_RULESET_FILE.testMeta!.yamlString!)
 ```
 
-**Prevention:** When testing file downloads, always verify both the file name (using the original TestFile object) and key content to ensure the correct file was downloaded.
+**Prevention:** When testing file downloads, always verify both the file name (using the original TestFile object) and key content. Store expected content strings in `testMeta` when creating the TestFile object, then reference them in assertions instead of hardcoding strings.
 
 ### Using Generic URL Checks Instead of Specific Format
 
@@ -201,16 +209,16 @@ await expectFile(downloadedFile).toContainText('info-contact:')
 await expectText(copiedUrl).toMatch(/^https?:\/\//)
 await expectText(copiedUrl).toContain('rulesets')
 
-// ❌ Incorrect: regex-only check without verifying specific data
-await expectText(copiedUrl).toMatch(/^https?:\/\/.+\/api\/v1\/api-linter\/rulesets\/.+\/data$/)
+// ❌ Incorrect: multiple separate checks instead of one complete check
+await expectText(copiedUrl).toContain('/api-linter/api/v1/rulesets/')
+await expectText(copiedUrl).toContain('/data')
+await expectText(copiedUrl).toContain(ruleset.id)
 
-// ✅ Correct: use containText with specific URL parts and verify ruleset ID
-await expectText(copiedUrl).toContainText('/api-linter/api/v1/rulesets/')
-await expectText(copiedUrl).toContainText('/data')
-await expectText(copiedUrl).toContainText(ruleset.id)
+// ✅ Correct: verify complete URL format in a single assertion
+await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${ruleset.id}/data`)
 ```
 
-**Prevention:** Check the actual URL format in the UI code (e.g., `getPublicLink` function). Use `containText` with specific URL parts and verify that the URL contains the actual ruleset ID or other specific data from the test context, rather than relying solely on regex patterns.
+**Prevention:** Check the actual URL format in the UI code (e.g., `getPublicLink` function). Verify the complete URL path in a single assertion that includes all required parts (path segments and dynamic values like IDs) rather than splitting into multiple checks.
 
 ### Not Activating Test Data Before Asserting State
 
@@ -224,13 +232,13 @@ await test.step('Verify the status of the previously active ruleset changes to I
 // ✅ Correct: activate ruleset first, then verify
 await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
 await navigateToRulesetManagement(portalPage)
-await test.step('Verify GENERAL_RULESET_OAS30_N is active', async () => {
-  const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
-  await expect(previouslyActiveRow.statusCell).toHaveText(STATUS_ACTIVE)
+await test.step('Verify ruleset is active', async () => {
+  const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+  await expect(rulesetRow.statusCell).toHaveText(STATUS_ACTIVE)
 })
 ```
 
-**Prevention:** Never assume the state of test data. Always set up the required state via API before testing UI behavior.
+**Prevention:** Never assume the state of test data. Always set up the required state via API before testing UI behavior. Use constants from entities (e.g., `LintRulesetStatuses`) instead of hardcoded strings.
 
 ### Not Using Test ID Pattern for All Ruleset Names
 

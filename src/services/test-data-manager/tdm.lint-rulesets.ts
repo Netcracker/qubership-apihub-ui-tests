@@ -92,7 +92,7 @@ export class LintRulesetsTestDataManager {
     await test.step(`Checking ${message}`, async () => {
       const ruleset = await this.getRulesetById({ id })
       expect(ruleset).toBeDefined()
-      expect(ruleset?.status).toBe(LintRulesetStatuses.ACTIVE)
+      expect(ruleset?.status.toLowerCase()).toBe(LintRulesetStatuses.ACTIVE.toLowerCase())
     }, { box: true })
   }
 

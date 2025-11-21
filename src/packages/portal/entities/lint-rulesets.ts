@@ -1,15 +1,9 @@
 export const LintRulesetStatuses = {
-  INACTIVE: 'inactive',
-  ACTIVE: 'active',
+  INACTIVE: 'Inactive',
+  ACTIVE: 'Active',
 } as const
 
 export type LintRulesetStatus = (typeof LintRulesetStatuses)[keyof typeof LintRulesetStatuses]
-
-// Display values for statuses (UI uses capitalize on status, so 'active' -> 'Active', 'inactive' -> 'Inactive')
-export const LINT_RULESET_STATUS_DISPLAY = {
-  ACTIVE: 'Active',
-  INACTIVE: 'Inactive',
-} as const
 
 export const LintRulesetApiTypes = {
   OAS_2_0: 'openapi-2-0',

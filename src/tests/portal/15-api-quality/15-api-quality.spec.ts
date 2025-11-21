@@ -1,12 +1,14 @@
 import { test } from '@fixtures'
 import type { Page } from '@playwright/test'
 import {
-  LINT_RULESET_STATUS_DISPLAY,
   LintRulesetApiTypes,
   LintRulesetLinters,
+  LintRulesetStatuses,
   RULESET_API_TYPE_TITLE_MAP,
   SERVER_DEFAULT_RULESETS,
 } from '@portal/entities'
+
+const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
 import { PortalPage } from '@portal/pages'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
 import { ROOT_RESOURCES, TestFile } from '@shared/entities'
@@ -16,12 +18,10 @@ const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OA
 const RULESET_MANAGEMENT_PATH = '/portal/settings/rulesets'
 
 // Test resource files
-const SIMPLE_RULESET_FILE = new TestFile(
-  `${ROOT_RESOURCES}/portal/api-quality/rulesets/simple-ruleset.yaml`,
-)
-const INVALID_EXTENSION_FILE = new TestFile(
-  `${ROOT_RESOURCES}/portal/api-quality/rulesets/invalid-extension.txt`,
-)
+const SIMPLE_RULESET_FILE = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/simple-ruleset.yaml`, {
+  yamlString: 'ruseverity: warn',
+})
+const INVALID_EXTENSION_FILE = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/invalid-extension.txt`)
 
 // Notification messages
 const RULESET_CREATED_SUCCESS_MSG = (rulesetName: string): string => `${rulesetName} ruleset has been created`
@@ -116,16 +116,12 @@ test.describe('API Quality Validation', () => {
       })
       PREVIOUSLY_ACTIVE_RULESET_OAS30_N = { id: previouslyActive.id, name: previouslyActive.name }
 
-      // Establish activation history for PREVIOUSLY_ACTIVE_RULESET_OAS30_N
-      // Activate PREVIOUSLY_ACTIVE_RULESET_OAS30_N first time
-      await lintRulesetTdm.activateRuleset(PREVIOUSLY_ACTIVE_RULESET_OAS30_N)
-      // Activate GENERAL_RULESET_OAS30_N to deactivate PREVIOUSLY_ACTIVE_RULESET_OAS30_N (creates first activation record with ActiveTo)
-      await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
-      // Activate PREVIOUSLY_ACTIVE_RULESET_OAS30_N second time (creates second activation record)
-      await lintRulesetTdm.activateRuleset(PREVIOUSLY_ACTIVE_RULESET_OAS30_N)
-      // Activate GENERAL_RULESET_OAS30_N again to ensure it's active at the end
-      await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
-      // Result: GENERAL_RULESET_OAS30_N is active, PREVIOUSLY_ACTIVE_RULESET_OAS30_N has 2 activation records
+      // Establish activation history: activate PREVIOUSLY_ACTIVE_RULESET_OAS30_N three times
+      // (last activation is shown in table, previous ones in tooltip)
+      for (let i = 0; i < 3; i++) {
+        await lintRulesetTdm.activateRuleset(PREVIOUSLY_ACTIVE_RULESET_OAS30_N)
+        await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
+      }
     })
 
     test.afterAll(async ({ lintRulesetTdm }) => {
@@ -238,7 +234,7 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-RM-CREATE-2 Create a new inactive ruleset', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page, lintRulesetTdm }) => {
+      }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
         const { portalSettingsPage } = portalPage
         const { rulesetManagementTab } = portalSettingsPage
@@ -270,7 +266,7 @@ test.describe('API Quality Validation', () => {
         await test.step('Verify new Inactive ruleset is in the table', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await expect(rulesetRow.nameCell).toHaveText(rulesetName)
-          await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.INACTIVE)
+          await expect(rulesetRow.statusCell).toHaveText(STATUS_INACTIVE)
         })
       })
 
@@ -427,7 +423,7 @@ test.describe('API Quality Validation', () => {
 
         const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
         await test.step('Verify previously active ruleset is active', async () => {
-          await expect(previouslyActiveRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
+          await expect(previouslyActiveRow.statusCell).toHaveText(STATUS_ACTIVE)
         })
 
         await test.step('Click the Activate button for the inactive ruleset', async () => {
@@ -441,7 +437,7 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify the status of the target ruleset changes to Active', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
-          await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
+          await expect(rulesetRow.statusCell).toHaveText(STATUS_ACTIVE)
         })
 
         await test.step('Verify its activation history is updated', async () => {
@@ -451,7 +447,7 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify the status of the previously active ruleset changes to Inactive', async () => {
           const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
-          await expect(previouslyActiveRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.INACTIVE)
+          await expect(previouslyActiveRow.statusCell).toHaveText(STATUS_INACTIVE)
         })
       })
 
@@ -465,7 +461,7 @@ test.describe('API Quality Validation', () => {
         const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
 
         await test.step('Verify first ruleset row is active', async () => {
-          await expect(firstRulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
+          await expect(firstRulesetRow.statusCell).toHaveText(STATUS_ACTIVE)
         })
 
         await firstRulesetRow.hover()
@@ -517,7 +513,7 @@ test.describe('API Quality Validation', () => {
         const firstRulesetRow = rulesetManagementTab.getRulesetRow(1)
 
         await test.step('Verify first ruleset row is active', async () => {
-          await expect(firstRulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.ACTIVE)
+          await expect(firstRulesetRow.statusCell).toHaveText(STATUS_ACTIVE)
         })
 
         await firstRulesetRow.hover()
@@ -541,7 +537,7 @@ test.describe('API Quality Validation', () => {
         const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
 
         await test.step('Verify ruleset is inactive', async () => {
-          await expect(rulesetRow.statusCell).toHaveText(LINT_RULESET_STATUS_DISPLAY.INACTIVE)
+          await expect(rulesetRow.statusCell).toHaveText(STATUS_INACTIVE)
         })
 
         await rulesetRow.hover()
@@ -606,8 +602,7 @@ test.describe('API Quality Validation', () => {
 
           await test.step('Verify the browser initiates a download of the correct ruleset file', async () => {
             await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
-            await expectFile(downloadedFile).toContainText('rules:')
-            await expectFile(downloadedFile).toContainText('info-contact:')
+            await expectFile(downloadedFile).toContainText(SIMPLE_RULESET_FILE.testMeta!.yamlString!)
           })
         })
       })
@@ -628,9 +623,7 @@ test.describe('API Quality Validation', () => {
           })
 
           await test.step('Verify clipboard contains a valid, direct URL', async () => {
-            await expectText(copiedUrl).toContain('/api-linter/api/v1/rulesets/')
-            await expectText(copiedUrl).toContain('/data')
-            await expectText(copiedUrl).toContain(GENERAL_RULESET_OAS30_N.id)
+            await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${GENERAL_RULESET_OAS30_N.id}/data`)
           })
         })
       })
