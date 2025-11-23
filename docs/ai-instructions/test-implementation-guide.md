@@ -275,6 +275,38 @@ test.describe('API Quality Validation', () => {
 
 **Prevention:** Move `testIdN` and cleanup (`afterAll`) to the outermost `test.describe` level where they can be shared across all nested suites.
 
+### Incorrect Date Formatting and Validation
+
+```typescript
+
+// ❌ Incorrect: multiple toContainText checks instead of one toHaveText
+await expect(cell).toContainText(formattedDate)
+await expect(cell).toContainText(' - ')
+
+// ❌ Incorrect: using nodeExpect instead of Playwright expect
+import { expect as nodeExpect } from '@playwright/test'
+const text = await element.textContent()
+nodeExpect(text).toContain(formattedDate)
+
+// ✅ Correct: use dayjs like UI project, fix formatted date once, use exact assertions
+import { formatDateToUI } from '@services/utils'
+
+test.describe('Feature Suite', () => {
+  const currentFormattedDate = formatDateToUI(new Date())
+  
+  test('Verify date', async ({ page }) => {
+    await expect(dateCell).toHaveText(currentFormattedDate)
+    await expect(historyCell).toHaveText(`${currentFormattedDate} - ${currentFormattedDate}`)
+  })
+})
+```
+
+**Prevention:**
+- Always use `dayjs` library (same version as UI project) for date formatting via `formatDateToUI()` utility
+- Fix formatted date once at the beginning of the test suite: `const currentFormattedDate = formatDateToUI(new Date())`
+- Use exact text assertions (`toHaveText`) with complete expected text instead of multiple `toContainText` checks
+- Never use `nodeExpect` or Node.js assertions - always use Playwright's `expect` API
+
 ## Compliance Workflow
 
 Follow the evidence workflow defined in `docs/ai-instructions/README.md`, with these test-specific notes:

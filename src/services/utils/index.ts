@@ -1,4 +1,5 @@
 export * from './browser'
+export * from './dates'
 export * from './errors'
 export * from './files'
 export * from './item-getter'

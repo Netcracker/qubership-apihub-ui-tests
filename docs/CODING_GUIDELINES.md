@@ -230,6 +230,9 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
   This prevents false positives where the entire page fails to load. Check for a stable, always-present element, like a page title or another tab.
   When verifying that a dialog is closed, also verify that you remain on the correct page with the expected content visible.
 - **Tooltips:** Surface every tooltip through the shared `portalPage.tooltip` (or the equivalent page-level component). Hover the interactive element to trigger the tooltip, then assert the text via `portalPage.tooltip` instead of introducing ad-hoc tooltip locators.
+- **Date Formatting & Validation:**
+  - Use `formatDateToUI()` from `@services/utils` to format dates in the UI format (`DD MMM, YYYY`)
+  - Always use `dayjs` library (same as UI project) for date formatting, not native Date API
 
 ```typescript
 // Non-blocking assertions
@@ -244,6 +247,16 @@ await expect.soft(operationsTab.table.getOperationRow(GET_PET_BY_TAG_V1)).toBeVi
 // File assertion
 const file = await exportDialog.performExport()
 await expectFile(file).toHaveName('exported-file.yaml')
+
+// Date formatting and validation
+test.describe('Feature Suite', () => {
+  const currentFormattedDate = formatDateToUI(new Date())
+
+  test('Verify date display', async ({ page }) => {
+    await expect(dateCell).toHaveText(currentFormattedDate)
+    await expect(historyCell).toHaveText(`${currentFormattedDate} - ${currentFormattedDate}`)
+  })
+})
 ```
 
 ## Test Data Management

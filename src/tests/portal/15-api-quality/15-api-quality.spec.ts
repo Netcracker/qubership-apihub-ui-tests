@@ -11,6 +11,7 @@ import {
 const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
 import { PortalPage } from '@portal/pages'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
+import { formatDateToUI } from '@services/utils'
 import { ROOT_RESOURCES, TestFile } from '@shared/entities'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
 
@@ -19,7 +20,7 @@ const RULESET_MANAGEMENT_PATH = '/portal/settings/rulesets'
 
 // Test resource files
 const SIMPLE_RULESET_FILE = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/simple-ruleset.yaml`, {
-  yamlString: 'ruseverity: warn',
+  yamlString: 'rules:',
 })
 const INVALID_EXTENSION_FILE = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/invalid-extension.txt`)
 
@@ -73,6 +74,9 @@ test.describe('API Quality Validation', () => {
   const testIdN = process.env.TEST_ID_N!
 
   test.describe('Ruleset Management', () => {
+    // Current formatted date for all date validations in this suite
+    const currentFormattedDate = formatDateToUI(new Date())
+
     // Suite-level reusable data (_N rulesets)
     let INACTIVE_RULESET_OAS30_N: { id: string; name: string }
     let PREVIOUSLY_ACTIVE_RULESET_OAS30_N: { id: string; name: string }
@@ -259,15 +263,20 @@ test.describe('API Quality Validation', () => {
 
         await createRulesetDialog.createBtn.click()
 
+        const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
+
         await test.step('Verify success notification appears', async () => {
           await expect(portalPage.snackbar).toContainText(RULESET_CREATED_SUCCESS_MSG(rulesetName))
         })
 
         await test.step('Verify new Inactive ruleset is in the table', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await expect(rulesetRow.nameCell).toHaveText(rulesetName)
           await expect(rulesetRow.statusCell).toHaveText(STATUS_INACTIVE)
-          await expect(rulesetRow.createdAtCell).not.toBeEmpty()
+          await expect(rulesetRow.activationHistoryCell).toBeEmpty()
+        })
+
+        await test.step('Verify created date format', async () => {
+          await expect(rulesetRow.createdAtCell).toHaveText(currentFormattedDate)
         })
       })
 
@@ -422,13 +431,14 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
+        const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
         const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+
         await test.step('Verify previously active ruleset is active', async () => {
           await expect(previouslyActiveRow.statusCell).toHaveText(STATUS_ACTIVE)
         })
 
         await test.step('Click the Activate button for the inactive ruleset', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await rulesetRow.openActivateRulesetDialog()
         })
 
@@ -437,19 +447,15 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Verify the status of the target ruleset changes to Active', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await expect(rulesetRow.statusCell).toHaveText(STATUS_ACTIVE)
         })
 
         await test.step('Verify its activation history is updated', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
-          await expect(rulesetRow.activationHistoryCell).toBeVisible()
-          await expect(rulesetRow.activationHistoryCell).not.toBeEmpty()
+          await expect(rulesetRow.activationHistoryCell).toHaveText(`${currentFormattedDate} - ...`)
           await expect(rulesetRow.infoIcon).toBeHidden()
         })
 
         await test.step('Verify the status of the previously active ruleset changes to Inactive', async () => {
-          const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
           await expect(previouslyActiveRow.statusCell).toHaveText(STATUS_INACTIVE)
         })
       })
@@ -483,22 +489,24 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
+        const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
+        const tooltip = rulesetRow.activationHistoryTooltip
+        const firstRecord = tooltip.getActivationRecord(1)
+        const secondRecord = tooltip.getActivationRecord(2)
+
         await test.step('Hover over the info icon in the Activation History column', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
           await rulesetRow.infoIcon.hover()
         })
 
         await test.step('Verify tooltip appears with at least two activation records', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
-          const tooltip = rulesetRow.activationHistoryTooltip
           await expect(tooltip.title).toBeVisible()
-
-          // Wait for tooltip to fully load and verify at least two activation records exist
-          const firstRecord = tooltip.getActivationRecord(1)
           await expect(firstRecord).toBeVisible()
-
-          const secondRecord = tooltip.getActivationRecord(2)
           await expect(secondRecord).toBeVisible()
+        })
+
+        await test.step('Verify activation history dates format', async () => {
+          await expect(firstRecord).toHaveText(`${currentFormattedDate} - ${currentFormattedDate}`)
+          await expect(secondRecord).toHaveText(`${currentFormattedDate} - ${currentFormattedDate}`)
         })
       })
     })
@@ -549,6 +557,10 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify tooltip reads The ruleset cannot be deleted due to existing versions', async () => {
           await expect(portalPage.tooltip).toHaveText(CANNOT_DELETE_WITH_HISTORY_TOOLTIP)
+        })
+
+        await test.step('Verify activation history date format for inactive ruleset with history', async () => {
+          await expect(rulesetRow.activationHistoryCell).toHaveText(`${currentFormattedDate} - ${currentFormattedDate}`)
         })
       })
 
