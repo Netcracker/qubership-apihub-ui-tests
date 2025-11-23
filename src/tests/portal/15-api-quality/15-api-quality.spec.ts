@@ -267,6 +267,7 @@ test.describe('API Quality Validation', () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await expect(rulesetRow.nameCell).toHaveText(rulesetName)
           await expect(rulesetRow.statusCell).toHaveText(STATUS_INACTIVE)
+          await expect(rulesetRow.createdAtCell).not.toBeEmpty()
         })
       })
 
@@ -443,6 +444,8 @@ test.describe('API Quality Validation', () => {
         await test.step('Verify its activation history is updated', async () => {
           const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
           await expect(rulesetRow.activationHistoryCell).toBeVisible()
+          await expect(rulesetRow.activationHistoryCell).not.toBeEmpty()
+          await expect(rulesetRow.infoIcon).toBeHidden()
         })
 
         await test.step('Verify the status of the previously active ruleset changes to Inactive', async () => {
