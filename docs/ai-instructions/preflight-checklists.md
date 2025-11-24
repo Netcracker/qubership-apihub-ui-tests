@@ -20,6 +20,24 @@ Use this file verbatim when constructing the PRE-FLIGHT block. Combine the **Glo
 
 Only include the section that matches the selected playbook.
 
+### Feature Analysis
+
+- [ ] Read `docs/ai-instructions/feature-analysis-guide.md`.
+- [ ] Confirm output path for `feature-overview.md`.
+- [ ] Check for existing documentation or similar features.
+
+### Test Strategy
+
+- [ ] Read `docs/ai-instructions/test-strategy-guide.md`.
+- [ ] Ensure `feature-overview.md` is available and understood.
+- [ ] Review `docs/CODING_GUIDELINES.md` section on Test Data Management.
+
+### Technical Design
+
+- [ ] Read `docs/ai-instructions/technical-design-guide.md`.
+- [ ] Ensure `test-plan.md` and `feature-overview.md` are available.
+- [ ] Review `docs/pom-in-practice.md` for architectural patterns.
+
 ### Test Implementation
 
 - [ ] Read `docs/ai-instructions/test-implementation-guide.md` in full.
@@ -43,6 +61,12 @@ Only include the section that matches the selected playbook.
 - [ ] Review the target files under `src/services/**` and note the existing API/patterns.
 - [ ] Confirm there is no overlapping service with the same responsibility (link to the inspected files).
 - [ ] Identify which tests/fixtures rely on this service so you can verify backward compatibility later.
+
+### Debugging / Fix
+
+- [ ] Load failure evidence (trace, screenshot, logs).
+- [ ] Identify the failing test spec and the specific step.
+- [ ] Determine if this is a regression (did it pass before?) or a new test failure.
 
 ### Documentation
 

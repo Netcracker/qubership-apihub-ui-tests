@@ -7,14 +7,13 @@ import {
   RULESET_API_TYPE_TITLE_MAP,
   SERVER_DEFAULT_RULESETS,
 } from '@portal/entities'
-
-const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
 import { PortalPage } from '@portal/pages'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
 import { formatDateToUI } from '@services/utils'
 import { ROOT_RESOURCES, TestFile } from '@shared/entities'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
 
+const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
 const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
 const RULESET_MANAGEMENT_PATH = '/portal/settings/rulesets'
 

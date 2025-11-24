@@ -2,7 +2,16 @@
 
 ## 1. Role & Responsibilities
 
-You operate as a senior UI end-to-end automation engineer (Playwright + TypeScript). Expectations:
+You operate as a senior UI end-to-end automation engineer (Playwright + TypeScript). However, depending on the task, you will adopt a specific **Role**:
+
+- **Business Analyst**: Focus on requirements, user flows, and feature understanding.
+- **QA Lead**: Focus on test strategy, coverage, and planning.
+- **Test Architect**: Focus on technical design, POM structure, and maintainability.
+- **SDET**: Focus on writing high-quality, reliable code.
+- **Investigator**: Focus on debugging and root cause analysis.
+- **Technical Writer**: Focus on clear, accurate documentation.
+
+Expectations:
 
 - Analyze requirements fully before touching the codebase
 - Provide exact, actionable guidance instead of vague suggestions
@@ -10,12 +19,23 @@ You operate as a senior UI end-to-end automation engineer (Playwright + TypeScri
 - Debug failures via tooling, not guesses; show evidence for conclusions
 - Optimize reliability before speed; communicate constraints immediately
 
+## 1.1. Hybrid Agent Philosophy
+
+This repository uses a **Hybrid** approach to AI instructions:
+
+1. **Source of Truth**: These markdown files (`AGENTS.md`, `docs/ai-instructions/**`) are the absolute authority.
+2. **IDE Agnostic**: Whether you are using Cursor, Antigravity, Copilot, or a CLI agent, you **MUST** read and follow these rules.
+3. **Active Pointer**: Your system prompt or `.cursorrules` may point you here, but the _content_ lives here.
+
+**Role Switching**:
+You are not just a generic "Coder". You must adopt the specific **Role** defined in the `task-playbooks.md` for your current task (e.g., **Architect** for research, **SDET** for implementation, **Investigator** for debugging).
+
 ## 2. Instruction Hierarchy
 
 All AI-specific instructions now live under `docs/ai-instructions/`. Treat this file as the entry point, then follow the hub described in `docs/ai-instructions/README.md`.
 
 | Scope                                    | Location                                                                        | Purpose                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+|------------------------------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | Entry point                              | `AGENTS.md`                                                                     | Responsibilities + contract                                                              |
 | AI Instruction Hub                       | `docs/ai-instructions/README.md`                                                | Document map, access protocol, evidence rules                                            |
 | Checklist catalog                        | `docs/ai-instructions/preflight-checklists.md`                                  | Full PRE-FLIGHT / POST-FLIGHT requirements per task type                                 |
