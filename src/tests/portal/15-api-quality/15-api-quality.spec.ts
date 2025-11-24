@@ -40,7 +40,7 @@ const CANNOT_DELETE_WITH_HISTORY_TOOLTIP =
   'The ruleset cannot be deleted due to existing versions that have been validated against this ruleset'
 
 // Helper functions
-async function mockSystemConfigurationToDisableLinter(page: Page): Promise<void> {
+const mockSystemConfigurationToDisableLinter = async (page: Page): Promise<void> => {
   await page.route('**/api/v2/system/configuration', async (route) => {
     const response = await route.fetch()
     const json = await response.json()
@@ -60,14 +60,10 @@ async function mockSystemConfigurationToDisableLinter(page: Page): Promise<void>
   })
 }
 
-async function navigateToRulesetManagement(portalPage: PortalPage): Promise<void> {
-  await portalPage.goto(RULESET_MANAGEMENT_PATH)
-}
-
-async function openCreateRulesetDialog(portalPage: PortalPage): Promise<void> {
-  const { portalSettingsPage } = portalPage
-  const { rulesetManagementTab } = portalSettingsPage
-  await rulesetManagementTab.addRulesetBtn.click()
+const navigateToRulesetManagement = async (portalPage: PortalPage): Promise<void> => {
+  await test.step('Navigate to Ruleset Management tab', async () => {
+    await portalPage.goto(RULESET_MANAGEMENT_PATH)
+  })
 }
 
 test.describe('API Quality Validation', () => {
@@ -217,9 +213,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Open Create Ruleset dialog', async () => {
-          await openCreateRulesetDialog(portalPage)
-        })
+        await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Verify dialog title matches expected format', async () => {
           await expect(createRulesetDialog.title).toHaveText(`Create Ruleset for ${DEFAULT_API_TYPE_LABEL}`)
@@ -249,9 +243,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Open Create Ruleset dialog', async () => {
-          await openCreateRulesetDialog(portalPage)
-        })
+        await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Fill in unique name and upload file', async () => {
           const file = { path: SIMPLE_RULESET_FILE.path, name: SIMPLE_RULESET_FILE.name }
@@ -290,9 +282,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Open Create Ruleset dialog', async () => {
-          await openCreateRulesetDialog(portalPage)
-        })
+        await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Fill in duplicate name and upload file', async () => {
           const file = { path: SIMPLE_RULESET_FILE.path, name: SIMPLE_RULESET_FILE.name }
@@ -321,9 +311,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Open Create Ruleset dialog', async () => {
-          await openCreateRulesetDialog(portalPage)
-        })
+        await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Upload a file but leave name field blank', async () => {
           const file = { path: SIMPLE_RULESET_FILE.path, name: SIMPLE_RULESET_FILE.name }
@@ -345,9 +333,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Open Create Ruleset dialog', async () => {
-          await openCreateRulesetDialog(portalPage)
-        })
+        await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Fill in a name but do not upload a file', async () => {
           const rulesetName = `${ALIAS_PREFIX}-Test-Name-${testIdN}`
@@ -372,9 +358,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Open Create Ruleset dialog', async () => {
-          await openCreateRulesetDialog(portalPage)
-        })
+        await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Fill in a unique name', async () => {
           await createRulesetDialog.fillForm({
@@ -598,7 +582,7 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Verify the ruleset is removed from the table', async () => {
-          await expect(rulesetRow.nameCell).toBeHidden()
+          await expect(rulesetRow).toBeHidden()
         })
       })
     })
@@ -611,14 +595,12 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Click the Download action for a ruleset', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
-          const downloadedFile = await rulesetRow.downloadRuleset()
+        const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+        const downloadedFile = await rulesetRow.downloadRuleset()
 
-          await test.step('Verify the browser initiates a download of the correct ruleset file', async () => {
-            await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
-            await expectFile(downloadedFile).toContainText(SIMPLE_RULESET_FILE.testMeta!.yamlString!)
-          })
+        await test.step('Verify the browser initiates a download of the correct ruleset file', async () => {
+          await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
+          await expectFile(downloadedFile).toContainText(SIMPLE_RULESET_FILE.testMeta!.yamlString!)
         })
       })
 
@@ -629,17 +611,15 @@ test.describe('API Quality Validation', () => {
 
         await navigateToRulesetManagement(portalPage)
 
-        await test.step('Click the Copy Link action', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
-          const copiedUrl = await rulesetRow.copyPublicUrl()
+        const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+        const copiedUrl = await rulesetRow.copyPublicUrl()
 
-          await test.step('Verify success notification appears', async () => {
-            await expect(portalPage.snackbar).toContainText(PUBLIC_URL_COPIED_SUCCESS_MSG)
-          })
+        await test.step('Verify success notification appears', async () => {
+          await expect(portalPage.snackbar).toContainText(PUBLIC_URL_COPIED_SUCCESS_MSG)
+        })
 
-          await test.step('Verify clipboard contains a valid, direct URL', async () => {
-            await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${GENERAL_RULESET_OAS30_N.id}/data`)
-          })
+        await test.step('Verify clipboard contains a valid, direct URL', async () => {
+          await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${GENERAL_RULESET_OAS30_N.id}/data`)
         })
       })
     })

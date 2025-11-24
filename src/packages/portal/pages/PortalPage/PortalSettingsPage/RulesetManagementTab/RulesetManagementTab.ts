@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import { type Page, test } from '@playwright/test'
 import { createItemGetter, type ItemGetterConfig } from '@services/utils'
 import { Button, Select, Tab, Title } from '@shared/components/base'
 import { BaseDeleteDialog } from '@shared/components/custom'
@@ -26,6 +26,12 @@ export class RulesetManagementTab extends Tab {
   }
 
   readonly getRulesetRow = createItemGetter(this.rulesetRowConfig)
+
+  async openCreateRulesetDialog(): Promise<void> {
+    await test.step('Open Create Ruleset dialog', async () => {
+      await this.addRulesetBtn.click()
+    })
+  }
 
   constructor(protected readonly page: Page) {
     super(page.getByTestId('RulesetManagementTabButton'), 'API Quality Ruleset Management')

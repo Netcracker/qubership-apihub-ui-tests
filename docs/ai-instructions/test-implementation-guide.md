@@ -184,7 +184,7 @@ await rulesetRow.hover()
 ### Not Verifying File Content When Downloading
 
 ```typescript
-// ❌ Incorrect: only checking file name
+// ❌ Incorrect: only checking filename
 await expectFile(downloadedFile).toHaveName('simple-ruleset.yaml')
 
 // ❌ Incorrect: hardcoding content strings instead of using testMeta
@@ -200,7 +200,7 @@ await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
 await expectFile(downloadedFile).toContainText(SIMPLE_RULESET_FILE.testMeta!.yamlString!)
 ```
 
-**Prevention:** When testing file downloads, always verify both the file name (using the original TestFile object) and key content. Store expected content strings in `testMeta` when creating the TestFile object, then reference them in assertions instead of hardcoding strings.
+**Prevention:** When testing file downloads, always verify both the filename (using the original TestFile object) and key content. Store expected content strings in `testMeta` when creating the TestFile object, then reference them in assertions instead of hardcoding strings.
 
 ### Using Generic URL Checks Instead of Specific Format
 
@@ -278,7 +278,6 @@ test.describe('API Quality Validation', () => {
 ### Incorrect Date Formatting and Validation
 
 ```typescript
-
 // ❌ Incorrect: multiple toContainText checks instead of one toHaveText
 await expect(cell).toContainText(formattedDate)
 await expect(cell).toContainText(' - ')
@@ -293,7 +292,7 @@ import { formatDateToUI } from '@services/utils'
 
 test.describe('Feature Suite', () => {
   const currentFormattedDate = formatDateToUI(new Date())
-  
+
   test('Verify date', async ({ page }) => {
     await expect(dateCell).toHaveText(currentFormattedDate)
     await expect(historyCell).toHaveText(`${currentFormattedDate} - ${currentFormattedDate}`)
@@ -302,6 +301,7 @@ test.describe('Feature Suite', () => {
 ```
 
 **Prevention:**
+
 - Always use `dayjs` library (same version as UI project) for date formatting via `formatDateToUI()` utility
 - Fix formatted date once at the beginning of the test suite: `const currentFormattedDate = formatDateToUI(new Date())`
 - Use exact text assertions (`toHaveText`) with complete expected text instead of multiple `toContainText` checks
