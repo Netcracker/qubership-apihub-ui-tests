@@ -1,6 +1,6 @@
 # Agent Task Playbooks
 
-Pick exactly one playbook that best matches the incoming request. Use it together with `docs/ai-instructions/preflight-checklists.md` (for checklist wording) and the Instruction Access Protocol defined in `docs/ai-instructions/README.md`.
+Pick exactly one playbook that best matches the incoming request. Use it together with `docs/ai-instructions/preflight-checklists.md` (for checklist wording) and the Instruction Access Protocol defined in `AGENTS.md`.
 
 ## Task Matrix
 

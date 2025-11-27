@@ -309,7 +309,7 @@ test.describe('Feature Suite', () => {
 
 ## Compliance Workflow
 
-Follow the evidence workflow defined in `docs/ai-instructions/README.md`, with these test-specific notes:
+Follow the evidence workflow defined in `AGENTS.md`, with these test-specific notes:
 
 1. Snapshot this guide’s checklist in your todo list (`Checklist ➜ loaded from test-implementation-guide`).
 2. When errors occur, document them in the “Common Errors” section above (edit this file) before closing the task.

@@ -25,6 +25,13 @@ This guide is for the **Technical Design** task.
 - Specify where new files should be created.
 - Follow project structure: `src/packages/[module]/pages/...`
 
+### Step 3: High-Level Instructions ONLY
+
+- **DO NOT** write full implementation code (e.g., class definitions with methods).
+- **DO** describe the component's purpose, location, and key elements/methods.
+- **DO** reference base classes to extend (e.g., `BaseComponent`, `BaseDialog`).
+- **DO** list critical selectors or `data-testid`s required.
+
 ## 3. Template & Patterns
 
 Use this exact structure for the output file:
@@ -54,8 +61,8 @@ Use this exact structure for the output file:
 The feature will be located within `[ParentPage]`.
 
 - **`[ParentPage]`**: `src/packages/[module]/pages/[ParentPage].ts`
-- **`[FeatureTab]`**: Child of `[ParentPage]`.
-- **`[SubComponents]`**: [List sub-components like Tables, Dialogs, etc.]
+- **`[FeatureTab]`**: Child of `[ParentPage]`. Describe its responsibility.
+- **`[SubComponent]`**: Describe responsibility and location.
 
 ### Simplified Structure:
 

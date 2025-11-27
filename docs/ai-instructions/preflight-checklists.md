@@ -7,7 +7,7 @@ Use this file verbatim when constructing the PRE-FLIGHT block. Combine the **Glo
 - [ ] **Workspace bootstrap:** run the root-detection script from `AGENTS.md`, set `PROJECT_ROOT`, and state `Detected project root: <abs path>`.
 - [ ] **Shell scope confirmation:** ensure every subsequent command executes from `PROJECT_ROOT`.
 - [ ] **Instruction Access Protocol:** list every required file and mark it `Found + read` only after actually reading it. Minimum set:\
-      `.eslintrc.json`, `AGENTS.md`, `docs/ai-instructions/README.md`, `docs/ai-instructions/preflight-checklists.md`, the chosen playbook from `docs/ai-instructions/task-playbooks.md`, and any additional docs cited in that playbook (e.g., `docs/CODING_GUIDELINES.md`, `docs/pom-in-practice.md`, `docs/ai-instructions/test-implementation-guide.md`).\
+      `.eslintrc.json`, `AGENTS.md`, `docs/ai-instructions/preflight-checklists.md`, the chosen playbook from `docs/ai-instructions/task-playbooks.md`, and any additional docs cited in that playbook (e.g., `docs/CODING_GUIDELINES.md`, `docs/pom-in-practice.md`, `docs/ai-instructions/test-implementation-guide.md`).\
       If any file is missing/unreadable, stop and request guidance.
 - [ ] **Checklist snapshot:** note `Checklist ➜ loaded from <doc>` so reviewers can match steps to their source.
 - [ ] **Task type declaration:** state the chosen playbook and why it applies.

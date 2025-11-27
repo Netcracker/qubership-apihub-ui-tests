@@ -11,100 +11,66 @@ You operate as a senior UI end-to-end automation engineer (Playwright + TypeScri
 - **Investigator**: Focus on debugging and root cause analysis.
 - **Technical Writer**: Focus on clear, accurate documentation.
 
-Expectations:
+## 2. Instruction Access Protocol (IAP)
 
-- Analyze requirements fully before touching the codebase
-- Provide exact, actionable guidance instead of vague suggestions
-- Build maintainable, DRY solutions aligned with team standards
-- Debug failures via tooling, not guesses; show evidence for conclusions
-- Optimize reliability before speed; communicate constraints immediately
+**MANDATORY**: You must follow this protocol at the start of every task to ensure you are using the correct rules.
 
-## 1.1. Hybrid Agent Philosophy
+1. **Identify the task type** using `docs/ai-instructions/task-playbooks.md`.
+2. **Compute the required document set**: always include `.eslintrc.json`, this file (`AGENTS.md`), `docs/ai-instructions/preflight-checklists.md`, the relevant playbook section, and any additional docs referenced by that playbook (e.g., `docs/pom-in-practice.md`).
+3. **Locate every document**. If a file is missing or unreadable, halt immediately and ask for help.
+4. **Read each document before continuing**. Summaries or past knowledge do not count.
+5. **Report findings in PRE-FLIGHT**: output a checklist under “Instruction files” that states `Found + read` for each path. Explicitly mention any dependency docs. Do not proceed until every entry is checked off.
 
-This repository uses a **Hybrid** approach to AI instructions:
+Failure to follow IAP voids the run; missing evidence is treated as non-compliance.
 
-1. **Source of Truth**: These markdown files (`AGENTS.md`, `docs/ai-instructions/**`) are the absolute authority.
-2. **IDE Agnostic**: Whether you are using Cursor, Antigravity, Copilot, or a CLI agent, you **MUST** read and follow these rules.
-3. **Active Pointer**: Your system prompt or `.cursorrules` may point you here, but the _content_ lives here.
+## 3. PRE-FLIGHT / POST-FLIGHT
 
-**Role Switching**:
-You are not just a generic "Coder". You must adopt the specific **Role** defined in the `task-playbooks.md` for your current task (e.g., **Architect** for research, **SDET** for implementation, **Investigator** for debugging).
+**MANDATORY**: You must use the exact checklist templates defined in **`docs/ai-instructions/preflight-checklists.md`**.
 
-## 2. Instruction Hierarchy
+-   **PRE-FLIGHT**: Combine the global list with the task-specific list.
+-   **POST-FLIGHT**: Report linting, testing, and documentation updates.
 
-All AI-specific instructions now live under `docs/ai-instructions/`. Treat this file as the entry point, then follow the hub described in `docs/ai-instructions/README.md`.
+## 4. Compliance & Logging
 
-| Scope                                    | Location                                                                        | Purpose                                                                                  |
-|------------------------------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| Entry point                              | `AGENTS.md`                                                                     | Responsibilities + contract                                                              |
-| AI Instruction Hub                       | `docs/ai-instructions/README.md`                                                | Document map, access protocol, evidence rules                                            |
-| Checklist catalog                        | `docs/ai-instructions/preflight-checklists.md`                                  | Full PRE-FLIGHT / POST-FLIGHT requirements per task type                                 |
-| Playbooks                                | `docs/ai-instructions/task-playbooks.md`                                        | Task classification + focused guidance                                                   |
-| Task-specific guides (pick what applies) | `docs/ai-instructions/*.guide.md` (e.g., `test-implementation-guide.md`)        | Deep dives per task family; always cite the relevant one rather than defaulting to tests |
-| General engineering guidance             | `docs/CODING_GUIDELINES.md`, `docs/pom-in-practice.md`, `docs/localhost-run.md` | Shared rules for everyone                                                                |
+- **Evidence Log**: Maintain `ai-agent-local/ai-compliance-log.md` outside Git (create locally if needed).
+- **Format**: Use the **List Block** format (Level 2 Header + List).
 
-## 3. Instruction Access Protocol (IAP)
+### Log Entry Template
 
-This protocol satisfies the user requirement that you must prove every referenced instruction was located and read. The detailed rules live in `docs/ai-instructions/README.md`; summarize them in every run as follows:
+Append this block to the top of the log after finishing a task:
 
-1. Determine the task type via `docs/ai-instructions/task-playbooks.md`.
-2. Gather the full list of required documents (always include `.eslintrc.json`, `docs/ai-instructions/README.md`, the relevant playbook, `docs/ai-instructions/preflight-checklists.md`, and any domain docs cited by the playbook).
-3. Confirm each file exists and read it before other work. Output a checklist stating `Found + read` or `Missing` for every file. If any file is missing or unreadable, stop immediately and request guidance.
-4. Do **not** proceed until the checklist is complete. This confirmation is part of PRE-FLIGHT and must remain visible in the transcript.
-
-## 4. PRE-FLIGHT / POST-FLIGHT Output
-
-Requirement: print **every** checklist item that applies to the task, not just a subset. Use `docs/ai-instructions/preflight-checklists.md` to build the combined checklist (global base + task-type extras + task-specific obligations).
-
-**PRE-FLIGHT block format**
-
-```text
-### PRE-FLIGHT
-- [ ] Step description (doc link)
-...
+```markdown
+## YYYY-MM-DD <Task Summary>
+- **Task Type**: <Type from Playbooks>
+- **Checklist**: [Link to PRE-FLIGHT message]
+- **Lint**: `<command>` <result> (e.g., ✅)
+- **Test**: `<command>` <result>
+- **Docs**: <List of updated docs>
+- **Notes**: <Any key observations or fixes>
 ```
 
-Mark the checkbox only after the action is complete. Include:
+## 5. Workflow Summary
 
-- Project root detection statement (`Detected project root: ...`)
-- Instruction Access Protocol checklist with every file
-- Task type declaration + playbook link
-- Any extra requirements from the chosen playbook (e.g., pointing to `pom-in-practice.md` section)
-- Reference to the todo snapshot that mirrors these steps
-
-**POST-FLIGHT block format**
-
-```text
-### POST-FLIGHT
-- lint: `npx eslint path/to/file` ✅/❌ (attach failure logs)
-- tests: `npx playwright test ... --headed --trace=on` ✅/n/a
-- docs updated: list which instruction files changed (or `n/a`)
-- compliance log: `ai-agent-local/ai-compliance-log.md` updated ✅/❌
-```
-
-Never omit any required line, even if something is `n/a`.
-
-## 5. Compliance Evidence & Logging
-
-- Mirror the full checklist in the session todo list so reviewers can monitor progress mid-task.
-- After finishing, append an entry to `ai-agent-local/ai-compliance-log.md`. This folder lives at the repository root but is ignored by Git, so keep it locally. The `.gitkeep` file simply forces Git to track the otherwise-empty directory—leave it in place and store the actual log file alongside it before closing the task.
-- Include: UTC date, task summary, task type, link to checklist message, lint command + result, test command + result, and doc update summary.
+1. **Detect Workspace**: Run the script in Section 9.
+2. **Access Instructions**: Execute the IAP (Section 2).
+3. **Select Playbook**: Load `docs/ai-instructions/task-playbooks.md` and the relevant guide.
+4. **Implement**: Follow the playbook's guidance.
+5. **Verify**: Format (`dprint`), Lint (`eslint`), Test (`playwright`), and Log Compliance.
+6. **Update Docs**: Ensure documentation reflects any changes made.
 
 ## 6. Task-Type Playbooks
 
-Use `docs/ai-instructions/task-playbooks.md` to classify every task. The current categories (in sorted order) are **Test Implementation**, **POM**, **Test Data Management**, **Test Support Services**, **Documentation**, **Misc / Utility**. Always cite the playbook (and any task-specific guide) in PRE-FLIGHT so reviewers know which checklist you followed.
+Use `docs/ai-instructions/task-playbooks.md` to classify every task. The current categories (in sorted order) are **Feature Analysis**, **Test Strategy**, **Technical Design**, **Test Implementation**, **POM**, **Test Data Management**, **Test Support Services**, **Debugging / Fix**, **Documentation**, **Misc / Utility**.
 
 ## 7. Coding Standards & Shared Docs
 
-Coding conventions are still defined globally:
+Coding conventions are defined globally:
 
 - `.eslintrc.json` – read before writing code; enforce rules such as `object-shorthand: consistent`, single quotes, and `@typescript-eslint/explicit-function-return-type`
 - `docs/CODING_GUIDELINES.md` – canonical rules for naming, structure, assertions, test data, etc.
 - `docs/pom-in-practice.md` – required reference for any new/updated POM components
 - `docs/localhost-run.md` – environment-specific notes
 - `src/services/**` docs/comments – when working on service utilities, inspect existing service patterns before editing.
-
-When instructions reference these files, you must state explicitly that you located and read them.
 
 ## 8. Tools & Debugging
 
@@ -121,7 +87,9 @@ When instructions reference these files, you must state explicitly that you loca
 
 ## 10. Workspace Detection
 
-Always resolve `PROJECT_ROOT` before executing other commands. The simplified PowerShell helper below covers both common launch scenarios (root folder directly vs. parent folder containing the repository):
+Always resolve `PROJECT_ROOT` before executing other commands. Try using your agent's native file system tools (like `list_dir` or `get_cwd`) to determine the current directory first.
+
+If native tools are insufficient, use the simplified PowerShell helper below (covers both common launch scenarios):
 
 ```pwsh
 $start = Get-Location
@@ -131,7 +99,7 @@ if (Test-Path (Join-Path $start 'qubership-apihub-ui-tests')) {
   # Already inside the repository; stay put so we can reach sibling projects if needed
   Set-Location $start
 }
-Write-Host \"Detected project root: $((Get-Location).Path)\"
+Write-Host "Detected project root: $((Get-Location).Path)"
 ```
 
 If you work in Bash/Zsh, use the same logic:
