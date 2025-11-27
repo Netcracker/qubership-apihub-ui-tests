@@ -10,13 +10,17 @@ import {
   rClearLinterTestData,
   rCreateRuleset,
   rDeleteRuleset,
+  rGetValidationStatus,
   type Rest,
   rGetRuleset,
   rGetRulesets,
+  rRunValidation,
+  type RunValidationRestParams,
+  type ValidationStatusRestDto,
 } from '@services/rest'
 import type { IdRestParams } from '@services/rest/rest.types'
 import type { IdNameTdmParams } from '@services/test-data-manager/tdm.entities'
-import { getRestFailMsg } from '@services/utils'
+import { asyncTimeout, getRestFailMsg } from '@services/utils'
 import type { Credentials } from '@shared/entities'
 import { BASE_URL } from '@test-setup'
 
@@ -173,6 +177,38 @@ export class LintRulesetsTestDataManager {
 
       // Verify that no ruleset names contain any of the test IDs after deletion.
       expect(rulesets.every((r) => !testIds.some((id) => r.name.includes(id)))).toBeTruthy()
+    }, { box: true })
+  }
+
+  async runValidation({ packageId, version }: RunValidationRestParams): Promise<void> {
+    const message = `Running validation for "${packageId}" package version "${version}"`
+
+    await test.step(message, async () => {
+      const response = await this.rest.send(rRunValidation, [202], { packageId, version })
+
+      if (response.status() !== 202) {
+        throw Error(await getRestFailMsg(message, response))
+      }
+    }, { box: true })
+
+    await test.step('Waiting for validation to complete', async () => {
+      const maxAttempts = 30
+      const pollInterval = 2000
+
+      for (let i = 0; i < maxAttempts; i++) {
+        const statusResponse = await this.rest.send(rGetValidationStatus, [200, 404], { packageId, version })
+
+        if (statusResponse.status() === 200) {
+          const statusData: ValidationStatusRestDto = await statusResponse.json()
+          if (statusData.status === 'success' || statusData.status === 'error') {
+            return
+          }
+        }
+
+        await asyncTimeout(pollInterval)
+      }
+
+      throw Error(`Validation did not complete within ${maxAttempts * pollInterval / 1000} seconds`)
     }, { box: true })
   }
 }

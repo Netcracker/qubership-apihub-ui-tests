@@ -60,3 +60,26 @@ export async function rDeleteRuleset(rc: APIRequestContext, { id }: IdRestParams
 export async function rClearLinterTestData(rc: APIRequestContext, { testId }: TestIdRestParams): Promise<APIResponse> {
   return await rc.delete(`/api-linter/api/internal/clear/${testId}`)
 }
+
+export type RunValidationRestParams = Readonly<{
+  packageId: string
+  version: string
+}>
+
+export type ValidationStatusRestDto = Readonly<{
+  status: 'success' | 'inProgress' | 'error'
+}>
+
+export async function rRunValidation(
+  rc: APIRequestContext,
+  { packageId, version }: RunValidationRestParams,
+): Promise<APIResponse> {
+  return await rc.post(`${API_LINTER_API_V1}/packages/${packageId}/versions/${version}/validation`)
+}
+
+export async function rGetValidationStatus(
+  rc: APIRequestContext,
+  { packageId, version }: RunValidationRestParams,
+): Promise<APIResponse> {
+  return await rc.get(`${API_LINTER_API_V1}/packages/${packageId}/versions/${version}/validation/summary`)
+}
