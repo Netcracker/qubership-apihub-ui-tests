@@ -275,6 +275,92 @@ test.describe('API Quality Validation', () => {
 
 **Prevention:** Move `testIdN` and cleanup (`afterAll`) to the outermost `test.describe` level where they can be shared across all nested suites.
 
+### Duplicating Code in Hooks
+
+```typescript
+// ❌ Incorrect: duplicate cleanup in multiple afterAll hooks
+test.describe('Suite A', () => {
+  test.afterAll(async ({ lintRulesetTdm }) => {
+    const defaultRuleset = await lintRulesetTdm.getRulesetByName({ ... })
+    if (defaultRuleset) {
+      await lintRulesetTdm.activateRuleset({ ... })
+    }
+    await lintRulesetTdm.deleteTestRulesets(testIdN)
+  })
+})
+
+test.describe('Suite B', () => {
+  test.afterAll(async ({ lintRulesetTdm }) => {
+    // Same cleanup code duplicated
+    const defaultRuleset = await lintRulesetTdm.getRulesetByName({ ... })
+    if (defaultRuleset) {
+      await lintRulesetTdm.activateRuleset({ ... })
+    }
+    await lintRulesetTdm.deleteTestRulesets(testIdN)
+  })
+})
+
+// ✅ Correct: single cleanup at parent level
+test.describe('API Quality Validation', () => {
+  const testIdN = process.env.TEST_ID_N!
+  
+  test.afterAll(async ({ lintRulesetTdm }) => {
+    // Shared cleanup for all nested suites
+    const defaultRuleset = await lintRulesetTdm.getRulesetByName({ ... })
+    if (defaultRuleset) {
+      await lintRulesetTdm.activateRuleset({ ... })
+    }
+    await lintRulesetTdm.deleteTestRulesets(testIdN)
+  })
+  
+  test.describe('Suite A', () => { ... })
+  test.describe('Suite B', () => { ... })
+})
+```
+
+**Prevention:** Place shared cleanup logic in a single `afterAll` hook at the parent describe level.
+
+### Using String Instead of Version Object
+
+```typescript
+// ❌ Incorrect: version as a plain string
+const V_OAS30_N = 'v1-oas30'
+await apihubTDM.publishVersion({
+  pkg: PKG_MAIN_N,
+  version: V_OAS30_N,
+  status: 'release',
+  files: [{ file: FILE_OAS30 }],
+})
+
+// ✅ Correct: version as a Version object
+const V_OAS30_N: Version = {
+  pkg: PKG_MAIN_N,
+  version: 'v1-oas30',
+  status: 'release',
+  files: [{ file: FILE_OAS30 }],
+}
+await apihubTDM.publishVersion(V_OAS30_N)
+await portalPage.gotoVersion(V_OAS30_N)
+```
+
+**Prevention:** Always define versions as `Version` objects (from `@test-data/props`) that can be passed directly to TDM methods and `gotoVersion()`.
+
+### Incorrect Naming Convention for Test Entities
+
+```typescript
+// ❌ Incorrect: suffix-based naming
+const SIMPLE_RULESET_FILE = new TestFile(...)
+const PUBLIC_URL_COPIED_MSG = '...'
+const INACTIVE_RULESET_OAS30_N = { ... }
+
+// ✅ Correct: prefix-based naming
+const FILE_SIMPLE_RULESET = new TestFile(...)
+const MSG_PUBLIC_URL_COPIED = '...'
+const RUL_INACTIVE_OAS30_N = { ... }
+```
+
+**Prevention:** Always use entity type as prefix: `FILE_`, `MSG_`, `TIP_`, `RUL_`, `G_`, `PKG_`, `V_`, `WSP_`, `DSH_`.
+
 ### Incorrect Date Formatting and Validation
 
 ```typescript

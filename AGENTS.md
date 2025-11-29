@@ -27,8 +27,8 @@ Failure to follow IAP voids the run; missing evidence is treated as non-complian
 
 **MANDATORY**: You must use the exact checklist templates defined in **`docs/ai-instructions/preflight-checklists.md`**.
 
--   **PRE-FLIGHT**: Combine the global list with the task-specific list.
--   **POST-FLIGHT**: Report linting, testing, and documentation updates.
+- **PRE-FLIGHT**: Combine the global list with the task-specific list.
+- **POST-FLIGHT**: Report linting, testing, and documentation updates.
 
 ## 4. Compliance & Logging
 
@@ -41,6 +41,7 @@ Append this block to the top of the log after finishing a task:
 
 ```markdown
 ## YYYY-MM-DD <Task Summary>
+
 - **Task Type**: <Type from Playbooks>
 - **Checklist**: [Link to PRE-FLIGHT message]
 - **Lint**: `<command>` <result> (e.g., ✅)

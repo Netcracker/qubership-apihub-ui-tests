@@ -2,6 +2,16 @@ import type { Locator } from '@playwright/test'
 import { Content } from '@shared/components/base'
 import { QualityValidationSection } from './QualityValidationSection'
 
+/**
+ * Validations content section (REST or GraphQL) within the Overview Summary tab.
+ *
+ * NOTE: This class should be refactored to extend BaseComponent because it has
+ * a dedicated container element with its own testId in the UI (e.g., 'ValidationsContent-rest',
+ * 'ValidationsContent-graphql'). Once refactored, it can be used directly in expect()
+ * assertions like `expect(restApi).toBeVisible()`. Currently, it uses a Locator directly,
+ * which limits its usage in assertions. For now, use child elements in assertions,
+ * e.g., `expect(restApi.operations).toBeVisible()` instead of `expect(restApi).toBeVisible()`.
+ */
 export class OverviewValidationsContent {
   readonly operations = new Content(this.locator.getByTestId('NumberOfOperationsTypography'), 'Number of operations')
   readonly deprecatedOperations = new Content(

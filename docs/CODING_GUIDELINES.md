@@ -28,6 +28,34 @@ This document provides a comprehensive guide to the coding standards and best pr
 - **Classes:** `PascalCase`
 - **Test IDs:** `P-FEATURE-1` format (note: when adding new tests, always ensure the test ID is unique)
 
+### Test Entity Constant Naming Pattern
+
+Constants for test entities must start with a **prefix indicating the entity type**, followed by descriptive parts. This ensures consistent naming and easy identification:
+
+| Entity Type        | Prefix  | Example                                             |
+| ------------------ | ------- | --------------------------------------------------- |
+| File               | `FILE_` | `FILE_SIMPLE_RULESET`, `FILE_OAS30_SPEC`            |
+| Message (any text) | `MSG_`  | `MSG_RULESET_CREATED_SUCCESS`, `MSG_INVALID_FORMAT` |
+| Tooltip            | `TIP_`  | `TIP_CANNOT_DELETE_ACTIVE`                          |
+| Ruleset            | `RUL_`  | `RUL_INACTIVE_OAS30_N`, `RUL_SUMMARY_OAS31_N`       |
+| Group              | `G_`    | `G_AQ_SUMMARY`, `G_PUBLISH_VAR`                     |
+| Package            | `PKG_`  | `PKG_AQ_SUMMARY_N`, `PKG_MAIN_R`                    |
+| Version            | `V_`    | `V_OAS30_N`, `V_MULTI_SPEC_N`                       |
+| Workspace          | `WSP_`  | `WSP_MAIN_R`, `WSP_CREATE_N`                        |
+| Dashboard          | `DSH_`  | `DSH_OVERVIEW_R`, `DSH_CRUD_N`                      |
+
+```typescript
+// ❌ Incorrect: suffix-based naming
+const SIMPLE_RULESET_FILE = new TestFile(...)
+const PUBLIC_URL_COPIED_SUCCESS_MSG = 'Public URL copied'
+const INACTIVE_RULESET_OAS30_N = { id: '...', name: '...' }
+
+// ✅ Correct: prefix-based naming
+const FILE_SIMPLE_RULESET = new TestFile(...)
+const MSG_PUBLIC_URL_COPIED_SUCCESS = 'Public URL copied'
+const RUL_INACTIVE_OAS30_N = { id: '...', name: '...' }
+```
+
 ## Code Organization
 
 - **Import from project-specific paths:**
@@ -48,6 +76,58 @@ This document provides a comprehensive guide to the coding standards and best pr
 - **Include ticket references:** `{ annotation: { type: 'Test Case', description: 'URL' } }`
 - **Ensure test independence through proper isolation**
 - **Group related scenarios within the same describe block**
+
+### Constants Placement
+
+**All constants must be defined inside their corresponding `test.describe()` blocks**, not at the file level. This keeps the code organized and avoids a "messy" file header with unrelated constants mixed together.
+
+```typescript
+// ❌ Incorrect: constants at file level become messy
+const FILE_SIMPLE_RULESET = new TestFile(...)
+const MSG_SUCCESS = '...'
+const RUL_INACTIVE_OAS30_N = { ... }
+
+test.describe('Feature A', () => { ... })
+test.describe('Feature B', () => { ... })
+
+// ✅ Correct: constants inside their corresponding describes
+test.describe('Feature A', () => {
+  const FILE_SIMPLE_RULESET = new TestFile(...)
+  const MSG_SUCCESS = '...'
+  
+  test('Test 1', async () => { ... })
+})
+
+test.describe('Feature B', () => {
+  const RUL_INACTIVE_OAS30_N = { ... }
+  
+  test('Test 2', async () => { ... })
+})
+```
+
+### Minimal Destructuring
+
+Use **direct property chaining** instead of creating intermediate variables through destructuring. Only destructure when you need the final component that will be used in the test.
+
+```typescript
+// ❌ Incorrect: excessive intermediate destructuring
+const portalPage = new PortalPage(page)
+const { portalSettingsPage } = portalPage
+const { rulesetManagementTab } = portalSettingsPage
+
+const { versionPackagePage } = portalPage
+const { overviewTab } = versionPackagePage
+const { summaryTab } = overviewTab
+const { restApi } = summaryTab.body
+const { qualityValidation } = restApi
+
+// ✅ Correct: minimal destructuring with direct chaining
+const portalPage = new PortalPage(page)
+const { rulesetManagementTab } = portalPage.portalSettingsPage
+
+const { restApi } = portalPage.versionPackagePage.overviewTab.summaryTab.body
+const { qualityValidation } = restApi
+```
 
 ### Using `test.step()`
 
@@ -229,6 +309,16 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
 - **Robust Assertions:** When asserting that an element is **hidden**, always add a complementary assertion to verify that the page or component has loaded correctly.
   This prevents false positives where the entire page fails to load. Check for a stable, always-present element, like a page title or another tab.
   When verifying that a dialog is closed, also verify that you remain on the correct page with the expected content visible.
+- **Minimal Assertions:** Avoid redundant assertions. Assert on the **most specific element** that proves the expected state. Do not add extra assertions that duplicate information already verified by a parent element's visibility.
+  ```typescript
+  // ❌ Incorrect: redundant assertions
+  await expect(restApi.operations).toBeVisible() // unnecessary if restApi is checked
+  await expect(qualityValidation.title).toHaveText('Quality Validation') // title text is static, visibility is enough
+
+  // ✅ Correct: minimal, sufficient assertions
+  await expect(restApi).toBeVisible()
+  await expect(qualityValidation.title).toBeVisible()
+  ```
 - **Tooltips:** Surface every tooltip through the shared `portalPage.tooltip` (or the equivalent page-level component). Hover the interactive element to trigger the tooltip, then assert the text via `portalPage.tooltip` instead of introducing ad-hoc tooltip locators.
 - **Date Formatting & Validation:**
   - Use `formatDateToUI()` from `@services/utils` to format dates in the UI format (`DD MMM, YYYY`)
@@ -294,6 +384,50 @@ Test data is categorized into two types based on reusability and lifecycle:
   - `beforeEach`/`afterEach` → per-test setup/cleanup
   - `beforeAll`/`afterAll` → suite-level fixtures
 - When using API-based managers, wrap the calls in these hooks so that failures are easier to trace and cleanup always runs, even if the test fails early.
+
+### Hook Timeouts
+
+For hooks that perform long-running operations (e.g., version publishing), **always set an extended timeout** using `test.setTimeout()` at the beginning of the hook. Use the `HOOK_PUBLISH_TIMEOUT` constant from `@test-setup` (3 minutes / 180,000 ms).
+
+```typescript
+import { HOOK_PUBLISH_TIMEOUT } from '@test-setup'
+
+test.beforeAll(async ({ apihubTDM }) => {
+  // Extended timeout for version publishing operations
+  test.setTimeout(HOOK_PUBLISH_TIMEOUT)
+
+  await apihubTDM.createPackage([...])
+  await apihubTDM.publishVersion(V_OAS30_N)
+})
+```
+
+### Version Entities
+
+**Versions must always be defined as `Version` objects**, not as plain strings. This ensures consistency with other test data entities and enables proper usage with TDM methods and navigation.
+
+```typescript
+import type { Version } from '@test-data/props'
+
+// ❌ Incorrect: version as a plain string
+const V_OAS30_N = 'v1-oas30'
+await apihubTDM.publishVersion({
+  pkg: PKG_AQ_SUMMARY_N,
+  version: V_OAS30_N,
+  status: 'release',
+  files: [{ file: FILE_SUMMARY_OAS30 }],
+})
+await portalPage.gotoVersion({ pkg: PKG_AQ_SUMMARY_N, version: V_OAS30_N })
+
+// ✅ Correct: version as a Version object
+const V_OAS30_N: Version = {
+  pkg: PKG_AQ_SUMMARY_N,
+  version: 'v1-oas30',
+  status: 'release',
+  files: [{ file: FILE_SUMMARY_OAS30 }],
+}
+await apihubTDM.publishVersion(V_OAS30_N)
+await portalPage.gotoVersion(V_OAS30_N)
+```
 
 ```typescript
 // Test data interface

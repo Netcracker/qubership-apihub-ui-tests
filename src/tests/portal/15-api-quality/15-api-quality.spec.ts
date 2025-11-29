@@ -9,135 +9,149 @@ import {
 } from '@portal/entities'
 import { PortalPage } from '@portal/pages'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
+import type { LintRulesetsTestDataManager } from '@services/test-data-manager'
 import { formatDateToUI } from '@services/utils'
 import { ROOT_RESOURCES, TestFile } from '@shared/entities'
+import { VAR_GR } from '@test-data/portal/groups'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
+import type { Version } from '@test-data/props'
+import { Group, Package } from '@test-data/props'
+import { HOOK_PUBLISH_TIMEOUT } from '@test-setup'
+import path from 'node:path'
 
-const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
-const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
-const RULESET_MANAGEMENT_PATH = '/portal/settings/rulesets'
-
-// Test resource files
-const SIMPLE_RULESET_FILE = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/simple-ruleset.yaml`, {
-  yamlString: 'rules:',
-})
-const INVALID_EXTENSION_FILE = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/invalid-extension.txt`)
-
-// Notification messages
-const RULESET_CREATED_SUCCESS_MSG = (rulesetName: string): string => `${rulesetName} ruleset has been created`
-const RULESET_DELETED_SUCCESS_MSG = (rulesetName: string): string => `${rulesetName} ruleset has been deleted`
-const PUBLIC_URL_COPIED_SUCCESS_MSG = 'Public URL copied'
-
-// Error messages
-const DUPLICATE_NAME_ERROR_MSG = (rulesetName: string, apiType: string): string =>
-  `Ruleset name ${rulesetName} is not unique for API type ${apiType}`
-const INVALID_FILE_FORMAT_ERROR_MSG = 'File format must be YAML'
-
-// Tooltip messages
-const CANNOT_DELETE_ACTIVE_TOOLTIP = 'Cannot delete active ruleset'
-const CANNOT_DELETE_WITH_HISTORY_TOOLTIP =
-  'The ruleset cannot be deleted due to existing versions that have been validated against this ruleset'
-
-// Helper functions
-const mockSystemConfigurationToDisableLinter = async (page: Page): Promise<void> => {
-  await page.route('**/api/v2/system/configuration', async (route) => {
-    const response = await route.fetch()
-    const json = await response.json()
-
-    const filteredExtensions = json.extensions.filter(
-      (ext: { name: string }) => ext.name !== 'api-linter',
-    )
-
-    await route.fulfill({
-      status: response.status(),
-      headers: response.headers(),
-      body: JSON.stringify({
-        ...json,
-        extensions: filteredExtensions,
-      }),
+// Global helper functions
+const activateDefaultRulesetAndCleanup = async (
+  lintRulesetTdm: LintRulesetsTestDataManager,
+  testIdN: string,
+): Promise<void> => {
+  // Activate default rulesets for all API types used in tests
+  const apiTypes = [LintRulesetApiTypes.OAS_3_0, LintRulesetApiTypes.OAS_3_1]
+  for (const apiType of apiTypes) {
+    const defaultRuleset = await lintRulesetTdm.getRulesetByName({
+      rulesetName: SERVER_DEFAULT_RULESETS[apiType],
+      apiType: apiType,
     })
-  })
-}
-
-const navigateToRulesetManagement = async (portalPage: PortalPage): Promise<void> => {
-  await test.step('Navigate to Ruleset Management tab', async () => {
-    await portalPage.goto(RULESET_MANAGEMENT_PATH)
-  })
+    if (defaultRuleset) {
+      await lintRulesetTdm.activateRuleset({
+        id: defaultRuleset.id,
+        name: defaultRuleset.name,
+      })
+    }
+  }
+  await lintRulesetTdm.deleteTestRulesets(testIdN)
 }
 
 test.describe('API Quality Validation', () => {
   const testIdN = process.env.TEST_ID_N!
 
+  // Shared constants for all nested describe blocks
+  const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
+  const currentFormattedDate = formatDateToUI(new Date())
+
+  // Shared helper functions
+  const mockSystemConfigurationToDisableLinter = async (page: Page): Promise<void> => {
+    await test.step('Mock system configuration API to disable linter', async () => {
+      await page.route('**/api/v2/system/configuration', async (route) => {
+        const response = await route.fetch()
+        const json = await response.json()
+
+        const filteredExtensions = json.extensions.filter(
+          (ext: { name: string }) => ext.name !== 'api-linter',
+        )
+
+        await route.fulfill({
+          status: response.status(),
+          headers: response.headers(),
+          body: JSON.stringify({
+            ...json,
+            extensions: filteredExtensions,
+          }),
+        })
+      })
+    })
+  }
+
+  test.afterAll(async ({ lintRulesetTdm }) => {
+    await activateDefaultRulesetAndCleanup(lintRulesetTdm, testIdN)
+  })
+
   test.describe('Ruleset Management', () => {
-    // Current formatted date for all date validations in this suite
-    const currentFormattedDate = formatDateToUI(new Date())
+    // Helper functions
+    const navigateToRulesetManagement = async (portalPage: PortalPage): Promise<void> => {
+      await test.step('Navigate to Ruleset Management tab', async () => {
+        await portalPage.goto('/portal/settings/rulesets')
+      })
+    }
+
+    // Constants
+    const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
+
+    // Test resource files
+    const FILE_SIMPLE_RULESET = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/simple-ruleset.yaml`, {
+      yamlString: 'rules:',
+    })
+    const FILE_INVALID_EXTENSION = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/invalid-extension.txt`)
+
+    // Messages
+    const MSG_RULESET_CREATED_SUCCESS = (rulesetName: string): string => `${rulesetName} ruleset has been created`
+    const MSG_RULESET_DELETED_SUCCESS = (rulesetName: string): string => `${rulesetName} ruleset has been deleted`
+    const MSG_PUBLIC_URL_COPIED_SUCCESS = 'Public URL copied'
+    const MSG_DUPLICATE_NAME = (rulesetName: string, apiType: string): string =>
+      `Ruleset name ${rulesetName} is not unique for API type ${apiType}`
+    const MSG_INVALID_FILE_FORMAT = 'File format must be YAML'
+
+    // Tooltip messages
+    const TIP_CANNOT_DELETE_ACTIVE = 'Cannot delete active ruleset'
+    const TIP_CANNOT_DELETE_WITH_HISTORY =
+      'The ruleset cannot be deleted due to existing versions that have been validated against this ruleset'
 
     // Suite-level reusable data (_N rulesets)
-    let INACTIVE_RULESET_OAS30_N: { id: string; name: string }
-    let PREVIOUSLY_ACTIVE_RULESET_OAS30_N: { id: string; name: string }
-    let INACTIVE_RULESET_OAS31_N: { id: string; name: string }
-    let GENERAL_RULESET_OAS30_N: { id: string; name: string }
+    let RUL_INACTIVE_OAS30_N: { id: string; name: string }
+    let RUL_PREVIOUSLY_ACTIVE_OAS30_N: { id: string; name: string }
+    let RUL_INACTIVE_OAS31_N: { id: string; name: string }
+    let RUL_GENERAL_OAS30_N: { id: string; name: string }
 
     test.beforeAll(async ({ lintRulesetTdm }) => {
       const rulesetNamePrefix = `${ALIAS_PREFIX}-`
 
-      // Create INACTIVE_RULESET_OAS30_N, INACTIVE_RULESET_OAS31_N, and GENERAL_RULESET_OAS30_N
       const inactiveOas30 = await lintRulesetTdm.createRuleset({
         rulesetName: `${rulesetNamePrefix}Inactive-OAS30-${testIdN}`,
         apiType: LintRulesetApiTypes.OAS_3_0,
         linter: LintRulesetLinters.SPECTRAL,
-        rulesetFile: SIMPLE_RULESET_FILE,
+        rulesetFile: FILE_SIMPLE_RULESET,
       })
-      INACTIVE_RULESET_OAS30_N = { id: inactiveOas30.id, name: inactiveOas30.name }
+      RUL_INACTIVE_OAS30_N = { id: inactiveOas30.id, name: inactiveOas30.name }
 
       const inactiveOas31 = await lintRulesetTdm.createRuleset({
         rulesetName: `${rulesetNamePrefix}Inactive-OAS31-${testIdN}`,
         apiType: LintRulesetApiTypes.OAS_3_1,
         linter: LintRulesetLinters.SPECTRAL,
-        rulesetFile: SIMPLE_RULESET_FILE,
+        rulesetFile: FILE_SIMPLE_RULESET,
       })
-      INACTIVE_RULESET_OAS31_N = { id: inactiveOas31.id, name: inactiveOas31.name }
+      RUL_INACTIVE_OAS31_N = { id: inactiveOas31.id, name: inactiveOas31.name }
 
       const generalOas30 = await lintRulesetTdm.createRuleset({
         rulesetName: `${rulesetNamePrefix}General-OAS30-${testIdN}`,
         apiType: LintRulesetApiTypes.OAS_3_0,
         linter: LintRulesetLinters.SPECTRAL,
-        rulesetFile: SIMPLE_RULESET_FILE,
+        rulesetFile: FILE_SIMPLE_RULESET,
       })
-      GENERAL_RULESET_OAS30_N = { id: generalOas30.id, name: generalOas30.name }
+      RUL_GENERAL_OAS30_N = { id: generalOas30.id, name: generalOas30.name }
 
-      // Create PREVIOUSLY_ACTIVE_RULESET_OAS30_N
       const previouslyActive = await lintRulesetTdm.createRuleset({
         rulesetName: `${rulesetNamePrefix}PreviouslyActive-OAS30-${testIdN}`,
         apiType: LintRulesetApiTypes.OAS_3_0,
         linter: LintRulesetLinters.SPECTRAL,
-        rulesetFile: SIMPLE_RULESET_FILE,
+        rulesetFile: FILE_SIMPLE_RULESET,
       })
-      PREVIOUSLY_ACTIVE_RULESET_OAS30_N = { id: previouslyActive.id, name: previouslyActive.name }
+      RUL_PREVIOUSLY_ACTIVE_OAS30_N = { id: previouslyActive.id, name: previouslyActive.name }
 
       // Establish activation history: activate PREVIOUSLY_ACTIVE_RULESET_OAS30_N three times
       // (last activation is shown in table, previous ones in tooltip)
       for (let i = 0; i < 3; i++) {
-        await lintRulesetTdm.activateRuleset(PREVIOUSLY_ACTIVE_RULESET_OAS30_N)
-        await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
+        await lintRulesetTdm.activateRuleset(RUL_PREVIOUSLY_ACTIVE_OAS30_N)
+        await lintRulesetTdm.activateRuleset(RUL_GENERAL_OAS30_N)
       }
-    })
-
-    test.afterAll(async ({ lintRulesetTdm }) => {
-      // Activate the default server ruleset (necessary because an active ruleset cannot be deleted)
-      const defaultRuleset = await lintRulesetTdm.getRulesetByName({
-        rulesetName: SERVER_DEFAULT_RULESETS[LintRulesetApiTypes.OAS_3_0],
-        apiType: LintRulesetApiTypes.OAS_3_0,
-      })
-      if (defaultRuleset) {
-        await lintRulesetTdm.activateRuleset({
-          id: defaultRuleset.id,
-          name: defaultRuleset.name,
-        })
-      }
-
-      // Cleanup all test rulesets
-      await lintRulesetTdm.deleteTestRulesets(testIdN)
     })
 
     test.describe('Initial State and Core UI', () => {
@@ -169,8 +183,7 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await test.step('Navigate to Ruleset Management tab', async () => {
           await portalPage.goto()
@@ -206,8 +219,7 @@ test.describe('API Quality Validation', () => {
     test.describe('Ruleset Creation', () => {
       test('P-AQ-RM-CREATE-1 Open, verify title, and close the Create Ruleset dialog', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         await navigateToRulesetManagement(portalPage)
@@ -233,8 +245,7 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
@@ -245,7 +256,7 @@ test.describe('API Quality Validation', () => {
         await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Fill in unique name and upload file', async () => {
-          const file = { path: SIMPLE_RULESET_FILE.path, name: SIMPLE_RULESET_FILE.name }
+          const file = { path: FILE_SIMPLE_RULESET.path, name: FILE_SIMPLE_RULESET.name }
           await createRulesetDialog.fillForm({
             rulesetName,
             file,
@@ -257,7 +268,7 @@ test.describe('API Quality Validation', () => {
         const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
 
         await test.step('Verify success notification appears', async () => {
-          await expect(portalPage.snackbar).toContainText(RULESET_CREATED_SUCCESS_MSG(rulesetName))
+          await expect(portalPage.snackbar).toContainText(MSG_RULESET_CREATED_SUCCESS(rulesetName))
         })
 
         await test.step('Verify new Inactive ruleset is in the table', async () => {
@@ -275,8 +286,7 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         await navigateToRulesetManagement(portalPage)
@@ -284,8 +294,8 @@ test.describe('API Quality Validation', () => {
         await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Fill in duplicate name and upload file', async () => {
-          const file = { path: SIMPLE_RULESET_FILE.path, name: SIMPLE_RULESET_FILE.name }
-          const rulesetName = GENERAL_RULESET_OAS30_N.name
+          const file = { path: FILE_SIMPLE_RULESET.path, name: FILE_SIMPLE_RULESET.name }
+          const rulesetName = RUL_GENERAL_OAS30_N.name
           await createRulesetDialog.fillForm({
             rulesetName,
             file,
@@ -297,15 +307,14 @@ test.describe('API Quality Validation', () => {
         await test.step('Verify error message appears in the dialog', async () => {
           await expect(createRulesetDialog.nameTxtFld.errorMsg).toBeVisible()
           await expect(createRulesetDialog.nameTxtFld.errorMsg).toContainText(
-            DUPLICATE_NAME_ERROR_MSG(GENERAL_RULESET_OAS30_N.name, LintRulesetApiTypes.OAS_3_0),
+            MSG_DUPLICATE_NAME(RUL_GENERAL_OAS30_N.name, LintRulesetApiTypes.OAS_3_0),
           )
         })
       })
 
       test('P-AQ-RM-CREATE-4 Attempt to create a ruleset without a name', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         await navigateToRulesetManagement(portalPage)
@@ -313,7 +322,7 @@ test.describe('API Quality Validation', () => {
         await rulesetManagementTab.openCreateRulesetDialog()
 
         await test.step('Upload a file but leave name field blank', async () => {
-          const file = { path: SIMPLE_RULESET_FILE.path, name: SIMPLE_RULESET_FILE.name }
+          const file = { path: FILE_SIMPLE_RULESET.path, name: FILE_SIMPLE_RULESET.name }
           await createRulesetDialog.fillForm({
             file,
           })
@@ -326,8 +335,7 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-RM-CREATE-5 Attempt to create a ruleset without a file', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         await navigateToRulesetManagement(portalPage)
@@ -348,8 +356,7 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-RM-CREATE-6 Attempt to create a ruleset with an invalid file extension', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
@@ -366,7 +373,7 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Attempt to upload the invalid extension file', async () => {
-          const file = { path: INVALID_EXTENSION_FILE.path, name: INVALID_EXTENSION_FILE.name }
+          const file = { path: FILE_INVALID_EXTENSION.path, name: FILE_INVALID_EXTENSION.name }
           await createRulesetDialog.fillForm({
             rulesetName,
             file,
@@ -377,7 +384,7 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify error message is displayed within the dialog', async () => {
           await expect(createRulesetDialog.fileUploadAlert).toBeVisible()
-          await expect(createRulesetDialog.fileUploadAlert).toContainText(INVALID_FILE_FORMAT_ERROR_MSG)
+          await expect(createRulesetDialog.fileUploadAlert).toContainText(MSG_INVALID_FILE_FORMAT)
         })
 
         await test.step('Verify dialog remains open', async () => {
@@ -391,31 +398,26 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page, lintRulesetTdm }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { activateRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Activate-New-${retryIndex}-${testIdN}`
 
         // Create a new ruleset for activation
-        const apiType = LintRulesetApiTypes.OAS_3_0
-        const linter = LintRulesetLinters.SPECTRAL
-        const rulesetFile = SIMPLE_RULESET_FILE
         await lintRulesetTdm.createRuleset({
-          rulesetName,
-          apiType,
-          linter,
-          rulesetFile,
+          rulesetName: rulesetName,
+          apiType: LintRulesetApiTypes.OAS_3_0,
+          linter: LintRulesetLinters.SPECTRAL,
+          rulesetFile: FILE_SIMPLE_RULESET,
         })
 
-        // Activate GENERAL_RULESET_OAS30_N to ensure it's active before test
-        await lintRulesetTdm.activateRuleset(GENERAL_RULESET_OAS30_N)
+        await lintRulesetTdm.activateRuleset(RUL_GENERAL_OAS30_N)
 
         await navigateToRulesetManagement(portalPage)
 
         const rulesetRow = rulesetManagementTab.getRulesetRow(rulesetName)
-        const previouslyActiveRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+        const previouslyActiveRow = rulesetManagementTab.getRulesetRow(RUL_GENERAL_OAS30_N.name)
 
         await test.step('Verify previously active ruleset is active', async () => {
           await expect(previouslyActiveRow.statusCell).toHaveText(STATUS_ACTIVE)
@@ -445,8 +447,7 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-RM-ACTIVATE-2 Verify Activate button is disabled for an already active ruleset', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await navigateToRulesetManagement(portalPage)
 
@@ -467,12 +468,11 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await navigateToRulesetManagement(portalPage)
 
-        const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
+        const rulesetRow = rulesetManagementTab.getRulesetRow(RUL_PREVIOUSLY_ACTIVE_OAS30_N.name)
         const tooltip = rulesetRow.activationHistoryTooltip
         const firstRecord = tooltip.getActivationRecord(1)
         const secondRecord = tooltip.getActivationRecord(2)
@@ -499,8 +499,7 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await navigateToRulesetManagement(portalPage)
 
@@ -515,7 +514,7 @@ test.describe('API Quality Validation', () => {
         await firstRulesetRow.deleteBtn.hover({ force: true })
 
         await test.step('Verify tooltip reads Cannot delete active ruleset', async () => {
-          await expect(portalPage.tooltip).toHaveText(CANNOT_DELETE_ACTIVE_TOOLTIP)
+          await expect(portalPage.tooltip).toHaveText(TIP_CANNOT_DELETE_ACTIVE)
         })
       })
 
@@ -523,12 +522,11 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await navigateToRulesetManagement(portalPage)
 
-        const rulesetRow = rulesetManagementTab.getRulesetRow(PREVIOUSLY_ACTIVE_RULESET_OAS30_N.name)
+        const rulesetRow = rulesetManagementTab.getRulesetRow(RUL_PREVIOUSLY_ACTIVE_OAS30_N.name)
 
         await test.step('Verify ruleset is inactive', async () => {
           await expect(rulesetRow.statusCell).toHaveText(STATUS_INACTIVE)
@@ -539,7 +537,7 @@ test.describe('API Quality Validation', () => {
         await rulesetRow.deleteBtn.hover({ force: true })
 
         await test.step('Verify tooltip reads The ruleset cannot be deleted due to existing versions', async () => {
-          await expect(portalPage.tooltip).toHaveText(CANNOT_DELETE_WITH_HISTORY_TOOLTIP)
+          await expect(portalPage.tooltip).toHaveText(TIP_CANNOT_DELETE_WITH_HISTORY)
         })
 
         await test.step('Verify activation history date format for inactive ruleset with history', async () => {
@@ -549,22 +547,17 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-RM-DEL-3 Delete a never-activated inactive ruleset', async ({ sysadminPage: page, lintRulesetTdm }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { deleteRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Delete-NeverActivated-${retryIndex}-${testIdN}`
 
-        // Create a never-activated inactive ruleset
-        const apiType = LintRulesetApiTypes.OAS_3_0
-        const linter = LintRulesetLinters.SPECTRAL
-        const rulesetFile = SIMPLE_RULESET_FILE
         await lintRulesetTdm.createRuleset({
-          rulesetName,
-          apiType,
-          linter,
-          rulesetFile,
+          rulesetName: rulesetName,
+          apiType: LintRulesetApiTypes.OAS_3_0,
+          linter: LintRulesetLinters.SPECTRAL,
+          rulesetFile: FILE_SIMPLE_RULESET,
         })
 
         await navigateToRulesetManagement(portalPage)
@@ -577,7 +570,7 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Verify success notification appears', async () => {
-          await expect(portalPage.snackbar).toContainText(RULESET_DELETED_SUCCESS_MSG(rulesetName))
+          await expect(portalPage.snackbar).toContainText(MSG_RULESET_DELETED_SUCCESS(rulesetName))
         })
 
         await test.step('Verify the ruleset is removed from the table', async () => {
@@ -589,36 +582,34 @@ test.describe('API Quality Validation', () => {
     test.describe('Ruleset Export and Sharing', () => {
       test('P-AQ-RM-SHARE-1 Download a ruleset file', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await navigateToRulesetManagement(portalPage)
 
-        const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+        const rulesetRow = rulesetManagementTab.getRulesetRow(RUL_GENERAL_OAS30_N.name)
         const downloadedFile = await rulesetRow.downloadRuleset()
 
         await test.step('Verify the browser initiates a download of the correct ruleset file', async () => {
-          await expectFile(downloadedFile).toHaveName(SIMPLE_RULESET_FILE.name)
-          await expectFile(downloadedFile).toContainText(SIMPLE_RULESET_FILE.testMeta!.yamlString!)
+          await expectFile(downloadedFile).toHaveName(FILE_SIMPLE_RULESET.name)
+          await expectFile(downloadedFile).toContainText(FILE_SIMPLE_RULESET.testMeta!.yamlString!)
         })
       })
 
       test('P-AQ-RM-SHARE-2 Copy a ruleset link and verify URL format', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await navigateToRulesetManagement(portalPage)
 
-        const rulesetRow = rulesetManagementTab.getRulesetRow(GENERAL_RULESET_OAS30_N.name)
+        const rulesetRow = rulesetManagementTab.getRulesetRow(RUL_GENERAL_OAS30_N.name)
         const copiedUrl = await rulesetRow.copyPublicUrl()
 
         await test.step('Verify success notification appears', async () => {
-          await expect(portalPage.snackbar).toContainText(PUBLIC_URL_COPIED_SUCCESS_MSG)
+          await expect(portalPage.snackbar).toContainText(MSG_PUBLIC_URL_COPIED_SUCCESS)
         })
 
         await test.step('Verify clipboard contains a valid, direct URL', async () => {
-          await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${GENERAL_RULESET_OAS30_N.id}/data`)
+          await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${RUL_GENERAL_OAS30_N.id}/data`)
         })
       })
     })
@@ -628,13 +619,12 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-        const { rulesetManagementTab } = portalSettingsPage
+        const { rulesetManagementTab } = portalPage.portalSettingsPage
 
         await navigateToRulesetManagement(portalPage)
 
         await test.step('Verify OAS 3.0 rulesets are visible', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(INACTIVE_RULESET_OAS30_N.name)
+          const rulesetRow = rulesetManagementTab.getRulesetRow(RUL_INACTIVE_OAS30_N.name)
           await expect(rulesetRow.nameCell).toBeVisible()
         })
 
@@ -647,12 +637,664 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Verify the table updates to show only the rulesets for OAS 3.1', async () => {
-          const rulesetRow = rulesetManagementTab.getRulesetRow(INACTIVE_RULESET_OAS31_N.name)
+          const rulesetRow = rulesetManagementTab.getRulesetRow(RUL_INACTIVE_OAS31_N.name)
           await expect(rulesetRow.nameCell).toBeVisible()
 
           // Verify OAS 3.0 ruleset is not visible
-          const oas30RulesetRow = rulesetManagementTab.getRulesetRow(INACTIVE_RULESET_OAS30_N.name)
+          const oas30RulesetRow = rulesetManagementTab.getRulesetRow(RUL_INACTIVE_OAS30_N.name)
           await expect(oas30RulesetRow.nameCell).toBeHidden()
+        })
+      })
+    })
+  })
+
+  test.describe('Quality Summary Tab', () => {
+    // Constants
+    const OAS_30_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
+    const OAS_31_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_1]
+
+    // Tooltip messages - full messages from UI
+    const TIP_ISSUE_ERROR =
+      'ErrorA critical violation of the OpenAPI specification that must be fixed. These issues break compliance and may prevent the API from functioning or integrating correctly.'
+    const TIP_ISSUE_WARNING =
+      'WarningA significant deviation from recommended practices that should be addressed. While not invalid, it may lead to misunderstandings or misuse by API consumers.'
+    const TIP_ISSUE_INFO =
+      'InfoA non-blocking suggestion to improve clarity, completeness, or usability. These enhancements help make the API more developer-friendly.'
+    const TIP_ISSUE_HINT =
+      'HintAn optional recommendation for advanced design improvements or optimizations. Helps raise the overall quality, consistency, and maintainability of the API.'
+    const TIP_VALIDATION_FAILED =
+      'Validation failed. Some documents could not be processed during quality validation. See information icon below for details about failed documents.'
+
+    // Messages
+    const MSG_NO_VALIDATION_RESULTS = 'No validation results.'
+    const MSG_CHECKING_VALIDATION = 'Checking validation status...'
+    const MSG_VALIDATION_IN_PROGRESS = 'Validation is in progress, please wait...'
+
+    // Mock data for failed documents
+    const MOCK_FAILED_DOC_1 = 'failed-doc-1.yaml'
+    const MOCK_FAILED_DOC_2 = 'failed-doc-2.yaml'
+
+    // Test resource files
+    const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
+    const FILE_SUMMARY_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'summary-ruleset.yaml'), {
+      yamlString: 'rules:',
+    })
+    const FILE_SIMPLE_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'simple-ruleset.yaml'), {
+      yamlString: 'rules:',
+    })
+    const FILE_SUMMARY_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas30.yaml'))
+    const FILE_SUMMARY_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas31.yaml'))
+    const FILE_SUMMARY_GRAPHQL = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-graphql.graphql'))
+
+    // Test data entities
+    const G_AQ_SUMMARY = new Group({
+      name: 'API-Quality',
+      alias: 'GAQSUM',
+      parent: VAR_GR,
+    })
+
+    const PKG_AQ_SUMMARY_N = new Package({
+      name: 'Quality-Summary',
+      alias: 'PAQSUM',
+      parent: G_AQ_SUMMARY,
+    })
+
+    const V_OAS30_N: Version = {
+      pkg: PKG_AQ_SUMMARY_N,
+      version: 'v1-oas30',
+      status: 'draft',
+      files: [{ file: FILE_SUMMARY_OAS30 }],
+    }
+
+    const V_MULTI_SPEC_N: Version = {
+      pkg: PKG_AQ_SUMMARY_N,
+      version: 'v2-multi',
+      status: 'draft',
+      files: [
+        { file: FILE_SUMMARY_OAS30 },
+        { file: FILE_SUMMARY_OAS31 },
+      ],
+    }
+
+    const V_MIXED_REST_GQL_N: Version = {
+      pkg: PKG_AQ_SUMMARY_N,
+      version: 'v3-mixed',
+      status: 'draft',
+      files: [
+        { file: FILE_SUMMARY_OAS30 },
+        { file: FILE_SUMMARY_GRAPHQL },
+      ],
+    }
+
+    // Ruleset data
+    let RUL_SUMMARY_OAS30_N: { id: string; name: string }
+    let RUL_SUMMARY_OAS31_N: { id: string; name: string }
+    let RUL_ALT_OAS30_N: { id: string; name: string }
+
+    // Helper functions
+    const mockValidationSummaryError = async (page: Page): Promise<void> => {
+      await test.step('Mock validation summary to return error status with failed documents', async () => {
+        await page.route('**/validation/summary', async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              status: 'error',
+              rulesets: [{
+                id: 'mock-ruleset-id',
+                name: 'Mock Ruleset',
+                apiType: LintRulesetApiTypes.OAS_3_0,
+                status: STATUS_ACTIVE,
+              }],
+              documents: [
+                {
+                  slug: 'doc-1',
+                  documentName: MOCK_FAILED_DOC_1,
+                  apiType: LintRulesetApiTypes.OAS_3_0,
+                  status: 'error',
+                },
+                {
+                  slug: 'doc-2',
+                  documentName: MOCK_FAILED_DOC_2,
+                  apiType: LintRulesetApiTypes.OAS_3_0,
+                  status: 'error',
+                },
+              ],
+            }),
+          })
+        })
+      })
+    }
+
+    const mockValidationSummaryNotFound = async (page: Page): Promise<void> => {
+      await test.step('Mock validation summary to return 404 LintResultNotFound', async () => {
+        await page.route('**/validation/summary', async (route) => {
+          await route.fulfill({
+            status: 404,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              code: 'LintResultNotFound',
+              message: 'Lint result not found',
+            }),
+          })
+        })
+      })
+    }
+
+    const mockValidationSummaryLoading = async (page: Page): Promise<void> => {
+      await test.step('Mock validation summary to delay response indefinitely', async () => {
+        await page.route('**/validation/summary', async () => {
+          // Never fulfill - simulate loading state
+          await new Promise(() => {})
+        })
+      })
+    }
+
+    const mockValidationSummaryInProgress = async (page: Page): Promise<void> => {
+      await test.step('Mock validation summary to return inProgress status', async () => {
+        await page.route('**/validation/summary', async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              status: 'inProgress',
+              rulesets: [],
+            }),
+          })
+        })
+      })
+    }
+
+    test.beforeAll(async ({ apihubTDM, lintRulesetTdm }) => {
+      // Extended timeout for version publishing operations
+      test.setTimeout(HOOK_PUBLISH_TIMEOUT)
+
+      // Create group and package hierarchy
+      await apihubTDM.createPackage([
+        G_AQ_SUMMARY,
+        PKG_AQ_SUMMARY_N,
+      ])
+
+      // Create custom rulesets for quality validation
+      const oas30Ruleset = await lintRulesetTdm.createRuleset({
+        rulesetName: `${ALIAS_PREFIX}-Summary-OAS30-${testIdN}`,
+        apiType: LintRulesetApiTypes.OAS_3_0,
+        linter: LintRulesetLinters.SPECTRAL,
+        rulesetFile: FILE_SUMMARY_RULESET,
+      })
+      RUL_SUMMARY_OAS30_N = { id: oas30Ruleset.id, name: oas30Ruleset.name }
+
+      const oas31Ruleset = await lintRulesetTdm.createRuleset({
+        rulesetName: `${ALIAS_PREFIX}-Summary-OAS31-${testIdN}`,
+        apiType: LintRulesetApiTypes.OAS_3_1,
+        linter: LintRulesetLinters.SPECTRAL,
+        rulesetFile: FILE_SUMMARY_RULESET,
+      })
+      RUL_SUMMARY_OAS31_N = { id: oas31Ruleset.id, name: oas31Ruleset.name }
+
+      const altOas30Ruleset = await lintRulesetTdm.createRuleset({
+        rulesetName: `${ALIAS_PREFIX}-Alt-OAS30-${testIdN}`,
+        apiType: LintRulesetApiTypes.OAS_3_0,
+        linter: LintRulesetLinters.SPECTRAL,
+        rulesetFile: FILE_SIMPLE_RULESET,
+      })
+      RUL_ALT_OAS30_N = { id: altOas30Ruleset.id, name: altOas30Ruleset.name }
+
+      // Establish activation history for P-AQ-SM-POPUP-5:
+      // Activate Summary -> Activate Alt (deactivates Summary)
+      await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS30_N)
+      await lintRulesetTdm.activateRuleset(RUL_ALT_OAS30_N)
+
+      // Activate final rulesets for tests (OAS 3.0 and OAS 3.1)
+      await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS30_N)
+      await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS31_N)
+
+      // Publish versions for quality validation tests
+      await apihubTDM.publishVersion(V_OAS30_N)
+      await apihubTDM.publishVersion(V_MULTI_SPEC_N)
+      await apihubTDM.publishVersion(V_MIXED_REST_GQL_N)
+    })
+
+    test.describe('UI Visibility and Access Control', () => {
+      test('P-AQ-SM-UI-1 Verify Quality Validation section visibility for REST API', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { restApi } = portalPage.versionPackagePage.overviewTab.summaryTab.body
+        const { qualityValidation } = restApi
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify REST API section is visible', async () => {
+          await expect(restApi.operations).toBeVisible()
+        })
+
+        await test.step('Verify the Quality Validation section is visible within the REST section', async () => {
+          await expect(qualityValidation.title).toBeVisible()
+        })
+      })
+
+      test('P-AQ-SM-UI-2 Verify Mixed API Types display - REST with GraphQL', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { body } = portalPage.versionPackagePage.overviewTab.summaryTab
+        const { restApi, graphQl } = body
+
+        await portalPage.gotoVersion(V_MIXED_REST_GQL_N)
+
+        await test.step('Verify REST API section is visible WITH Quality Validation section', async () => {
+          await expect(restApi.operations).toBeVisible()
+          await expect(restApi.qualityValidation.title).toBeVisible()
+        })
+
+        await test.step('Verify GraphQL API section is visible WITHOUT Quality Validation section', async () => {
+          await expect(graphQl.operations).toBeVisible()
+          await expect(graphQl.qualityValidation.title).toBeHidden()
+        })
+      })
+
+      test('P-AQ-SM-UI-3-M Verify Quality Validation section is hidden when linter is disabled', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { restApi } = portalPage.versionPackagePage.overviewTab.summaryTab.body
+        const { qualityValidation } = restApi
+
+        await mockSystemConfigurationToDisableLinter(page)
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify REST API section is visible to confirm page loaded correctly', async () => {
+          await expect(restApi.operations).toBeVisible()
+        })
+
+        await test.step('Verify the Quality Validation section is NOT visible', async () => {
+          await expect(qualityValidation.title).toBeHidden()
+        })
+      })
+    })
+
+    test.describe('Content and Aggregation', () => {
+      test('P-AQ-SM-CONTENT-1 Verify Ruleset info for single document', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify one ruleset is listed', async () => {
+          await expect(qualityValidation.getValidationRuleset()).toHaveCount(1)
+        })
+
+        const ruleset = qualityValidation.getValidationRuleset(1)
+
+        await test.step('Verify ruleset name is displayed as a clickable link', async () => {
+          await expect(ruleset.nameLink).toBeVisible()
+          await expect(ruleset.nameLink).toHaveText(RUL_SUMMARY_OAS30_N.name)
+        })
+
+        await test.step('Verify API Type chip shows OAS 3.0', async () => {
+          await expect(ruleset.apiTypeChip).toHaveText(OAS_30_LABEL)
+        })
+
+        await test.step('Verify Status chip shows Active', async () => {
+          await expect(ruleset.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+      })
+
+      test('P-AQ-SM-CONTENT-2 Verify Ruleset list items for multi-document version', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        await portalPage.gotoVersion(V_MULTI_SPEC_N)
+
+        await test.step('Verify two rulesets are listed', async () => {
+          await expect(qualityValidation.getValidationRuleset()).toHaveCount(2)
+        })
+
+        const firstRuleset = qualityValidation.getValidationRuleset(1)
+        const secondRuleset = qualityValidation.getValidationRuleset(2)
+
+        await test.step('Verify first ruleset displays correct info', async () => {
+          await expect(firstRuleset.nameLink).toBeVisible()
+          await expect(firstRuleset.apiTypeChip).toHaveText(OAS_30_LABEL)
+          await expect(firstRuleset.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+
+        await test.step('Verify second ruleset displays correct info', async () => {
+          await expect(secondRuleset.nameLink).toBeVisible()
+          await expect(secondRuleset.apiTypeChip).toHaveText(OAS_31_LABEL)
+          await expect(secondRuleset.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+      })
+
+      test('P-AQ-SM-CONTENT-3 Verify Issue Counts tooltip content', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify issue counts are visible', async () => {
+          await expect(qualityValidation.errorCount).toBeVisible()
+          await expect(qualityValidation.warningCount).toBeVisible()
+          await expect(qualityValidation.infoCount).toBeVisible()
+          await expect(qualityValidation.hintCount).toBeVisible()
+        })
+
+        await test.step('Hover over the Error count and verify tooltip', async () => {
+          await qualityValidation.errorCount.hover()
+          await expect(portalPage.tooltip).toHaveText(TIP_ISSUE_ERROR)
+        })
+
+        await test.step('Hover over the Warning count and verify tooltip', async () => {
+          await qualityValidation.warningCount.hover()
+          await expect(portalPage.tooltip).toHaveText(TIP_ISSUE_WARNING)
+        })
+
+        await test.step('Hover over the Info count and verify tooltip', async () => {
+          await qualityValidation.infoCount.hover()
+          await expect(portalPage.tooltip).toHaveText(TIP_ISSUE_INFO)
+        })
+
+        await test.step('Hover over the Hint count and verify tooltip', async () => {
+          await qualityValidation.hintCount.hover()
+          await expect(portalPage.tooltip).toHaveText(TIP_ISSUE_HINT)
+        })
+      })
+
+      test('P-AQ-SM-CONTENT-4-M Verify Validation Failed state', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        await mockValidationSummaryError(page)
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify red warning icon is visible', async () => {
+          await expect(qualityValidation.alertIcon).toBeVisible()
+        })
+
+        await test.step('Hover over warning icon and verify tooltip shows failure message', async () => {
+          await qualityValidation.alertIcon.hover()
+          await expect(portalPage.tooltip).toHaveText(TIP_VALIDATION_FAILED)
+        })
+
+        await test.step('Verify failed documents count shows 2', async () => {
+          await expect(qualityValidation.failedDocuments).toHaveText('2')
+        })
+
+        await test.step('Hover over info icon and verify tooltip shows failed document names', async () => {
+          await qualityValidation.failedDocumentsInfoIcon.hover()
+          await expect(portalPage.tooltip).toContainText(MOCK_FAILED_DOC_1)
+          await expect(portalPage.tooltip).toContainText(MOCK_FAILED_DOC_2)
+        })
+      })
+    })
+
+    test.describe('Ruleset Info Popup Interactions', () => {
+      test('P-AQ-SM-POPUP-1 Verify Ruleset Info Popup opens and displays correct content', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { summaryTab } = portalPage.versionPackagePage.overviewTab
+        const { qualityValidation } = summaryTab.body.restApi
+        const { rulesetInfoDialog } = summaryTab
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        const ruleset = qualityValidation.getValidationRuleset(1)
+        await ruleset.nameLink.click()
+
+        await test.step('Verify dialog title contains the ruleset name', async () => {
+          await expect(rulesetInfoDialog.title).toContainText(RUL_SUMMARY_OAS30_N.name)
+        })
+
+        await test.step('Verify API Type chip and Status chip are visible', async () => {
+          await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_30_LABEL)
+          await expect(rulesetInfoDialog.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+
+        await test.step('Verify ruleset file name is displayed', async () => {
+          await expect(rulesetInfoDialog.rulesetFile).toContainText(FILE_SUMMARY_RULESET.name)
+        })
+      })
+
+      test('P-AQ-SM-POPUP-2 Verify multiple Rulesets can be opened in multi-spec version', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { summaryTab } = portalPage.versionPackagePage.overviewTab
+        const { qualityValidation } = summaryTab.body.restApi
+        const { rulesetInfoDialog } = summaryTab
+
+        await portalPage.gotoVersion(V_MULTI_SPEC_N)
+
+        const firstRuleset = qualityValidation.getValidationRuleset(1)
+        const secondRuleset = qualityValidation.getValidationRuleset(2)
+
+        await test.step('Click on the first ruleset and verify popup content', async () => {
+          await firstRuleset.nameLink.click()
+          await expect(rulesetInfoDialog.title).toBeVisible()
+          await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_30_LABEL)
+        })
+
+        await rulesetInfoDialog.closeBtn.click()
+
+        await test.step('Click on the second ruleset and verify popup content', async () => {
+          await secondRuleset.nameLink.click()
+          await expect(rulesetInfoDialog.title).toBeVisible()
+          await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_31_LABEL)
+        })
+      })
+
+      test('P-AQ-SM-POPUP-3 Verify Download ruleset file', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { summaryTab } = portalPage.versionPackagePage.overviewTab
+        const { qualityValidation } = summaryTab.body.restApi
+        const { rulesetInfoDialog } = summaryTab
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        const ruleset = qualityValidation.getValidationRuleset(1)
+        await ruleset.nameLink.click()
+
+        const downloadedFile = await rulesetInfoDialog.downloadRuleset()
+
+        await test.step('Verify downloaded file has correct content', async () => {
+          await expectFile(downloadedFile).toContainText(FILE_SUMMARY_RULESET.testMeta!.yamlString!)
+        })
+      })
+
+      test('P-AQ-SM-POPUP-4 Verify Copy Link to ruleset', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { summaryTab } = portalPage.versionPackagePage.overviewTab
+        const { qualityValidation } = summaryTab.body.restApi
+        const { rulesetInfoDialog } = summaryTab
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        const ruleset = qualityValidation.getValidationRuleset(1)
+        await ruleset.nameLink.click()
+
+        const copiedUrl = await rulesetInfoDialog.copyPublicUrl()
+
+        await test.step('Verify clipboard contains URL matching expected pattern', async () => {
+          await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${RUL_SUMMARY_OAS30_N.id}/data`)
+        })
+      })
+
+      test('P-AQ-SM-POPUP-5 Verify Activation History table content', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { summaryTab } = portalPage.versionPackagePage.overviewTab
+        const { qualityValidation } = summaryTab.body.restApi
+        const { rulesetInfoDialog } = summaryTab
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        const ruleset = qualityValidation.getValidationRuleset(1)
+        await ruleset.nameLink.click()
+
+        const firstRecord = rulesetInfoDialog.getActivationRecord(1)
+        const secondRecord = rulesetInfoDialog.getActivationRecord(2)
+
+        await test.step('Verify activation history contains at least two rows', async () => {
+          await expect(firstRecord).toBeVisible()
+          await expect(secondRecord).toBeVisible()
+        })
+
+        await test.step('Verify active period format shows current date with ellipsis', async () => {
+          await expect(firstRecord).toContainText(`${currentFormattedDate} - ...`)
+        })
+
+        await test.step('Verify inactive period format shows date range', async () => {
+          await expect(secondRecord).toContainText(`${currentFormattedDate} - ${currentFormattedDate}`)
+        })
+      })
+    })
+
+    test.describe('Manual Validation', () => {
+      test.skip('P-AQ-SM-RUN-1 Verify re-validation updates status and issue counts for single document', {
+        tag: '@smoke',
+        annotation: { type: 'Issue', description: 'https://github.com/Netcracker/qubership-apihub/issues/437' },
+      }, async ({ sysadminPage: page, lintRulesetTdm }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        // Setup: Ensure initial state with Summary ruleset active, then run validation, then activate Alt ruleset
+        await test.step('Setup initial state via API', async () => {
+          await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS30_N)
+          await lintRulesetTdm.runValidation({
+            packageId: PKG_AQ_SUMMARY_N.packageId,
+            version: V_OAS30_N.version,
+          })
+          await lintRulesetTdm.activateRuleset(RUL_ALT_OAS30_N)
+        })
+
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify initial state shows Inactive status and original issue counts', async () => {
+          const ruleset = qualityValidation.getValidationRuleset(1)
+          await expect(ruleset.statusChip).toHaveText(STATUS_INACTIVE)
+          await expect(qualityValidation.errorCount).toHaveText('1')
+          await expect(qualityValidation.warningCount).toHaveText('1')
+          await expect(qualityValidation.infoCount).toHaveText('1')
+          await expect(qualityValidation.hintCount).toHaveText('1')
+        })
+
+        await test.step('Verify Run Validation link is visible', async () => {
+          await expect(qualityValidation.runValidationLink).toBeVisible()
+        })
+
+        await qualityValidation.runValidationLink.click()
+
+        await test.step('Wait for validation to complete and verify status changes to Active', async () => {
+          const ruleset = qualityValidation.getValidationRuleset(1)
+          await expect(ruleset.statusChip).toHaveText(STATUS_ACTIVE, { timeout: 30000 })
+        })
+
+        await test.step('Verify issue counts change to match Alt ruleset: 0/1/0/0', async () => {
+          await expect(qualityValidation.errorCount).toHaveText('0')
+          await expect(qualityValidation.warningCount).toHaveText('1')
+          await expect(qualityValidation.infoCount).toHaveText('0')
+          await expect(qualityValidation.hintCount).toHaveText('0')
+        })
+      })
+
+      test.skip('P-AQ-SM-RUN-2 Verify re-validation updates aggregated issue counts for multi-document version', {
+        tag: '@smoke',
+        annotation: { type: 'Issue', description: 'https://github.com/Netcracker/qubership-apihub/issues/437' },
+      }, async ({ sysadminPage: page, lintRulesetTdm }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        // Setup: Ensure both rulesets active, run validation, then make OAS 3.0 inactive
+        await test.step('Setup initial state via API', async () => {
+          await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS30_N)
+          await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS31_N)
+          await lintRulesetTdm.runValidation({
+            packageId: PKG_AQ_SUMMARY_N.packageId,
+            version: V_MULTI_SPEC_N.version,
+          })
+          await lintRulesetTdm.activateRuleset(RUL_ALT_OAS30_N)
+        })
+
+        await portalPage.gotoVersion(V_MULTI_SPEC_N)
+
+        await test.step('Verify initial state: OAS 3.0 shows Inactive, OAS 3.1 shows Active', async () => {
+          const firstRuleset = qualityValidation.getValidationRuleset(1)
+          const secondRuleset = qualityValidation.getValidationRuleset(2)
+          await expect(firstRuleset.statusChip).toHaveText(STATUS_INACTIVE)
+          await expect(secondRuleset.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+
+        await test.step('Verify aggregated counts are 2/2/2/2 initially', async () => {
+          await expect(qualityValidation.errorCount).toHaveText('2')
+          await expect(qualityValidation.warningCount).toHaveText('2')
+          await expect(qualityValidation.infoCount).toHaveText('2')
+          await expect(qualityValidation.hintCount).toHaveText('2')
+        })
+
+        await qualityValidation.runValidationLink.click()
+
+        await test.step('Wait for validation to complete and verify both rulesets show Active', async () => {
+          const firstRuleset = qualityValidation.getValidationRuleset(1)
+          const secondRuleset = qualityValidation.getValidationRuleset(2)
+          await expect(firstRuleset.statusChip).toHaveText(STATUS_ACTIVE, { timeout: 30000 })
+          await expect(secondRuleset.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+
+        await test.step('Verify aggregated issue counts updated: 1/2/1/1', async () => {
+          await expect(qualityValidation.errorCount).toHaveText('1')
+          await expect(qualityValidation.warningCount).toHaveText('2')
+          await expect(qualityValidation.infoCount).toHaveText('1')
+          await expect(qualityValidation.hintCount).toHaveText('1')
+        })
+      })
+    })
+
+    test.describe('Status Transitions', () => {
+      test('P-AQ-SM-STATUS-1-M Verify Not Validated state display', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        await mockValidationSummaryNotFound(page)
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify placeholder shows No validation results message', async () => {
+          await expect(qualityValidation.placeholder).toContainText(MSG_NO_VALIDATION_RESULTS)
+        })
+
+        await test.step('Verify Run Validation link is visible in the placeholder', async () => {
+          await expect(qualityValidation.runValidationLink).toBeVisible()
+        })
+      })
+
+      test('P-AQ-SM-STATUS-2-M Verify Checking status display', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        await mockValidationSummaryLoading(page)
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify placeholder shows Checking validation status message', async () => {
+          await expect(qualityValidation.placeholder).toContainText(MSG_CHECKING_VALIDATION)
+        })
+      })
+
+      test('P-AQ-SM-STATUS-3-M Verify In Progress status display', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        await mockValidationSummaryInProgress(page)
+        await portalPage.gotoVersion(V_OAS30_N)
+
+        await test.step('Verify placeholder shows Validation is in progress message', async () => {
+          await expect(qualityValidation.placeholder).toContainText(MSG_VALIDATION_IN_PROGRESS)
         })
       })
     })
