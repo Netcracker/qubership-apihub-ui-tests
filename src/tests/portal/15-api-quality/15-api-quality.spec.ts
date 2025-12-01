@@ -20,7 +20,7 @@ import { HOOK_PUBLISH_TIMEOUT } from '@test-setup'
 import path from 'node:path'
 
 // Global helper functions
-const activateDefaultRulesetAndCleanup = async (
+const activateDefaultRulesetsAndCleanup = async (
   lintRulesetTdm: LintRulesetsTestDataManager,
   testIdN: string,
 ): Promise<void> => {
@@ -44,7 +44,7 @@ const activateDefaultRulesetAndCleanup = async (
 test.describe('API Quality Validation', () => {
   const testIdN = process.env.TEST_ID_N!
 
-  // Shared constants for all nested describe blocks
+  // Shared constants
   const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
   const currentFormattedDate = formatDateToUI(new Date())
 
@@ -72,17 +72,10 @@ test.describe('API Quality Validation', () => {
   }
 
   test.afterAll(async ({ lintRulesetTdm }) => {
-    await activateDefaultRulesetAndCleanup(lintRulesetTdm, testIdN)
+    await activateDefaultRulesetsAndCleanup(lintRulesetTdm, testIdN)
   })
 
   test.describe('Ruleset Management', () => {
-    // Helper functions
-    const navigateToRulesetManagement = async (portalPage: PortalPage): Promise<void> => {
-      await test.step('Navigate to Ruleset Management tab', async () => {
-        await portalPage.goto('/portal/settings/rulesets')
-      })
-    }
-
     // Constants
     const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
 
@@ -105,11 +98,18 @@ test.describe('API Quality Validation', () => {
     const TIP_CANNOT_DELETE_WITH_HISTORY =
       'The ruleset cannot be deleted due to existing versions that have been validated against this ruleset'
 
-    // Suite-level reusable data (_N rulesets)
+    // Ruleset data
     let RUL_INACTIVE_OAS30_N: { id: string; name: string }
     let RUL_PREVIOUSLY_ACTIVE_OAS30_N: { id: string; name: string }
     let RUL_INACTIVE_OAS31_N: { id: string; name: string }
     let RUL_GENERAL_OAS30_N: { id: string; name: string }
+
+    // Helper functions
+    const navigateToRulesetManagement = async (portalPage: PortalPage): Promise<void> => {
+      await test.step('Navigate to Ruleset Management tab', async () => {
+        await portalPage.goto('/portal/settings/rulesets')
+      })
+    }
 
     test.beforeAll(async ({ lintRulesetTdm }) => {
       const rulesetNamePrefix = `${ALIAS_PREFIX}-`
@@ -653,27 +653,6 @@ test.describe('API Quality Validation', () => {
     const OAS_30_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
     const OAS_31_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_1]
 
-    // Tooltip messages - full messages from UI
-    const TIP_ISSUE_ERROR =
-      'ErrorA critical violation of the OpenAPI specification that must be fixed. These issues break compliance and may prevent the API from functioning or integrating correctly.'
-    const TIP_ISSUE_WARNING =
-      'WarningA significant deviation from recommended practices that should be addressed. While not invalid, it may lead to misunderstandings or misuse by API consumers.'
-    const TIP_ISSUE_INFO =
-      'InfoA non-blocking suggestion to improve clarity, completeness, or usability. These enhancements help make the API more developer-friendly.'
-    const TIP_ISSUE_HINT =
-      'HintAn optional recommendation for advanced design improvements or optimizations. Helps raise the overall quality, consistency, and maintainability of the API.'
-    const TIP_VALIDATION_FAILED =
-      'Validation failed. Some documents could not be processed during quality validation. See information icon below for details about failed documents.'
-
-    // Messages
-    const MSG_NO_VALIDATION_RESULTS = 'No validation results.'
-    const MSG_CHECKING_VALIDATION = 'Checking validation status...'
-    const MSG_VALIDATION_IN_PROGRESS = 'Validation is in progress, please wait...'
-
-    // Mock data for failed documents
-    const MOCK_FAILED_DOC_1 = 'failed-doc-1.yaml'
-    const MOCK_FAILED_DOC_2 = 'failed-doc-2.yaml'
-
     // Test resource files
     const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
     const FILE_SUMMARY_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'summary-ruleset.yaml'), {
@@ -685,6 +664,58 @@ test.describe('API Quality Validation', () => {
     const FILE_SUMMARY_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas30.yaml'))
     const FILE_SUMMARY_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas31.yaml'))
     const FILE_SUMMARY_GRAPHQL = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-graphql.graphql'))
+
+    // Messages
+    const MSG_NO_VALIDATION_RESULTS = 'No validation results.'
+    const MSG_CHECKING_VALIDATION = 'Checking validation status...'
+    const MSG_VALIDATION_IN_PROGRESS = 'Validation is in progress, please wait...'
+
+    // Issue count constants for single document tests
+    const ISSUE_COUNTS_INITIAL = {
+      error: '1',
+      warning: '1',
+      info: '1',
+      hint: '1',
+    } as const
+
+    const ISSUE_COUNTS_CHANGED = {
+      error: '0',
+      warning: '1',
+      info: '0',
+      hint: '0',
+    } as const
+
+    // Issue count constants for multi-document tests
+    const MULTI_DOC_ISSUE_COUNTS_INITIAL = {
+      error: '2',
+      warning: '2',
+      info: '2',
+      hint: '2',
+    } as const
+
+    const MULTI_DOC_ISSUE_COUNTS_CHANGED = {
+      error: '1',
+      warning: '2',
+      info: '1',
+      hint: '1',
+    } as const
+
+    // Tooltip messages
+    const TIP_ISSUE_ERROR =
+      'ErrorA critical violation of the OpenAPI specification that must be fixed. These issues break compliance and may prevent the API from functioning or integrating correctly.'
+    const TIP_ISSUE_WARNING =
+      'WarningA significant deviation from recommended practices that should be addressed. While not invalid, it may lead to misunderstandings or misuse by API consumers.'
+    const TIP_ISSUE_INFO =
+      'InfoA non-blocking suggestion to improve clarity, completeness, or usability. These enhancements help make the API more developer-friendly.'
+    const TIP_ISSUE_HINT =
+      'HintAn optional recommendation for advanced design improvements or optimizations. Helps raise the overall quality, consistency, and maintainability of the API.'
+    const TIP_VALIDATION_FAILED =
+      'Validation failed. Some documents could not be processed during quality validation. See information icon below for details about failed documents.'
+
+    // Mock data for failed documents
+    const MOCK_FAILED_DOC_1 = 'failed-doc-1.yaml'
+    const MOCK_FAILED_DOC_2 = 'failed-doc-2.yaml'
+    const FAILED_DOCS_COUNT = '2'
 
     // Test data entities
     const G_AQ_SUMMARY = new Group({
@@ -806,7 +837,7 @@ test.describe('API Quality Validation', () => {
     }
 
     test.beforeAll(async ({ apihubTDM, lintRulesetTdm }) => {
-      // Extended timeout for version publishing operations
+      // Extended timeout for API publishing
       test.setTimeout(HOOK_PUBLISH_TIMEOUT)
 
       // Create group and package hierarchy
@@ -840,12 +871,11 @@ test.describe('API Quality Validation', () => {
       })
       RUL_ALT_OAS30_N = { id: altOas30Ruleset.id, name: altOas30Ruleset.name }
 
-      // Establish activation history for P-AQ-SM-POPUP-5:
-      // Activate Summary -> Activate Alt (deactivates Summary)
+      // Establish activation history
       await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS30_N)
       await lintRulesetTdm.activateRuleset(RUL_ALT_OAS30_N)
 
-      // Activate final rulesets for tests (OAS 3.0 and OAS 3.1)
+      // Activate final rulesets for tests
       await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS30_N)
       await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS31_N)
 
@@ -913,7 +943,7 @@ test.describe('API Quality Validation', () => {
       })
     })
 
-    test.describe('Content and Aggregation', () => {
+    test.describe('Content', () => {
       test('P-AQ-SM-CONTENT-1 Verify Ruleset info for single document', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
@@ -926,18 +956,11 @@ test.describe('API Quality Validation', () => {
           await expect(qualityValidation.getValidationRuleset()).toHaveCount(1)
         })
 
-        const ruleset = qualityValidation.getValidationRuleset(1)
+        const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
 
-        await test.step('Verify ruleset name is displayed as a clickable link', async () => {
+        await test.step('Verify ruleset displays correct info', async () => {
           await expect(ruleset.nameLink).toBeVisible()
-          await expect(ruleset.nameLink).toHaveText(RUL_SUMMARY_OAS30_N.name)
-        })
-
-        await test.step('Verify API Type chip shows OAS 3.0', async () => {
           await expect(ruleset.apiTypeChip).toHaveText(OAS_30_LABEL)
-        })
-
-        await test.step('Verify Status chip shows Active', async () => {
           await expect(ruleset.statusChip).toHaveText(STATUS_ACTIVE)
         })
       })
@@ -954,8 +977,8 @@ test.describe('API Quality Validation', () => {
           await expect(qualityValidation.getValidationRuleset()).toHaveCount(2)
         })
 
-        const firstRuleset = qualityValidation.getValidationRuleset(1)
-        const secondRuleset = qualityValidation.getValidationRuleset(2)
+        const firstRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
+        const secondRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS31_N.name)
 
         await test.step('Verify first ruleset displays correct info', async () => {
           await expect(firstRuleset.nameLink).toBeVisible()
@@ -1022,8 +1045,8 @@ test.describe('API Quality Validation', () => {
           await expect(portalPage.tooltip).toHaveText(TIP_VALIDATION_FAILED)
         })
 
-        await test.step('Verify failed documents count shows 2', async () => {
-          await expect(qualityValidation.failedDocuments).toHaveText('2')
+        await test.step('Verify failed documents count', async () => {
+          await expect(qualityValidation.failedDocuments).toHaveText(FAILED_DOCS_COUNT)
         })
 
         await test.step('Hover over info icon and verify tooltip shows failed document names', async () => {
@@ -1045,19 +1068,13 @@ test.describe('API Quality Validation', () => {
 
         await portalPage.gotoVersion(V_OAS30_N)
 
-        const ruleset = qualityValidation.getValidationRuleset(1)
+        const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
-        await test.step('Verify dialog title contains the ruleset name', async () => {
+        await test.step('Verify dialog displays correct content', async () => {
           await expect(rulesetInfoDialog.title).toContainText(RUL_SUMMARY_OAS30_N.name)
-        })
-
-        await test.step('Verify API Type chip and Status chip are visible', async () => {
           await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_30_LABEL)
           await expect(rulesetInfoDialog.statusChip).toHaveText(STATUS_ACTIVE)
-        })
-
-        await test.step('Verify ruleset file name is displayed', async () => {
           await expect(rulesetInfoDialog.rulesetFile).toContainText(FILE_SUMMARY_RULESET.name)
         })
       })
@@ -1072,21 +1089,25 @@ test.describe('API Quality Validation', () => {
 
         await portalPage.gotoVersion(V_MULTI_SPEC_N)
 
-        const firstRuleset = qualityValidation.getValidationRuleset(1)
-        const secondRuleset = qualityValidation.getValidationRuleset(2)
+        const firstRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
+        const secondRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS31_N.name)
 
         await test.step('Click on the first ruleset and verify popup content', async () => {
           await firstRuleset.nameLink.click()
-          await expect(rulesetInfoDialog.title).toBeVisible()
+          await expect(rulesetInfoDialog.title).toContainText(RUL_SUMMARY_OAS30_N.name)
           await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_30_LABEL)
+          await expect(rulesetInfoDialog.statusChip).toHaveText(STATUS_ACTIVE)
+          await expect(rulesetInfoDialog.rulesetFile).toContainText(FILE_SUMMARY_RULESET.name)
         })
 
         await rulesetInfoDialog.closeBtn.click()
 
         await test.step('Click on the second ruleset and verify popup content', async () => {
           await secondRuleset.nameLink.click()
-          await expect(rulesetInfoDialog.title).toBeVisible()
+          await expect(rulesetInfoDialog.title).toContainText(RUL_SUMMARY_OAS31_N.name)
           await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_31_LABEL)
+          await expect(rulesetInfoDialog.statusChip).toHaveText(STATUS_ACTIVE)
+          await expect(rulesetInfoDialog.rulesetFile).toContainText(FILE_SUMMARY_RULESET.name)
         })
       })
 
@@ -1098,7 +1119,7 @@ test.describe('API Quality Validation', () => {
 
         await portalPage.gotoVersion(V_OAS30_N)
 
-        const ruleset = qualityValidation.getValidationRuleset(1)
+        const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
         const downloadedFile = await rulesetInfoDialog.downloadRuleset()
@@ -1116,7 +1137,7 @@ test.describe('API Quality Validation', () => {
 
         await portalPage.gotoVersion(V_OAS30_N)
 
-        const ruleset = qualityValidation.getValidationRuleset(1)
+        const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
         const copiedUrl = await rulesetInfoDialog.copyPublicUrl()
@@ -1134,22 +1155,16 @@ test.describe('API Quality Validation', () => {
 
         await portalPage.gotoVersion(V_OAS30_N)
 
-        const ruleset = qualityValidation.getValidationRuleset(1)
+        const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
         const firstRecord = rulesetInfoDialog.getActivationRecord(1)
         const secondRecord = rulesetInfoDialog.getActivationRecord(2)
 
-        await test.step('Verify activation history contains at least two rows', async () => {
+        await test.step('Verify activation history contains at least two rows with correct date formats', async () => {
           await expect(firstRecord).toBeVisible()
           await expect(secondRecord).toBeVisible()
-        })
-
-        await test.step('Verify active period format shows current date with ellipsis', async () => {
           await expect(firstRecord).toContainText(`${currentFormattedDate} - ...`)
-        })
-
-        await test.step('Verify inactive period format shows date range', async () => {
           await expect(secondRecord).toContainText(`${currentFormattedDate} - ${currentFormattedDate}`)
         })
       })
@@ -1176,30 +1191,23 @@ test.describe('API Quality Validation', () => {
         await portalPage.gotoVersion(V_OAS30_N)
 
         await test.step('Verify initial state shows Inactive status and original issue counts', async () => {
-          const ruleset = qualityValidation.getValidationRuleset(1)
+          const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
           await expect(ruleset.statusChip).toHaveText(STATUS_INACTIVE)
-          await expect(qualityValidation.errorCount).toHaveText('1')
-          await expect(qualityValidation.warningCount).toHaveText('1')
-          await expect(qualityValidation.infoCount).toHaveText('1')
-          await expect(qualityValidation.hintCount).toHaveText('1')
-        })
-
-        await test.step('Verify Run Validation link is visible', async () => {
-          await expect(qualityValidation.runValidationLink).toBeVisible()
+          await expect(qualityValidation.errorCount).toHaveText(ISSUE_COUNTS_INITIAL.error)
+          await expect(qualityValidation.warningCount).toHaveText(ISSUE_COUNTS_INITIAL.warning)
+          await expect(qualityValidation.infoCount).toHaveText(ISSUE_COUNTS_INITIAL.info)
+          await expect(qualityValidation.hintCount).toHaveText(ISSUE_COUNTS_INITIAL.hint)
         })
 
         await qualityValidation.runValidationLink.click()
 
-        await test.step('Wait for validation to complete and verify status changes to Active', async () => {
-          const ruleset = qualityValidation.getValidationRuleset(1)
-          await expect(ruleset.statusChip).toHaveText(STATUS_ACTIVE, { timeout: 30000 })
-        })
-
-        await test.step('Verify issue counts change to match Alt ruleset: 0/1/0/0', async () => {
-          await expect(qualityValidation.errorCount).toHaveText('0')
-          await expect(qualityValidation.warningCount).toHaveText('1')
-          await expect(qualityValidation.infoCount).toHaveText('0')
-          await expect(qualityValidation.hintCount).toHaveText('0')
+        await test.step('Wait for validation to complete and verify status and issue counts updated', async () => {
+          const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
+          await expect(ruleset.statusChip).toHaveText(STATUS_ACTIVE)
+          await expect(qualityValidation.errorCount).toHaveText(ISSUE_COUNTS_CHANGED.error)
+          await expect(qualityValidation.warningCount).toHaveText(ISSUE_COUNTS_CHANGED.warning)
+          await expect(qualityValidation.infoCount).toHaveText(ISSUE_COUNTS_CHANGED.info)
+          await expect(qualityValidation.hintCount).toHaveText(ISSUE_COUNTS_CHANGED.hint)
         })
       })
 
@@ -1224,33 +1232,30 @@ test.describe('API Quality Validation', () => {
         await portalPage.gotoVersion(V_MULTI_SPEC_N)
 
         await test.step('Verify initial state: OAS 3.0 shows Inactive, OAS 3.1 shows Active', async () => {
-          const firstRuleset = qualityValidation.getValidationRuleset(1)
-          const secondRuleset = qualityValidation.getValidationRuleset(2)
+          const firstRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
+          const secondRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS31_N.name)
           await expect(firstRuleset.statusChip).toHaveText(STATUS_INACTIVE)
           await expect(secondRuleset.statusChip).toHaveText(STATUS_ACTIVE)
         })
 
-        await test.step('Verify aggregated counts are 2/2/2/2 initially', async () => {
-          await expect(qualityValidation.errorCount).toHaveText('2')
-          await expect(qualityValidation.warningCount).toHaveText('2')
-          await expect(qualityValidation.infoCount).toHaveText('2')
-          await expect(qualityValidation.hintCount).toHaveText('2')
+        await test.step('Verify aggregated counts initially', async () => {
+          await expect(qualityValidation.errorCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_INITIAL.error)
+          await expect(qualityValidation.warningCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_INITIAL.warning)
+          await expect(qualityValidation.infoCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_INITIAL.info)
+          await expect(qualityValidation.hintCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_INITIAL.hint)
         })
 
         await qualityValidation.runValidationLink.click()
 
-        await test.step('Wait for validation to complete and verify both rulesets show Active', async () => {
-          const firstRuleset = qualityValidation.getValidationRuleset(1)
-          const secondRuleset = qualityValidation.getValidationRuleset(2)
-          await expect(firstRuleset.statusChip).toHaveText(STATUS_ACTIVE, { timeout: 30000 })
+        await test.step('Wait for validation to complete and verify both rulesets show Active and aggregated counts updated', async () => {
+          const firstRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
+          const secondRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS31_N.name)
+          await expect(firstRuleset.statusChip).toHaveText(STATUS_ACTIVE)
           await expect(secondRuleset.statusChip).toHaveText(STATUS_ACTIVE)
-        })
-
-        await test.step('Verify aggregated issue counts updated: 1/2/1/1', async () => {
-          await expect(qualityValidation.errorCount).toHaveText('1')
-          await expect(qualityValidation.warningCount).toHaveText('2')
-          await expect(qualityValidation.infoCount).toHaveText('1')
-          await expect(qualityValidation.hintCount).toHaveText('1')
+          await expect(qualityValidation.errorCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_CHANGED.error)
+          await expect(qualityValidation.warningCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_CHANGED.warning)
+          await expect(qualityValidation.infoCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_CHANGED.info)
+          await expect(qualityValidation.hintCount).toHaveText(MULTI_DOC_ISSUE_COUNTS_CHANGED.hint)
         })
       })
     })
@@ -1265,13 +1270,8 @@ test.describe('API Quality Validation', () => {
         await mockValidationSummaryNotFound(page)
         await portalPage.gotoVersion(V_OAS30_N)
 
-        await test.step('Verify placeholder shows No validation results message', async () => {
-          await expect(qualityValidation.placeholder).toContainText(MSG_NO_VALIDATION_RESULTS)
-        })
-
-        await test.step('Verify Run Validation link is visible in the placeholder', async () => {
-          await expect(qualityValidation.runValidationLink).toBeVisible()
-        })
+        await expect(qualityValidation.placeholder).toContainText(MSG_NO_VALIDATION_RESULTS)
+        await expect(qualityValidation.runValidationLink).toBeVisible()
       })
 
       test('P-AQ-SM-STATUS-2-M Verify Checking status display', async ({ sysadminPage: page }) => {
@@ -1281,9 +1281,7 @@ test.describe('API Quality Validation', () => {
         await mockValidationSummaryLoading(page)
         await portalPage.gotoVersion(V_OAS30_N)
 
-        await test.step('Verify placeholder shows Checking validation status message', async () => {
-          await expect(qualityValidation.placeholder).toContainText(MSG_CHECKING_VALIDATION)
-        })
+        await expect(qualityValidation.placeholder).toContainText(MSG_CHECKING_VALIDATION)
       })
 
       test('P-AQ-SM-STATUS-3-M Verify In Progress status display', async ({ sysadminPage: page }) => {
@@ -1293,9 +1291,7 @@ test.describe('API Quality Validation', () => {
         await mockValidationSummaryInProgress(page)
         await portalPage.gotoVersion(V_OAS30_N)
 
-        await test.step('Verify placeholder shows Validation is in progress message', async () => {
-          await expect(qualityValidation.placeholder).toContainText(MSG_VALIDATION_IN_PROGRESS)
-        })
+        await expect(qualityValidation.placeholder).toContainText(MSG_VALIDATION_IN_PROGRESS)
       })
     })
   })

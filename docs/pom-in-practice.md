@@ -659,6 +659,52 @@ export class ActivationHistoryTooltip extends Tooltip {
 }
 ```
 
+#### Filtering by Child Element Text
+
+When a container element contains multiple text elements (e.g., chips, badges, labels) and you need to filter by a specific child element's text rather than the entire container's text, use the `navigateToParent` option with a `rootLocator` pointing to the child element.
+
+**Example:** A validation ruleset container contains a name link, API type chip, and status chip. Filtering by the container's text would match all three elements, making exact matching impossible. Instead, filter by the name link's text:
+
+`QualityValidationSection.ts`
+
+```typescript
+import type { Locator } from '@playwright/test'
+import { createItemGetter, type ItemGetterConfig } from '@services/utils'
+import { Content, Icon, Link, Placeholder, Title } from '@shared/components/base'
+import { ValidationRuleset } from './QualityValidationSection/ValidationRuleset'
+
+export class QualityValidationSection {
+  // ... other properties ...
+
+  private readonly validationRulesetConfig: ItemGetterConfig<ValidationRuleset> = {
+    constructor: ValidationRuleset,
+    // Use the name link as rootLocator and navigate to parent container after filtering
+    // This allows filtering by the link's text instead of the entire container's text
+    // (which includes API type and status chips)
+    rootLocator: this.rootLocator.getByTestId('ValidationRulesetContainer').getByTestId('ValidationRulesetLinkName'),
+    navigateToParent: true,
+    componentTypes: {
+      singular: 'validation ruleset',
+      plural: 'validation rulesets',
+    },
+  }
+
+  readonly getValidationRuleset = createItemGetter(this.validationRulesetConfig)
+
+  constructor(private readonly rootLocator: Locator) {}
+}
+```
+
+**When to use this pattern:**
+
+- The container contains multiple text elements (chips, badges, labels, etc.)
+- You need to filter by a specific child element's text
+- Exact text matching fails because the container's text includes other elements
+
+**How it works:**
+
+By setting `rootLocator` to the child element (e.g., the name link) and `navigateToParent: true`, `createItemGetter` filters by the child element's text, then navigates back to the parent container. This ensures that filtering is done by the child element's text, not the container's combined text.
+
 ### TableRow with Action Buttons
 
 If a `TableRow` contains action buttons, they should be included as properties in the `TableRow` component.
@@ -724,7 +770,7 @@ POM Implementation (`CreateUpdateOperationGroupDialog.ts`)
 
 ```typescript
 export class DownloadTab extends BaseSettingsTab {
-// ... existing code ...
+  // ... existing code ...
   async downloadTemplate(): Promise<DownloadedTestFile> {
     let file!: DownloadedTestFile
     await report.step('Download OAS Template file', async () => {
@@ -734,7 +780,7 @@ export class DownloadTab extends BaseSettingsTab {
       file = await getDownloadedFile(download)
     })
     return file
-// ... existing code ...
+    // ... existing code ...
   }
 }
 ```

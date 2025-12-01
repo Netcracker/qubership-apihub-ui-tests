@@ -141,6 +141,7 @@ The same principles apply to both actions and assertions: do **not** wrap them i
 - **Grouping assertions:** Use `test.step()` to group multiple related assertions that verify a logical unit (e.g., verification groups, state checks).
 - **Context over duplication:** Do **not** wrap actions/assertions if `test.step()` would just duplicate the action name (e.g., "Click Add Ruleset button" for `addRulesetBtn.click()`). Do wrap them if `test.step()` describes the **purpose**, **context**, or **reason** (e.g., "Open dialog to verify its title" or "Verify dialog is closed to ensure we remain on correct page").
 - **Preference for context:** While simple actions/assertions can be written without `test.step()`, it is **preferred** to wrap them when doing so adds meaningful context or improves test readability.
+- **Step name guidelines:** Avoid hardcoding specific expected values in step names. Step names should describe **what** is being verified, not **what value** is expected. Use variables for expected values in assertions, not in step names. Only include specific values in step names when they are variables (e.g., `Verify ${rulesetName} is displayed`), not hardcoded strings (e.g., `Verify API Type chip shows OAS 3.0`).
 
 ```typescript
 // ✅ Correct: test.step() for grouping multiple related actions

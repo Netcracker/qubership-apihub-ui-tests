@@ -40,6 +40,7 @@ export class QualityValidationSection {
       singular: 'validation ruleset',
       plural: 'validation rulesets',
     },
+    defaultExact: false,
   }
 
   readonly getValidationRuleset = createItemGetter(this.validationRulesetConfig)

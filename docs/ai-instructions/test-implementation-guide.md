@@ -143,6 +143,32 @@ await createRulesetDialog.createBtn.click()
 
 **Prevention:** Only wrap actions/assertions in `test.step()` when the step provides additional context or groups related operations. Simple actions that duplicate the step name should be called directly.
 
+### Hardcoding Expected Values in Step Names
+
+```typescript
+// ❌ Incorrect: hardcoded expected values in step names
+await test.step('Verify API Type chip shows OAS 3.0', async () => {
+  await expect(ruleset.apiTypeChip).toHaveText(OAS_30_LABEL)
+})
+
+await test.step('Verify Status chip shows Active', async () => {
+  await expect(ruleset.statusChip).toHaveText(STATUS_ACTIVE)
+})
+
+// ✅ Correct: generic step names, values in assertions
+await test.step('Verify ruleset displays correct info', async () => {
+  await expect(ruleset.apiTypeChip).toHaveText(OAS_30_LABEL)
+  await expect(ruleset.statusChip).toHaveText(STATUS_ACTIVE)
+})
+
+// ✅ Correct: using variables in step names is acceptable
+await test.step(`Verify ${rulesetName} is displayed`, async () => {
+  await expect(ruleset.nameLink).toHaveText(rulesetName)
+})
+```
+
+**Prevention:** Avoid hardcoding specific expected values in step names. Step names should describe **what** is being verified, not **what value** is expected. Use variables for expected values in assertions, not in step names. Only include specific values in step names when they are variables, not hardcoded strings.
+
 ### Not Extracting Repeated Steps into Helper Functions
 
 ```typescript
@@ -251,6 +277,40 @@ const rulesetName = `${ALIAS_PREFIX}-Test-Name-${testIdN}`
 ```
 
 **Prevention:** All ruleset names (even for negative tests) must follow the pattern `${ALIAS_PREFIX}-<Name>-${testIdN}` to ensure proper cleanup in case of bugs.
+
+### Filtering by Container Text When Child Element Text Should Be Used
+
+When using `createItemGetter` to filter items by name, the default behavior filters by the container's entire text content. However, if the container contains multiple text elements (chips, badges, labels, etc.), exact matching may fail because the container's text includes all child elements.
+
+```typescript
+// ❌ Incorrect: filtering fails because container text includes chips
+private readonly validationRulesetConfig: ItemGetterConfig<ValidationRuleset> = {
+  constructor: ValidationRuleset,
+  rootLocator: this.rootLocator.getByTestId('ValidationRulesetContainer'),
+  componentTypes: {
+    singular: 'validation ruleset',
+    plural: 'validation rulesets',
+  },
+  // This will fail: container text is "QS-Summary-OAS30-6458OAS 3.0Active"
+  // Exact match "^QS-Summary-OAS30-6458$" won't work
+}
+readonly getValidationRuleset = createItemGetter(this.validationRulesetConfig)
+
+// ✅ Correct: use child element as rootLocator with navigateToParent
+private readonly validationRulesetConfig: ItemGetterConfig<ValidationRuleset> = {
+  constructor: ValidationRuleset,
+  // Use the name link as rootLocator and navigate to parent container after filtering
+  rootLocator: this.rootLocator.getByTestId('ValidationRulesetContainer').getByTestId('ValidationRulesetLinkName'),
+  navigateToParent: true,
+  componentTypes: {
+    singular: 'validation ruleset',
+    plural: 'validation rulesets',
+  },
+}
+readonly getValidationRuleset = createItemGetter(this.validationRulesetConfig)
+```
+
+**Prevention:** When a container contains multiple text elements and you need to filter by a specific child element's text, set `rootLocator` to the child element and use `navigateToParent: true`. This ensures that filtering is done by the child element's text, then navigates back to the parent container. See `docs/pom-in-practice.md` for more details and examples.
 
 ### Not Moving Cleanup to Correct Location
 
