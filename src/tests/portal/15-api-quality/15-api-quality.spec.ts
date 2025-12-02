@@ -718,16 +718,16 @@ test.describe('API Quality Validation', () => {
     const FAILED_DOCS_COUNT = '2'
 
     // Test data entities
-    const G_AQ_SUMMARY = new Group({
+    const G_AQ = new Group({
       name: 'API-Quality',
-      alias: 'GAQSUM',
+      alias: 'GAQ',
       parent: VAR_GR,
     })
 
     const PKG_AQ_SUMMARY_N = new Package({
       name: 'Quality-Summary',
       alias: 'PAQSUM',
-      parent: G_AQ_SUMMARY,
+      parent: G_AQ,
     })
 
     const V_OAS30_N: Version = {
@@ -842,7 +842,7 @@ test.describe('API Quality Validation', () => {
 
       // Create group and package hierarchy
       await apihubTDM.createPackage([
-        G_AQ_SUMMARY,
+        G_AQ,
         PKG_AQ_SUMMARY_N,
       ])
 

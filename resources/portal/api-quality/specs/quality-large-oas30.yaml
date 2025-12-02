@@ -1,0 +1,174 @@
+openapi: 3.0.0
+info:
+  title: Quality Tab Large Spec
+  version: 1.0.0
+paths:
+  # 1. Error 1
+  /path1:
+    get:
+      operationId: GetPath1Error
+      summary: Path 1
+      responses:
+        "200":
+          description: OK
+
+  # 2. Warning 1
+  /path2:
+    get:
+      operationId: GetPath2
+      summary: Path 2 Warning
+      responses:
+        "200":
+          description: OK
+
+  # Filler paths to increase size
+  /path3:
+    get:
+      operationId: GetPath3
+      summary: Path 3
+      responses:
+        "200":
+          description: OK
+  /path4:
+    get:
+      operationId: GetPath4
+      summary: Path 4
+      responses:
+        "200":
+          description: OK
+  /path5:
+    get:
+      operationId: GetPath5
+      summary: Path 5
+      responses:
+        "200":
+          description: OK
+
+  # 3. Info 1
+  /path6:
+    get:
+      operationId: GetPath6
+      summary: Path 6
+      description: Path 6 Info
+      responses:
+        "200":
+          description: OK
+
+  # 4. Hint 1
+  /path7:
+    get:
+      operationId: GetPath7
+      summary: Path 7
+      tags:
+        - Hint
+      responses:
+        "200":
+          description: OK
+
+  # More filler
+  /path8:
+    get:
+      operationId: GetPath8
+      summary: Path 8
+      responses:
+        "200":
+          description: OK
+  /path9:
+    get:
+      operationId: GetPath9
+      summary: Path 9
+      responses:
+        "200":
+          description: OK
+  /path10:
+    get:
+      operationId: GetPath10
+      summary: Path 10
+      responses:
+        "200":
+          description: OK
+
+  # 5. Error 2
+  /path11:
+    get:
+      operationId: GetPath11Error
+      summary: Path 11
+      responses:
+        "200":
+          description: OK
+
+  # 6. Warning 2
+  /path12:
+    get:
+      operationId: GetPath12
+      summary: Path 12 Warning
+      responses:
+        "200":
+          description: OK
+
+  # More filler
+  /path13:
+    get:
+      operationId: GetPath13
+      summary: Path 13
+      responses:
+        "200":
+          description: OK
+  /path14:
+    get:
+      operationId: GetPath14
+      summary: Path 14
+      responses:
+        "200":
+          description: OK
+  /path15:
+    get:
+      operationId: GetPath15
+      summary: Path 15
+      responses:
+        "200":
+          description: OK
+
+  # 7. Info 2
+  /path16:
+    get:
+      operationId: GetPath16
+      summary: Path 16
+      description: Path 16 Info
+      responses:
+        "200":
+          description: OK
+
+  # 8. Hint 2
+  /path17:
+    get:
+      operationId: GetPath17
+      summary: Path 17
+      tags:
+        - Hint
+      responses:
+        "200":
+          description: OK
+
+  # Final filler
+  /path18:
+    get:
+      operationId: GetPath18
+      summary: Path 18
+      responses:
+        "200":
+          description: OK
+  /path19:
+    get:
+      operationId: GetPath19
+      summary: Path 19
+      responses:
+        "200":
+          description: OK
+  /path20:
+    get:
+      operationId: GetPath20
+      summary: Path 20
+      responses:
+        "200":
+          description: OK

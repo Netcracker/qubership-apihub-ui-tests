@@ -38,7 +38,7 @@ Constants for test entities must start with a **prefix indicating the entity typ
 | Message (any text) | `MSG_`  | `MSG_RULESET_CREATED_SUCCESS`, `MSG_INVALID_FORMAT` |
 | Tooltip            | `TIP_`  | `TIP_CANNOT_DELETE_ACTIVE`                          |
 | Ruleset            | `RUL_`  | `RUL_INACTIVE_OAS30_N`, `RUL_SUMMARY_OAS31_N`       |
-| Group              | `G_`    | `G_AQ_SUMMARY`, `G_PUBLISH_VAR`                     |
+| Group              | `G_`    | `G_AQ`, `G_PUBLISH_VAR`                             |
 | Package            | `PKG_`  | `PKG_AQ_SUMMARY_N`, `PKG_MAIN_R`                    |
 | Version            | `V_`    | `V_OAS30_N`, `V_MULTI_SPEC_N`                       |
 | Workspace          | `WSP_`  | `WSP_MAIN_R`, `WSP_CREATE_N`                        |
@@ -521,3 +521,47 @@ await expect(page.getByTestId('loading')).toBeHidden()
 - **Fixtures:** Use custom fixtures from `@fixtures`.
 - **Decorators:** Implement decorators for enhanced assertions.
 - **Consistency:** Follow the established project structure and patterns.
+
+## Common Test Scenarios
+
+### Document Icon Verification
+
+When verifying document lists (e.g., in the sidebar or tables), always check for the correct file type icon using the `toHaveIcon` assertion and standard icon constants from `@shared/entities`.
+
+```typescript
+import { GRAPHQL_ICON, OPENAPI_ICON, SWAGGER_ICON } from '@shared/entities'
+
+// Verify icons in the sidebar
+await expect.soft(documentsTab.sidebar.getFileButton('petstore-2.0')).toHaveIcon(SWAGGER_ICON)
+await expect.soft(documentsTab.sidebar.getFileButton('petstore-3.0')).toHaveIcon(OPENAPI_ICON)
+await expect.soft(documentsTab.sidebar.getFileButton('graphql-schema')).toHaveIcon(GRAPHQL_ICON)
+```
+
+### Standard Search Algorithm
+
+When testing search functionality (e.g., in Document details or lists), follow this standard algorithm to ensure comprehensive coverage:
+
+1. **Part of a word**: Search for a substring (e.g., "f"). Verify results count.
+2. **Adding part of a word**: Append to the query (e.g., "inds"). Verify results refine.
+3. **Clearing a search query**: Clear the input. Verify all results return.
+4. **Two words**: Search for a phrase (e.g., "find pet"). Verify exact match.
+5. **Upper case**: Search with different casing (e.g., "Finds"). Verify case-insensitivity.
+6. **Invalid search query**: Search for non-existent text. Verify 0 results.
+
+```typescript
+await test.step('Part of a word', async () => {
+  await searchbar.fill('f')
+  await expect(table.getRow()).toHaveCount(8)
+})
+
+await test.step('Adding part of a word', async () => {
+  await searchbar.type('inds')
+  await expect(table.getRow()).toHaveCount(2)
+})
+
+await test.step('Clearing a search query', async () => {
+  await searchbar.clear()
+  await expect(table.getRow()).toHaveCount(20)
+})
+// ... continue with other steps
+```

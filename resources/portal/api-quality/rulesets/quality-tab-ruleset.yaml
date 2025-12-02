@@ -1,0 +1,44 @@
+rules:
+  # Error if operationId contains "Error"
+  tab-error-rule:
+    description: "Tab Error"
+    message: "Tab Error Found"
+    severity: error
+    given: $.paths.*.*.operationId
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: Error
+
+  # Warning if summary contains "Warning"
+  tab-warning-rule:
+    description: "Tab Warning"
+    message: "Tab Warning Found"
+    severity: warn
+    given: $.paths.*.*.summary
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: Warning
+
+  # Info if description contains "Info"
+  tab-info-rule:
+    description: "Tab Info"
+    message: "Tab Info Found"
+    severity: info
+    given: $.paths.*.*.description
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: Info
+
+  # Hint if tags contains "Hint"
+  tab-hint-rule:
+    description: "Tab Hint"
+    message: "Tab Hint Found"
+    severity: hint
+    given: $.paths.*.*.tags.*
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: Hint
