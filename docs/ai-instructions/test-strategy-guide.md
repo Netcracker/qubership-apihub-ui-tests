@@ -46,6 +46,8 @@ This document provides a complete technical specification for an AI agent to gen
   - **Steps**: [High-level steps]
   - **Expected Result**: [Verifiable outcome]
 
+> **Important**: In Part 1, avoid hardcoding specific filenames, IDs, or exact error messages (e.g., "Synthetic Error 1"). Use generic descriptions (e.g., "Select a document with errors", "Verify the error message corresponds to the issue"). Specific file names and data values must be defined in **Part 2 (TDM)** and **Part 3 (Implementation)**.
+
 ### **Test Suite: [Another Suite]**
 
 ...
