@@ -284,6 +284,30 @@ For practical examples of how to implement the Page Object Model, please refer t
 - **Complex:** `.and()`, `.or()`, `.filter()`
 - **Last Resort:** `page.locator()` with CSS selectors.
 
+### Finding and Adding Locators
+
+When implementing Page Objects or fixing locators, follow this workflow:
+
+1. **Inspect Element in Browser:**
+   - Use Chrome DevTools to inspect the target element.
+   - Check if a `data-testid` attribute already exists.
+
+2. **Prioritize `data-testid`:**
+   - If a `data-testid` exists, use it: `page.getByTestId('ExistingId')`.
+   - If no `data-testid` exists, **your primary goal is to add one**.
+
+3. **Add Missing `data-testid`:**
+   - Locate the component in the UI codebase.
+   - Add the attribute: `data-testid="MeaningfulContextComponent"` (PascalCase).
+   - If you cannot modify the UI code (e.g., third-party library), proceed to Step 4.
+
+4. **Use Playwright Locators (Fallback):**
+   - If `data-testid` cannot be used, rely on robust Playwright locators:
+     - `getByRole('button', { name: 'Save' })`
+     - `getByLabel('Username')`
+     - `getByText('Success')`
+   - Use `page.locator('css-selector')` only as a last resort for complex structures.
+
 ```typescript
 // Preferred approach
 const submitButton = page.getByTestId('SubmitButton')
@@ -465,6 +489,7 @@ test('Create a new workspace', async ({ apihubTDM }) => {
   Masking failures with workarounds like arbitrary timeouts is strictly forbidden. The primary goal is to identify and fix the root cause.
 - **Mandatory Use of Debugging Tools (MCP):** To comply with the root cause analysis principle, you **must** utilize the powerful debugging tools at your disposal, particularly the Playwright MCP tools.
   When a test fails because an element is not found or visible, use tools like `browser_snapshot` to capture the accessibility tree or `take_screenshot` to visually inspect the UI.
+- **Finding Unknown testId - MANDATORY FIRST STEP:** When testId is unknown or element cannot be located, **IMMEDIATELY** use Playwright MCP browser tools (`browser_navigate` + `browser_snapshot` + `browser_click`) to inspect the actual page and identify the correct testId. Do NOT guess testId values or search codebase first - use browser inspection as the primary method. Only after identifying the correct testId through browser inspection, proceed with implementation.
   Interacting with the live browser session via MCP tools is the required method for diagnosing UI-related test failures, not guessing or assuming.
 
 ## Performance & Reliability
