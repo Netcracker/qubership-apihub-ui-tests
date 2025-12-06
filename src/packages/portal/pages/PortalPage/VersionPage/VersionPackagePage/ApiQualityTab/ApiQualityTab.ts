@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { createItemGetter, type ItemGetterConfig } from '@services/utils'
-import { Placeholder, Tab, Title } from '@shared/components/base'
+import { Placeholder, Tab } from '@shared/components/base'
 import { RawView } from '@shared/components/custom/views/RawView'
 import { RulesetInfoDialog } from '../../VersionOverviewTab/OverviewSummaryTab/components/RulesetInfoDialog'
 import { ValidationRuleset } from '../../VersionOverviewTab/OverviewSummaryTab/OverviewSummaryTabBody/QualityValidationSection/ValidationRuleset'
@@ -8,7 +8,6 @@ import { ValidatedDocumentSelect } from './ValidatedDocumentSelect'
 import { ValidationResultsTableRow } from './ValidationResultsTableRow'
 
 export class ApiQualityTab extends Tab {
-  readonly title = new Title(this.page.getByTestId('QualityValidationTitle'), 'Quality Validation')
   readonly noResultsPlaceholder = new Placeholder(
     this.page.getByTestId('ApiQualityNoResultsPlaceholder'),
     'API Quality no results',
@@ -34,6 +33,6 @@ export class ApiQualityTab extends Tab {
   readonly getProblemRow = createItemGetter(this.problemRowConfig)
 
   constructor(protected readonly page: Page) {
-    super(page.getByTestId('ApiQualityTabButton'), 'API Quality')
+    super(page.getByTestId('ApiQualityButton'), 'API Quality')
   }
 }

@@ -48,6 +48,13 @@ test.describe('API Quality Validation', () => {
   const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
   const currentFormattedDate = formatDateToUI(new Date())
 
+  // Shared test data entities
+  const G_AQ = new Group({
+    name: 'API-Quality',
+    alias: 'GAQ',
+    parent: VAR_GR,
+  })
+
   // Shared helper functions
   const mockSystemConfigurationToDisableLinter = async (page: Page): Promise<void> => {
     await test.step('Mock system configuration API to disable linter', async () => {
@@ -70,6 +77,11 @@ test.describe('API Quality Validation', () => {
       })
     })
   }
+
+  test.beforeAll(async ({ apihubTDM }) => {
+    // Create shared group for all API Quality tests
+    await apihubTDM.createPackage([G_AQ])
+  })
 
   test.afterAll(async ({ lintRulesetTdm }) => {
     await activateDefaultRulesetsAndCleanup(lintRulesetTdm, testIdN)
@@ -718,12 +730,6 @@ test.describe('API Quality Validation', () => {
     const FAILED_DOCS_COUNT = '2'
 
     // Test data entities
-    const G_AQ = new Group({
-      name: 'API-Quality',
-      alias: 'GAQ',
-      parent: VAR_GR,
-    })
-
     const PKG_AQ_SUMMARY_N = new Package({
       name: 'Quality-Summary',
       alias: 'PAQSUM',
@@ -840,11 +846,8 @@ test.describe('API Quality Validation', () => {
       // Extended timeout for API publishing
       test.setTimeout(HOOK_PUBLISH_TIMEOUT)
 
-      // Create group and package hierarchy
-      await apihubTDM.createPackage([
-        G_AQ,
-        PKG_AQ_SUMMARY_N,
-      ])
+      // Create package hierarchy (G_AQ is already created at top level)
+      await apihubTDM.createPackage([PKG_AQ_SUMMARY_N])
 
       // Create custom rulesets for quality validation
       const oas30Ruleset = await lintRulesetTdm.createRuleset({
@@ -1053,6 +1056,15 @@ test.describe('API Quality Validation', () => {
           await qualityValidation.failedDocumentsInfoIcon.hover()
           await expect(portalPage.tooltip).toContainText(MOCK_FAILED_DOC_1)
           await expect(portalPage.tooltip).toContainText(MOCK_FAILED_DOC_2)
+        })
+
+        await test.step('Verify API Quality tab is disabled', async () => {
+          await expect(portalPage.versionPackagePage.apiQualityTab).toBeDisabled()
+        })
+
+        await test.step('Hover over API Quality tab and verify tooltip', async () => {
+          await portalPage.versionPackagePage.apiQualityTab.hover({ force: true })
+          await expect(portalPage.tooltip).toHaveText('API quality check is failed')
         })
       })
     })
@@ -1291,7 +1303,103 @@ test.describe('API Quality Validation', () => {
         await mockValidationSummaryInProgress(page)
         await portalPage.gotoVersion(V_OAS30_N)
 
-        await expect(qualityValidation.placeholder).toContainText(MSG_VALIDATION_IN_PROGRESS)
+        await test.step('Verify placeholder shows in progress message', async () => {
+          await expect(qualityValidation.placeholder).toContainText(MSG_VALIDATION_IN_PROGRESS)
+        })
+
+        await test.step('Verify API Quality tab is disabled', async () => {
+          await expect(portalPage.versionPackagePage.apiQualityTab).toBeDisabled()
+        })
+
+        await test.step('Hover over API Quality tab and verify tooltip', async () => {
+          await portalPage.versionPackagePage.apiQualityTab.hover({ force: true })
+          await expect(portalPage.tooltip).toHaveText('API quality check is in progress')
+        })
+      })
+    })
+  })
+
+  test.describe('API Quality Tab', () => {
+    // Test resource files
+    const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
+    const FILE_QUALITY_TAB_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'quality-tab-ruleset.yaml'), {
+      yamlString: 'rules:',
+    })
+    const FILE_QUALITY_TAB_LARGE = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'quality-tab-large.yaml'))
+
+    // Test data entities
+    const PKG_AQ_TAB_N = new Package({
+      name: 'Quality-Tab',
+      alias: 'PAQTAB',
+      parent: G_AQ,
+    })
+
+    const V_AQ_TAB_MIXED_N: Version = {
+      pkg: PKG_AQ_TAB_N,
+      version: 'v2-tab-mixed',
+      status: 'draft',
+      files: [{ file: FILE_QUALITY_TAB_LARGE }],
+    }
+
+    // Ruleset data
+    let RUL_QUALITY_TAB_OAS30_N: { id: string; name: string }
+
+    test.beforeAll(async ({ apihubTDM, lintRulesetTdm }) => {
+      // Extended timeout for API publishing
+      test.setTimeout(HOOK_PUBLISH_TIMEOUT)
+
+      // Create package hierarchy (G_AQ is already created at top level)
+      await apihubTDM.createPackage([PKG_AQ_TAB_N])
+
+      // Create custom ruleset for API Quality Tab tests
+      const qualityTabRuleset = await lintRulesetTdm.createRuleset({
+        rulesetName: `${ALIAS_PREFIX}-Quality-Tab-OAS30-${testIdN}`,
+        apiType: LintRulesetApiTypes.OAS_3_0,
+        linter: LintRulesetLinters.SPECTRAL,
+        rulesetFile: FILE_QUALITY_TAB_RULESET,
+      })
+      RUL_QUALITY_TAB_OAS30_N = { id: qualityTabRuleset.id, name: qualityTabRuleset.name }
+
+      // Activate ruleset for OAS 3.0
+      await lintRulesetTdm.activateRuleset(RUL_QUALITY_TAB_OAS30_N)
+
+      // Publish version for API Quality Tab tests
+      await apihubTDM.publishVersion(V_AQ_TAB_MIXED_N)
+
+      // Wait for validation to complete after publishing
+      await lintRulesetTdm.waitForValidationToComplete({
+        packageId: PKG_AQ_TAB_N.packageId,
+        version: V_AQ_TAB_MIXED_N.version,
+      })
+    })
+
+    test.describe('UI Visibility and Navigation', () => {
+      test('P-AQ-TAB-UI-1 Verify API Quality Tab visibility and navigation', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+
+        await test.step('Navigate to the Package Version page', async () => {
+          await portalPage.gotoVersion(V_AQ_TAB_MIXED_N)
+        })
+
+        await test.step('Open the API Quality tab', async () => {
+          await apiQualityTab.click()
+        })
+
+        await test.step('Verify API Quality tab opening and document selector', async () => {
+          await expect(apiQualityTab.documentSlt).toBeVisible()
+          await expect(apiQualityTab.documentSlt).not.toBeEmpty()
+        })
+
+        await test.step('Verify the Issue List table is visible', async () => {
+          await expect(apiQualityTab.getProblemRow(1)).toBeVisible()
+        })
+
+        await test.step('Verify the Document Viewer is visible', async () => {
+          await expect(apiQualityTab.rawView).toBeVisible()
+        })
       })
     })
   })

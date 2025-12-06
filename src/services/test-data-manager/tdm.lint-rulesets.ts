@@ -10,10 +10,10 @@ import {
   rClearLinterTestData,
   rCreateRuleset,
   rDeleteRuleset,
-  rGetValidationStatus,
   type Rest,
   rGetRuleset,
   rGetRulesets,
+  rGetValidationStatus,
   rRunValidation,
   type RunValidationRestParams,
   type ValidationStatusRestDto,
@@ -180,18 +180,8 @@ export class LintRulesetsTestDataManager {
     }, { box: true })
   }
 
-  async runValidation({ packageId, version }: RunValidationRestParams): Promise<void> {
-    const message = `Running validation for "${packageId}" package version "${version}"`
-
-    await test.step(message, async () => {
-      const response = await this.rest.send(rRunValidation, [202], { packageId, version })
-
-      if (response.status() !== 202) {
-        throw Error(await getRestFailMsg(message, response))
-      }
-    }, { box: true })
-
-    await test.step('Waiting for validation to complete', async () => {
+  async waitForValidationToComplete({ packageId, version }: RunValidationRestParams): Promise<void> {
+    await test.step(`Waiting for validation to complete for "${packageId}" package version "${version}"`, async () => {
       const maxAttempts = 30
       const pollInterval = 2000
 
@@ -210,5 +200,19 @@ export class LintRulesetsTestDataManager {
 
       throw Error(`Validation did not complete within ${maxAttempts * pollInterval / 1000} seconds`)
     }, { box: true })
+  }
+
+  async runValidation({ packageId, version }: RunValidationRestParams): Promise<void> {
+    const message = `Running validation for "${packageId}" package version "${version}"`
+
+    await test.step(message, async () => {
+      const response = await this.rest.send(rRunValidation, [202], { packageId, version })
+
+      if (response.status() !== 202) {
+        throw Error(await getRestFailMsg(message, response))
+      }
+    }, { box: true })
+
+    await this.waitForValidationToComplete({ packageId, version })
   }
 }

@@ -141,7 +141,8 @@ The same principles apply to both actions and assertions: do **not** wrap them i
 - **Grouping assertions:** Use `test.step()` to group multiple related assertions that verify a logical unit (e.g., verification groups, state checks).
 - **Context over duplication:** Do **not** wrap actions/assertions if `test.step()` would just duplicate the action name (e.g., "Click Add Ruleset button" for `addRulesetBtn.click()`). Do wrap them if `test.step()` describes the **purpose**, **context**, or **reason** (e.g., "Open dialog to verify its title" or "Verify dialog is closed to ensure we remain on correct page").
 - **Preference for context:** While simple actions/assertions can be written without `test.step()`, it is **preferred** to wrap them when doing so adds meaningful context or improves test readability.
-- **Step name guidelines:** Avoid hardcoding specific expected values in step names. Step names should describe **what** is being verified, not **what value** is expected. Use variables for expected values in assertions, not in step names. Only include specific values in step names when they are variables (e.g., `Verify ${rulesetName} is displayed`), not hardcoded strings (e.g., `Verify API Type chip shows OAS 3.0`).
+- **Step name guidelines:** Avoid hardcoding specific expected values in step names. Step names should describe **what** is being verified, not **what value** is expected.
+  Use variables for expected values in assertions, not in step names. Only include specific values in step names when they are variables (e.g., `Verify ${rulesetName} is displayed`), not hardcoded strings (e.g., `Verify API Type chip shows OAS 3.0`).
 
 ```typescript
 // ✅ Correct: test.step() for grouping multiple related actions
@@ -331,6 +332,7 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
 - Implement custom assertions for domain-specific validations
 - Use the `expectFile` helper for file-based assertions. It requires a `DownloadedTestFile` object returned from a download action
 - Use `toHaveCount()` to verify the number of elements
+- **Empty/Non-empty assertions:** Use `toBeEmpty()` and `not.toBeEmpty()` instead of `toHaveText('')` and `not.toHaveText('')` for checking if elements contain content. This is more semantic and readable.
 - **Robust Assertions:** When asserting that an element is **hidden**, always add a complementary assertion to verify that the page or component has loaded correctly.
   This prevents false positives where the entire page fails to load. Check for a stable, always-present element, like a page title or another tab.
   When verifying that a dialog is closed, also verify that you remain on the correct page with the expected content visible.
@@ -372,6 +374,13 @@ test.describe('Feature Suite', () => {
     await expect(historyCell).toHaveText(`${currentFormattedDate} - ${currentFormattedDate}`)
   })
 })
+
+// Empty/non-empty assertions
+await expect(inputField).toBeEmpty()
+await expect(dropdown).not.toBeEmpty()
+// ❌ Incorrect: use toBeEmpty() instead
+await expect(inputField).toHaveText('')
+await expect(dropdown).not.toHaveText('')
 ```
 
 ## Test Data Management
@@ -489,7 +498,8 @@ test('Create a new workspace', async ({ apihubTDM }) => {
   Masking failures with workarounds like arbitrary timeouts is strictly forbidden. The primary goal is to identify and fix the root cause.
 - **Mandatory Use of Debugging Tools (MCP):** To comply with the root cause analysis principle, you **must** utilize the powerful debugging tools at your disposal, particularly the Playwright MCP tools.
   When a test fails because an element is not found or visible, use tools like `browser_snapshot` to capture the accessibility tree or `take_screenshot` to visually inspect the UI.
-- **Finding Unknown testId - MANDATORY FIRST STEP:** When testId is unknown or element cannot be located, **IMMEDIATELY** use Playwright MCP browser tools (`browser_navigate` + `browser_snapshot` + `browser_click`) to inspect the actual page and identify the correct testId. Do NOT guess testId values or search codebase first - use browser inspection as the primary method. Only after identifying the correct testId through browser inspection, proceed with implementation.
+- **Finding Unknown testId - MANDATORY FIRST STEP:** When testId is unknown or element cannot be located, **IMMEDIATELY** use Playwright MCP browser tools (`browser_navigate` + `browser_snapshot` + `browser_click`) to inspect the actual page and identify the correct testId.
+  Do NOT guess testId values or search codebase first - use browser inspection as the primary method. Only after identifying the correct testId through browser inspection, proceed with implementation.
   Interacting with the live browser session via MCP tools is the required method for diagnosing UI-related test failures, not guessing or assuming.
 
 ## Performance & Reliability
