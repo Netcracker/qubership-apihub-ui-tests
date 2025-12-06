@@ -6,12 +6,13 @@ import {
   LintRulesetStatuses,
   RULESET_API_TYPE_TITLE_MAP,
   SERVER_DEFAULT_RULESETS,
+  VERSION_API_QUALITY_TAB_REST,
 } from '@portal/entities'
 import { PortalPage } from '@portal/pages'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
 import type { LintRulesetsTestDataManager } from '@services/test-data-manager'
 import { formatDateToUI } from '@services/utils'
-import { ROOT_RESOURCES, TestFile } from '@shared/entities'
+import { OPENAPI_ICON, ROOT_RESOURCES, TestFile } from '@shared/entities'
 import { VAR_GR } from '@test-data/portal/groups'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
 import type { Version } from '@test-data/props'
@@ -47,6 +48,8 @@ test.describe('API Quality Validation', () => {
   // Shared constants
   const { ACTIVE: STATUS_ACTIVE, INACTIVE: STATUS_INACTIVE } = LintRulesetStatuses
   const currentFormattedDate = formatDateToUI(new Date())
+  const OAS_30_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
+  const OAS_31_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_1]
 
   // Shared test data entities
   const G_AQ = new Group({
@@ -661,10 +664,6 @@ test.describe('API Quality Validation', () => {
   })
 
   test.describe('Quality Summary Tab', () => {
-    // Constants
-    const OAS_30_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
-    const OAS_31_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_1]
-
     // Test resource files
     const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
     const FILE_SUMMARY_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'summary-ruleset.yaml'), {
@@ -1326,6 +1325,13 @@ test.describe('API Quality Validation', () => {
       yamlString: 'rules:',
     })
     const FILE_QUALITY_TAB_LARGE = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'quality-tab-large.yaml'))
+    const FILE_SUMMARY_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas30.yaml'), {
+      yamlString: 'OAS 3.0 Spec TriggerError',
+    })
+    const FILE_SUMMARY_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas31.yaml'), {
+      yamlString: 'OAS 3.1 Spec TriggerError',
+    })
+    const FILE_SUMMARY_GRAPHQL = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-graphql.graphql'))
 
     // Test data entities
     const PKG_AQ_TAB_N = new Package({
@@ -1341,8 +1347,20 @@ test.describe('API Quality Validation', () => {
       files: [{ file: FILE_QUALITY_TAB_LARGE }],
     }
 
+    const V_AQ_TAB_MULTI_N: Version = {
+      pkg: PKG_AQ_TAB_N,
+      version: 'v1-tab-multi',
+      status: 'draft',
+      files: [
+        { file: FILE_SUMMARY_OAS30 },
+        { file: FILE_SUMMARY_OAS31 },
+        { file: FILE_SUMMARY_GRAPHQL },
+      ],
+    }
+
     // Ruleset data
     let RUL_QUALITY_TAB_OAS30_N: { id: string; name: string }
+    let RUL_QUALITY_TAB_OAS31_N: { id: string; name: string }
 
     test.beforeAll(async ({ apihubTDM, lintRulesetTdm }) => {
       // Extended timeout for API publishing
@@ -1351,25 +1369,39 @@ test.describe('API Quality Validation', () => {
       // Create package hierarchy (G_AQ is already created at top level)
       await apihubTDM.createPackage([PKG_AQ_TAB_N])
 
-      // Create custom ruleset for API Quality Tab tests
-      const qualityTabRuleset = await lintRulesetTdm.createRuleset({
+      // Create custom rulesets for API Quality Tab tests
+      const qualityTabRulesetOas30 = await lintRulesetTdm.createRuleset({
         rulesetName: `${ALIAS_PREFIX}-Quality-Tab-OAS30-${testIdN}`,
         apiType: LintRulesetApiTypes.OAS_3_0,
         linter: LintRulesetLinters.SPECTRAL,
         rulesetFile: FILE_QUALITY_TAB_RULESET,
       })
-      RUL_QUALITY_TAB_OAS30_N = { id: qualityTabRuleset.id, name: qualityTabRuleset.name }
+      RUL_QUALITY_TAB_OAS30_N = { id: qualityTabRulesetOas30.id, name: qualityTabRulesetOas30.name }
 
-      // Activate ruleset for OAS 3.0
+      const qualityTabRulesetOas31 = await lintRulesetTdm.createRuleset({
+        rulesetName: `${ALIAS_PREFIX}-Quality-Tab-OAS31-${testIdN}`,
+        apiType: LintRulesetApiTypes.OAS_3_1,
+        linter: LintRulesetLinters.SPECTRAL,
+        rulesetFile: FILE_QUALITY_TAB_RULESET,
+      })
+      RUL_QUALITY_TAB_OAS31_N = { id: qualityTabRulesetOas31.id, name: qualityTabRulesetOas31.name }
+
+      // Activate rulesets for OAS 3.0 and OAS 3.1
       await lintRulesetTdm.activateRuleset(RUL_QUALITY_TAB_OAS30_N)
+      await lintRulesetTdm.activateRuleset(RUL_QUALITY_TAB_OAS31_N)
 
-      // Publish version for API Quality Tab tests
+      // Publish versions for API Quality Tab tests
       await apihubTDM.publishVersion(V_AQ_TAB_MIXED_N)
+      await apihubTDM.publishVersion(V_AQ_TAB_MULTI_N)
 
       // Wait for validation to complete after publishing
       await lintRulesetTdm.waitForValidationToComplete({
         packageId: PKG_AQ_TAB_N.packageId,
         version: V_AQ_TAB_MIXED_N.version,
+      })
+      await lintRulesetTdm.waitForValidationToComplete({
+        packageId: PKG_AQ_TAB_N.packageId,
+        version: V_AQ_TAB_MULTI_N.version,
       })
     })
 
@@ -1399,6 +1431,147 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify the Document Viewer is visible', async () => {
           await expect(apiQualityTab.rawView).toBeVisible()
+        })
+      })
+    })
+
+    test.describe('Document Selector', () => {
+      async function navigateToApiQualityTab(portalPage: PortalPage): Promise<void> {
+        await test.step('Navigate to the API Quality tab', async () => {
+          await portalPage.gotoVersion(V_AQ_TAB_MULTI_N, VERSION_API_QUALITY_TAB_REST)
+        })
+      }
+
+      test('P-AQ-TAB-DOC-1 Verify Document Selector list content and icons', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { documentSlt } = apiQualityTab
+
+        const oas30Doc = documentSlt.getListItem(FILE_SUMMARY_OAS30.name)
+        const oas31Doc = documentSlt.getListItem(FILE_SUMMARY_OAS31.name)
+        const graphqlDoc = documentSlt.getListItem(FILE_SUMMARY_GRAPHQL.name)
+
+        await navigateToApiQualityTab(portalPage)
+
+        await test.step('Open the Document Selector dropdown', async () => {
+          await documentSlt.click()
+        })
+
+        await test.step('Verify list contains all validated OAS documents with correct icons and names', async () => {
+          await expect(oas30Doc).toBeVisible()
+          await expect(oas30Doc).toHaveIcon(OPENAPI_ICON)
+          await expect(oas30Doc).toHaveText(FILE_SUMMARY_OAS30.name)
+
+          await expect(oas31Doc).toBeVisible()
+          await expect(oas31Doc).toHaveIcon(OPENAPI_ICON)
+          await expect(oas31Doc).toHaveText(FILE_SUMMARY_OAS31.name)
+        })
+
+        await test.step('Verify the list does NOT contain the GraphQL document', async () => {
+          await expect(graphqlDoc).toBeHidden()
+        })
+      })
+
+      test('P-AQ-TAB-DOC-2 Verify Document Selector Search', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { documentSlt } = apiQualityTab
+
+        const oas30Doc = documentSlt.getListItem(FILE_SUMMARY_OAS30.name)
+        const oas31Doc = documentSlt.getListItem(FILE_SUMMARY_OAS31.name)
+
+        await navigateToApiQualityTab(portalPage)
+
+        await test.step('Open the Document Selector dropdown', async () => {
+          await documentSlt.click()
+        })
+
+        await test.step('Part of a word', async () => {
+          await documentSlt.searchBar.fill('sum')
+          await expect(oas30Doc).toBeVisible()
+          await expect(oas31Doc).toBeVisible()
+        })
+
+        await test.step('Adding part of a word', async () => {
+          await documentSlt.searchBar.fill('summary-oas30')
+          await expect(oas30Doc).toBeVisible()
+          await expect(oas31Doc).toBeHidden()
+        })
+
+        await test.step('Clearing a search query', async () => {
+          await documentSlt.searchBar.clear()
+          await expect(oas30Doc).toBeVisible()
+          await expect(oas31Doc).toBeVisible()
+        })
+
+        await test.step('Case insensitive search', async () => {
+          await documentSlt.searchBar.fill('oas31')
+          await expect(oas30Doc).toBeHidden()
+          await expect(oas31Doc).toBeVisible()
+          await documentSlt.searchBar.fill('OAS31')
+          await expect(oas30Doc).toBeHidden()
+          await expect(oas31Doc).toBeVisible()
+        })
+
+        await test.step('Invalid search query', async () => {
+          await documentSlt.searchBar.fill('nonexistent-document')
+          await expect(oas30Doc).toBeHidden()
+          await expect(oas31Doc).toBeHidden()
+        })
+      })
+
+      test('P-AQ-TAB-DOC-3 Verify Switching Documents', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { documentSlt } = apiQualityTab
+
+        const oas31Doc = documentSlt.getListItem(FILE_SUMMARY_OAS31.name)
+
+        await navigateToApiQualityTab(portalPage)
+
+        await test.step(`Verify ${FILE_SUMMARY_OAS30.name} is selected by default`, async () => {
+          await expect(documentSlt).toHaveText(FILE_SUMMARY_OAS30.name)
+        })
+
+        await test.step(`Verify ruleset info for ${FILE_SUMMARY_OAS30.name}`, async () => {
+          await expect(apiQualityTab.ruleset.nameLink).toBeVisible()
+          await expect(apiQualityTab.ruleset.nameLink).toContainText(RUL_QUALITY_TAB_OAS30_N.name)
+          await expect(apiQualityTab.ruleset.apiTypeChip).toBeVisible()
+          await expect(apiQualityTab.ruleset.apiTypeChip).toHaveText(OAS_30_LABEL)
+          await expect(apiQualityTab.ruleset.statusChip).toBeVisible()
+          await expect(apiQualityTab.ruleset.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+
+        await test.step(`Verify document content for ${FILE_SUMMARY_OAS30.name}`, async () => {
+          await expect(apiQualityTab.rawView).toBeVisible()
+          await expect(apiQualityTab.rawView).toContainText(FILE_SUMMARY_OAS30.testMeta!.yamlString!)
+        })
+
+        await test.step(`Open Document Selector and select ${FILE_SUMMARY_OAS31.name}`, async () => {
+          await documentSlt.click()
+          await oas31Doc.click()
+        })
+
+        await test.step(`Verify Document Selector shows ${FILE_SUMMARY_OAS31.name}`, async () => {
+          await expect(documentSlt).toHaveText(FILE_SUMMARY_OAS31.name)
+        })
+
+        await test.step(`Verify ruleset info for ${FILE_SUMMARY_OAS31.name}`, async () => {
+          await expect(apiQualityTab.ruleset.nameLink).toBeVisible()
+          await expect(apiQualityTab.ruleset.nameLink).toContainText(RUL_QUALITY_TAB_OAS31_N.name)
+          await expect(apiQualityTab.ruleset.apiTypeChip).toBeVisible()
+          await expect(apiQualityTab.ruleset.apiTypeChip).toHaveText(OAS_31_LABEL)
+          await expect(apiQualityTab.ruleset.statusChip).toBeVisible()
+          await expect(apiQualityTab.ruleset.statusChip).toHaveText(STATUS_ACTIVE)
+        })
+
+        await test.step(`Verify document content for ${FILE_SUMMARY_OAS31.name}`, async () => {
+          await expect(apiQualityTab.rawView).toBeVisible()
+          await expect(apiQualityTab.rawView).toContainText(FILE_SUMMARY_OAS31.testMeta!.yamlString!)
         })
       })
     })
