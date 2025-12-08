@@ -1376,6 +1376,7 @@ test.describe('API Quality Validation', () => {
     })
     const FILE_TAB_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-large-oas30.yaml'), {
       yamlString: 'Synthetic Large Spec',
+      jsonString: '"openapi": "3.0.0"',
     })
     const FILE_TAB_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-combo-oas31.yaml'), {
       yamlString: 'Synthetic Combo Spec',
@@ -1504,6 +1505,10 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Document Selector', () => {
+      // Note: Documents in selector are ordered alphabetically by their slug.
+      // For V_AQ_TAB_MIXED_N: aq-tab-combo-oas31.yaml comes before aq-tab-large-oas30.yaml (combo < large).
+      // So by default OAS 3.1 document is selected, which corresponds to RUL_QUALITY_TAB_OAS31_N.
+
       test('P-AQ-TAB-DOC-1 Verify Document Selector list content and icons', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
@@ -1591,9 +1596,6 @@ test.describe('API Quality Validation', () => {
         const { apiQualityTab } = portalPage.versionPackagePage
         const { documentSlt } = apiQualityTab
 
-        // Note: Documents in selector are ordered alphabetically by their slug
-        // So aq-tab-combo-oas31.yaml comes before aq-tab-large-oas30.yaml (combo < large)
-
         const oas30Doc = documentSlt.getListItem(FILE_TAB_OAS30.name)
 
         const verifyDocumentContent = async (
@@ -1639,18 +1641,15 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Ruleset and Dialog Interactions', () => {
-      // Note: Documents in selector are ordered alphabetically by their slug.
-      // For V_AQ_TAB_MIXED_N: aq-tab-combo-oas31.yaml comes before aq-tab-large-oas30.yaml (combo < large).
-      // So by default OAS 3.1 document is selected, which corresponds to RUL_QUALITY_TAB_OAS31_N.
-
       // Helper functions - Actions
       const navigateToApiQualityTabAndOpenRulesetDialog = async (
         portalPage: PortalPage,
         version: Version,
       ): Promise<RulesetInfoDialog> => {
+        const { apiQualityTab } = portalPage.versionPackagePage
+
         await navigateToApiQualityTab(portalPage, version)
 
-        const { apiQualityTab } = portalPage.versionPackagePage
         await test.step('Open ruleset dialog', async () => {
           await apiQualityTab.nameLink.click()
         })
@@ -1691,6 +1690,159 @@ test.describe('API Quality Validation', () => {
         await navigateToApiQualityTabAndOpenRulesetDialog(portalPage, V_AQ_TAB_MIXED_N)
 
         await verifyRulesetCopyLink(portalPage, RUL_QUALITY_TAB_OAS31_N)
+      })
+    })
+
+    test.describe('Content and Interactions', () => {
+      const MSG_ERROR_1 = 'Synthetic Error 1 Found'
+      const MSG_ERROR_2 = 'Synthetic Error 2 Found'
+      const MSG_WARNING_1 = 'Synthetic Warning 1 Found'
+      const MSG_WARNING_2 = 'Synthetic Warning 2 Found'
+      const MSG_INFO_1 = 'Synthetic Info 1 Found'
+      const MSG_INFO_2 = 'Synthetic Info 2 Found'
+      const MSG_HINT_1 = 'Synthetic Hint 1 Found'
+      const MSG_HINT_2 = 'Synthetic Hint 2 Found'
+
+      // According to test plan: Issues should be sorted by severity order: Error -> Warning -> Info -> Hint
+      // Within the same severity, sorted by document position (line/column) from start to end
+      // Expected order: Error1, Error2, Warning1, Warning2, Info1, Info2, Hint1, Hint2
+      const SORTED_ISSUES_BY_SEVERITY = [
+        MSG_ERROR_1,
+        MSG_ERROR_2,
+        MSG_WARNING_1,
+        MSG_WARNING_2,
+        MSG_INFO_1,
+        MSG_INFO_2,
+        MSG_HINT_1,
+        MSG_HINT_2,
+      ]
+
+      // Severity icon names
+      const ERROR_ICON = 'ErrorIcon'
+      const WARNING_ICON = 'WarningIcon'
+      const INFO_ICON = 'InfoIcon'
+      const HINT_ICON = 'HintIcon'
+
+      test('P-AQ-TAB-CONTENT-1 Verify Issue List displays issues with correct structure', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+
+        await test.step('Switch to OAS 3.0 document', async () => {
+          await apiQualityTab.documentSlt.click()
+          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
+        })
+
+        await test.step('Verify issues display severity icons', async () => {
+          // Verify Error icon
+          const errorRow = apiQualityTab.getProblemRow(MSG_ERROR_1)
+          await expect(errorRow.typeCell).toHaveIcon(ERROR_ICON)
+
+          // Verify Warning icon
+          const warningRow = apiQualityTab.getProblemRow(MSG_WARNING_1)
+          await expect(warningRow.typeCell).toHaveIcon(WARNING_ICON)
+
+          // Verify Info icon
+          const infoRow = apiQualityTab.getProblemRow(MSG_INFO_1)
+          await expect(infoRow.typeCell).toHaveIcon(INFO_ICON)
+
+          // Verify Hint icon
+          const hintRow = apiQualityTab.getProblemRow(MSG_HINT_1)
+          await expect(hintRow.typeCell).toHaveIcon(HINT_ICON)
+        })
+      })
+
+      test('P-AQ-TAB-CONTENT-2 Verify Format Toggler (YAML/JSON)', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { rawView } = apiQualityTab
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+
+        await test.step('Switch to OAS 3.0 document', async () => {
+          await apiQualityTab.documentSlt.click()
+          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
+        })
+
+        await test.step('Verify default format is YAML', async () => {
+          await expect(rawView.yamlBtn).toBePressed()
+          await expect(rawView).toContainText(FILE_TAB_OAS30.testMeta!.yamlString!)
+        })
+
+        await test.step('Click JSON in the toggler and verify Editor content is JSON', async () => {
+          await rawView.jsonBtn.click()
+          await expect(rawView.jsonBtn).toBePressed()
+          await expect(rawView).toContainText(FILE_TAB_OAS30.testMeta!.jsonString!)
+        })
+
+        await test.step('Click YAML in the toggler and verify Editor content is YAML', async () => {
+          await rawView.yamlBtn.click()
+          await expect(rawView.yamlBtn).toBePressed()
+          await expect(rawView).toContainText(FILE_TAB_OAS30.testMeta!.yamlString!)
+        })
+      })
+
+      test('P-AQ-TAB-CONTENT-3 Verify Issue Navigation (Highlight)', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { rawView } = apiQualityTab
+
+        const selectedIssueMessage = MSG_HINT_2
+        const expectedLineNumber = 303
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+
+        await test.step('Switch to OAS 3.0 document for more issues', async () => {
+          await apiQualityTab.documentSlt.click()
+          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
+        })
+
+        await test.step('Click on an issue in the Issue List table', async () => {
+          const issueRow = apiQualityTab.getProblemRow(selectedIssueMessage)
+          await issueRow.click()
+        })
+
+        await test.step('Verify the corresponding line in Document Viewer is highlighted and visible', async () => {
+          // Verify the line number is visible and in viewport
+          const lineElement = rawView.getLine(expectedLineNumber)
+          await expect(lineElement).toBeVisible()
+          await expect(lineElement).toBeInViewport()
+
+          // TODO: Verify the line has a selection marker
+          const selectedDecorator = rawView.mainLocator.locator('.MonacoSelectedDecorator')
+          await expect(selectedDecorator).toBeVisible()
+        })
+      })
+
+      test.skip('P-AQ-TAB-CONTENT-4 Verify Validation Issues Sorting', {
+        tag: '@smoke',
+        annotation: {
+          type: 'issue',
+          description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
+        },
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+
+        await test.step('Switch to OAS 3.0 document with multiple issues', async () => {
+          await apiQualityTab.documentSlt.click()
+          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
+        })
+
+        await test.step('Verify issues are sorted by severity order (Error -> Warning -> Info -> Hint)', async () => {
+          // Verify the expected number of issues
+          await expect(apiQualityTab.getProblemRow()).toHaveCount(8)
+
+          for (let i = 0; i < SORTED_ISSUES_BY_SEVERITY.length; i++) {
+            const row = apiQualityTab.getProblemRow(i + 1)
+            await expect(row.messageCell).toContainText(SORTED_ISSUES_BY_SEVERITY[i])
+          }
+        })
       })
     })
   })

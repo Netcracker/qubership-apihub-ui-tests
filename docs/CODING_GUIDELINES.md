@@ -470,6 +470,24 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
   await expect(qualityValidation.title).toBeVisible()
   ```
 - **Tooltips:** Surface every tooltip through the shared `portalPage.tooltip` (or the equivalent page-level component). Hover the interactive element to trigger the tooltip, then assert the text via `portalPage.tooltip` instead of introducing ad-hoc tooltip locators.
+- **Icon Verification:** When verifying icons in tables or lists, always use `toHaveIcon()` assertion on the element containing the icon (e.g., `typeCell`, `statusCell`). The method searches for the first SVG element within the component and checks its `data-testid` attribute. Do not skip icon verification - icons are important visual indicators of state/type.
+  ```typescript
+  // ✅ Correct: verify icon in table cell
+  const firstRow = apiQualityTab.getProblemRow(1)
+  await expect(firstRow.typeCell).toHaveIcon(ERROR_ICON)
+  ```
+- **Scrolling and Viewport Visibility:** When testing navigation or clicking elements that might require scrolling, always verify that:
+  1. The element is scrolled into view (Playwright's `click()` handles this automatically, no need for explicit `scrollIntoViewIfNeeded()` before click)
+  2. After interaction, verify the element is visible in the viewport using `toBeInViewport()`
+  3. For Monaco Editor line navigation, verify the line number is visible
+  ```typescript
+  // ✅ Correct: verify scrolling and viewport visibility
+  const issueRow = apiQualityTab.getProblemRow(selectedIssueMessage)
+  await issueRow.click() // Click automatically scrolls if needed
+  const lineElement = rawView.getLine(expectedLineNumber)
+  await expect(lineElement).toBeVisible()
+  await expect(lineElement).toBeInViewport()
+  ```
 - **Date Formatting & Validation:**
   - Use `formatDateToUI()` from `@services/utils` to format dates in the UI format (`DD MMM, YYYY`)
   - Always use `dayjs` library (same as UI project) for date formatting, not native Date API
@@ -624,6 +642,7 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 - **Finding Unknown testId - MANDATORY FIRST STEP:** When testId is unknown or element cannot be located, **IMMEDIATELY** use Playwright MCP browser tools (`browser_navigate` + `browser_snapshot` + `browser_click`) to inspect the actual page and identify the correct testId.
   Do NOT guess testId values or search codebase first - use browser inspection as the primary method. Only after identifying the correct testId through browser inspection, proceed with implementation.
   Interacting with the live browser session via MCP tools is the required method for diagnosing UI-related test failures, not guessing or assuming.
+- **Bug Detection is Our Primary Goal:** When implementing tests, **NEVER** adjust test expectations to match incorrect UI behavior. If the test plan specifies expected behavior (e.g., "issues sorted by severity: Error -> Warning -> Info -> Hint") but the UI behaves differently (e.g., sorted by document position), this is a **BUG** that must be reported, not masked.
 
 ## Performance & Reliability
 

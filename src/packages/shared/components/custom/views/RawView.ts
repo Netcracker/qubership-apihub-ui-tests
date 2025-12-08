@@ -4,8 +4,8 @@ import { ProblemPopUp } from './RawView/ProblemPopUp'
 import { ProblemTooltip } from './RawView/ProblemTooltip'
 
 export class RawView extends BaseComponent {
-  readonly jsonBtn = new Button(this.page.getByTestId('ModeButton-JSON'), 'JSON')
-  readonly yamlBtn = new Button(this.page.getByTestId('ModeButton-YAML'), 'YAML')
+  readonly jsonBtn = new Button(this.page.getByTestId('ModeButton-json'), 'JSON')
+  readonly yamlBtn = new Button(this.page.getByTestId('ModeButton-yaml'), 'YAML')
   readonly problemPopUp = new ProblemPopUp(this.page)
   readonly problemTooltip = new ProblemTooltip(this.page)
 
