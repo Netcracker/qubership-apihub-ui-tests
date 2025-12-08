@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { BaseVersionPage } from '../BaseVersionPage'
+import { RulesetInfoDialog } from './VersionOverviewTab/OverviewSummaryTab/components/RulesetInfoDialog'
 import { ApiChangesPackageTab } from './VersionPackagePage/ApiChangesPackageTab'
 import { ApiQualityTab } from './VersionPackagePage/ApiQualityTab/ApiQualityTab'
 import { DeprecatedPackageTab } from './VersionPackagePage/DeprecatedPackageTab'
@@ -12,6 +13,7 @@ export class VersionPackagePage extends BaseVersionPage {
   readonly apiQualityTab = new ApiQualityTab(this.page)
   readonly deprecatedTab = new DeprecatedPackageTab(this.page)
   readonly documentsTab = new DocumentsPackageTab(this.page)
+  readonly rulesetInfoDialog = new RulesetInfoDialog(this.page)
 
   constructor(protected readonly page: Page) {
     super(page)

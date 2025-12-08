@@ -1,9 +1,7 @@
 import type { Page } from '@playwright/test'
 import { createItemGetter, type ItemGetterConfig } from '@services/utils'
-import { Placeholder, Tab } from '@shared/components/base'
+import { Chip, Link, Placeholder, Tab } from '@shared/components/base'
 import { RawView } from '@shared/components/custom/views/RawView'
-import { RulesetInfoDialog } from '../../VersionOverviewTab/OverviewSummaryTab/components/RulesetInfoDialog'
-import { ValidationRuleset } from '../../VersionOverviewTab/OverviewSummaryTab/OverviewSummaryTabBody/QualityValidationSection/ValidationRuleset'
 import { ValidatedDocumentSelect } from './ValidatedDocumentSelect'
 import { ValidationResultsTableRow } from './ValidationResultsTableRow'
 
@@ -13,12 +11,22 @@ export class ApiQualityTab extends Tab {
     'API Quality no results',
   )
   readonly documentSlt = new ValidatedDocumentSelect(this.page)
-  readonly ruleset = new ValidationRuleset(
-    this.page.getByTestId('ValidationRulesetContainer'),
+  readonly nameLink = new Link(
+    this.page.getByTestId('ValidationRulesetLinkName'),
     'Quality validation',
+    'ruleset link',
+  )
+  readonly apiTypeChip = new Chip(
+    this.page.getByTestId('ValidationRulesetApiTypeChip'),
+    'Quality validation',
+    'ruleset API type chip',
+  )
+  readonly statusChip = new Chip(
+    this.page.getByTestId('ValidationRulesetStatusChip'),
+    'Quality validation',
+    'ruleset status chip',
   )
   readonly rawView = new RawView(this.page)
-  readonly rulesetInfoDialog = new RulesetInfoDialog(this.page)
 
   private readonly problemRowConfig: ItemGetterConfig<ValidationResultsTableRow> = {
     constructor: ValidationResultsTableRow,

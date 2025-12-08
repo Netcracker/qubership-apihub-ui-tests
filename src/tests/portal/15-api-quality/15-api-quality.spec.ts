@@ -1,6 +1,7 @@
 import { test } from '@fixtures'
 import type { Page } from '@playwright/test'
 import {
+  type LintRulesetApiType,
   LintRulesetApiTypes,
   LintRulesetLinters,
   LintRulesetStatuses,
@@ -9,6 +10,7 @@ import {
   VERSION_API_QUALITY_TAB_REST,
 } from '@portal/entities'
 import { PortalPage } from '@portal/pages'
+import type { RulesetInfoDialog } from '@portal/pages/PortalPage/VersionPage/VersionOverviewTab/OverviewSummaryTab/components/RulesetInfoDialog'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
 import type { LintRulesetsTestDataManager } from '@services/test-data-manager'
 import { formatDateToUI } from '@services/utils'
@@ -19,6 +21,14 @@ import type { Version } from '@test-data/props'
 import { Group, Package } from '@test-data/props'
 import { HOOK_PUBLISH_TIMEOUT } from '@test-setup'
 import path from 'node:path'
+
+// Types
+type RulesetWithFile = {
+  id: string
+  name: string
+  apiType: LintRulesetApiType
+  rulesetFile: TestFile
+}
 
 // Global helper functions
 const activateDefaultRulesetsAndCleanup = async (
@@ -58,7 +68,11 @@ test.describe('API Quality Validation', () => {
     parent: VAR_GR,
   })
 
-  // Shared helper functions
+  // Shared resource files
+  const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
+  const FILE_GRAPHQL = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-graphql.graphql'))
+
+  // Shared helper functions - Mocks
   const mockSystemConfigurationToDisableLinter = async (page: Page): Promise<void> => {
     await test.step('Mock system configuration API to disable linter', async () => {
       await page.route('**/api/v2/system/configuration', async (route) => {
@@ -81,6 +95,48 @@ test.describe('API Quality Validation', () => {
     })
   }
 
+  // Shared helper functions - Assertions
+  const verifyRulesetInfoDialogContent = async (
+    portalPage: PortalPage,
+    ruleset: RulesetWithFile,
+    status: string,
+  ): Promise<void> => {
+    const { rulesetInfoDialog } = portalPage.versionPackagePage
+    const apiTypeLabel = RULESET_API_TYPE_TITLE_MAP[ruleset.apiType]
+
+    await test.step('Verify dialog displays correct content', async () => {
+      await expect(rulesetInfoDialog.title).toContainText(ruleset.name)
+      await expect(rulesetInfoDialog.apiTypeChip).toHaveText(apiTypeLabel)
+      await expect(rulesetInfoDialog.statusChip).toHaveText(status)
+      await expect(rulesetInfoDialog.rulesetFile).toContainText(ruleset.rulesetFile.name)
+    })
+  }
+
+  const verifyRulesetDownload = async (
+    portalPage: PortalPage,
+    ruleset: RulesetWithFile,
+  ): Promise<void> => {
+    const { rulesetInfoDialog } = portalPage.versionPackagePage
+    const downloadedFile = await rulesetInfoDialog.downloadRuleset()
+
+    await test.step('Verify downloaded file has correct content', async () => {
+      await expectFile(downloadedFile).toHaveName(ruleset.rulesetFile.name)
+      await expectFile(downloadedFile).toContainText(ruleset.rulesetFile.testMeta!.yamlString!)
+    })
+  }
+
+  const verifyRulesetCopyLink = async (
+    portalPage: PortalPage,
+    ruleset: RulesetWithFile,
+  ): Promise<void> => {
+    const { rulesetInfoDialog } = portalPage.versionPackagePage
+    const copiedUrl = await rulesetInfoDialog.copyPublicUrl()
+
+    await test.step('Verify clipboard contains URL matching expected pattern', async () => {
+      await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${ruleset.id}/data`)
+    })
+  }
+
   test.beforeAll(async ({ apihubTDM }) => {
     // Create shared group for all API Quality tests
     await apihubTDM.createPackage([G_AQ])
@@ -95,10 +151,15 @@ test.describe('API Quality Validation', () => {
     const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiTypes.OAS_3_0]
 
     // Test resource files
-    const FILE_SIMPLE_RULESET = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/simple-ruleset.yaml`, {
-      yamlString: 'rules:',
-    })
-    const FILE_INVALID_EXTENSION = new TestFile(`${ROOT_RESOURCES}/portal/api-quality/rulesets/invalid-extension.txt`)
+    const FILE_SIMPLE_RULESET = new TestFile(
+      `${ROOT_RESOURCES}/portal/api-quality/rulesets/aq-rm-simple-ruleset.yaml`,
+      {
+        yamlString: 'rules:',
+      },
+    )
+    const FILE_INVALID_EXTENSION = new TestFile(
+      `${ROOT_RESOURCES}/portal/api-quality/rulesets/aq-rm-invalid-extension.txt`,
+    )
 
     // Messages
     const MSG_RULESET_CREATED_SUCCESS = (rulesetName: string): string => `${rulesetName} ruleset has been created`
@@ -119,7 +180,7 @@ test.describe('API Quality Validation', () => {
     let RUL_INACTIVE_OAS31_N: { id: string; name: string }
     let RUL_GENERAL_OAS30_N: { id: string; name: string }
 
-    // Helper functions
+    // Helper functions - Actions
     const navigateToRulesetManagement = async (portalPage: PortalPage): Promise<void> => {
       await test.step('Navigate to Ruleset Management tab', async () => {
         await portalPage.goto('/portal/settings/rulesets')
@@ -665,16 +726,17 @@ test.describe('API Quality Validation', () => {
 
   test.describe('Quality Summary Tab', () => {
     // Test resource files
-    const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
-    const FILE_SUMMARY_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'summary-ruleset.yaml'), {
+    const FILE_SUMMARY_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'aq-summary-ruleset.yaml'), {
       yamlString: 'rules:',
     })
-    const FILE_SIMPLE_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'simple-ruleset.yaml'), {
-      yamlString: 'rules:',
-    })
-    const FILE_SUMMARY_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas30.yaml'))
-    const FILE_SUMMARY_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas31.yaml'))
-    const FILE_SUMMARY_GRAPHQL = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-graphql.graphql'))
+    const FILE_SIMPLE_RULESET = new TestFile(
+      path.join(ROOT_API_QUALITY, 'rulesets', 'aq-rm-simple-ruleset.yaml'),
+      {
+        yamlString: 'rules:',
+      },
+    )
+    const FILE_SUMMARY_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-summary-oas30.yaml'))
+    const FILE_SUMMARY_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-summary-oas31.yaml'))
 
     // Messages
     const MSG_NO_VALIDATION_RESULTS = 'No validation results.'
@@ -758,16 +820,16 @@ test.describe('API Quality Validation', () => {
       status: 'draft',
       files: [
         { file: FILE_SUMMARY_OAS30 },
-        { file: FILE_SUMMARY_GRAPHQL },
+        { file: FILE_GRAPHQL },
       ],
     }
 
     // Ruleset data
-    let RUL_SUMMARY_OAS30_N: { id: string; name: string }
-    let RUL_SUMMARY_OAS31_N: { id: string; name: string }
+    let RUL_SUMMARY_OAS30_N: RulesetWithFile
+    let RUL_SUMMARY_OAS31_N: RulesetWithFile
     let RUL_ALT_OAS30_N: { id: string; name: string }
 
-    // Helper functions
+    // Helper functions - Mocks
     const mockValidationSummaryError = async (page: Page): Promise<void> => {
       await test.step('Mock validation summary to return error status with failed documents', async () => {
         await page.route('**/validation/summary', async (route) => {
@@ -855,7 +917,12 @@ test.describe('API Quality Validation', () => {
         linter: LintRulesetLinters.SPECTRAL,
         rulesetFile: FILE_SUMMARY_RULESET,
       })
-      RUL_SUMMARY_OAS30_N = { id: oas30Ruleset.id, name: oas30Ruleset.name }
+      RUL_SUMMARY_OAS30_N = {
+        id: oas30Ruleset.id,
+        name: oas30Ruleset.name,
+        apiType: LintRulesetApiTypes.OAS_3_0,
+        rulesetFile: FILE_SUMMARY_RULESET,
+      }
 
       const oas31Ruleset = await lintRulesetTdm.createRuleset({
         rulesetName: `${ALIAS_PREFIX}-Summary-OAS31-${testIdN}`,
@@ -863,7 +930,12 @@ test.describe('API Quality Validation', () => {
         linter: LintRulesetLinters.SPECTRAL,
         rulesetFile: FILE_SUMMARY_RULESET,
       })
-      RUL_SUMMARY_OAS31_N = { id: oas31Ruleset.id, name: oas31Ruleset.name }
+      RUL_SUMMARY_OAS31_N = {
+        id: oas31Ruleset.id,
+        name: oas31Ruleset.name,
+        apiType: LintRulesetApiTypes.OAS_3_1,
+        rulesetFile: FILE_SUMMARY_RULESET,
+      }
 
       const altOas30Ruleset = await lintRulesetTdm.createRuleset({
         rulesetName: `${ALIAS_PREFIX}-Alt-OAS30-${testIdN}`,
@@ -1075,19 +1147,13 @@ test.describe('API Quality Validation', () => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
-        const { rulesetInfoDialog } = summaryTab
 
         await portalPage.gotoVersion(V_OAS30_N)
 
         const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
-        await test.step('Verify dialog displays correct content', async () => {
-          await expect(rulesetInfoDialog.title).toContainText(RUL_SUMMARY_OAS30_N.name)
-          await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_30_LABEL)
-          await expect(rulesetInfoDialog.statusChip).toHaveText(STATUS_ACTIVE)
-          await expect(rulesetInfoDialog.rulesetFile).toContainText(FILE_SUMMARY_RULESET.name)
-        })
+        await verifyRulesetInfoDialogContent(portalPage, RUL_SUMMARY_OAS30_N, STATUS_ACTIVE)
       })
 
       test('P-AQ-SM-POPUP-2 Verify multiple Rulesets can be opened in multi-spec version', {
@@ -1096,29 +1162,23 @@ test.describe('API Quality Validation', () => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
-        const { rulesetInfoDialog } = summaryTab
-
-        await portalPage.gotoVersion(V_MULTI_SPEC_N)
+        const { rulesetInfoDialog } = portalPage.versionPackagePage
 
         const firstRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         const secondRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS31_N.name)
 
+        await portalPage.gotoVersion(V_MULTI_SPEC_N)
+
         await test.step('Click on the first ruleset and verify popup content', async () => {
           await firstRuleset.nameLink.click()
-          await expect(rulesetInfoDialog.title).toContainText(RUL_SUMMARY_OAS30_N.name)
-          await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_30_LABEL)
-          await expect(rulesetInfoDialog.statusChip).toHaveText(STATUS_ACTIVE)
-          await expect(rulesetInfoDialog.rulesetFile).toContainText(FILE_SUMMARY_RULESET.name)
+          await verifyRulesetInfoDialogContent(portalPage, RUL_SUMMARY_OAS30_N, STATUS_ACTIVE)
         })
 
         await rulesetInfoDialog.closeBtn.click()
 
         await test.step('Click on the second ruleset and verify popup content', async () => {
           await secondRuleset.nameLink.click()
-          await expect(rulesetInfoDialog.title).toContainText(RUL_SUMMARY_OAS31_N.name)
-          await expect(rulesetInfoDialog.apiTypeChip).toHaveText(OAS_31_LABEL)
-          await expect(rulesetInfoDialog.statusChip).toHaveText(STATUS_ACTIVE)
-          await expect(rulesetInfoDialog.rulesetFile).toContainText(FILE_SUMMARY_RULESET.name)
+          await verifyRulesetInfoDialogContent(portalPage, RUL_SUMMARY_OAS31_N, STATUS_ACTIVE)
         })
       })
 
@@ -1126,47 +1186,38 @@ test.describe('API Quality Validation', () => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
-        const { rulesetInfoDialog } = summaryTab
 
         await portalPage.gotoVersion(V_OAS30_N)
 
         const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
-        const downloadedFile = await rulesetInfoDialog.downloadRuleset()
-
-        await test.step('Verify downloaded file has correct content', async () => {
-          await expectFile(downloadedFile).toContainText(FILE_SUMMARY_RULESET.testMeta!.yamlString!)
-        })
+        await verifyRulesetDownload(portalPage, RUL_SUMMARY_OAS30_N)
       })
 
       test('P-AQ-SM-POPUP-4 Verify Copy Link to ruleset', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
-        const { rulesetInfoDialog } = summaryTab
 
         await portalPage.gotoVersion(V_OAS30_N)
 
         const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
-        const copiedUrl = await rulesetInfoDialog.copyPublicUrl()
-
-        await test.step('Verify clipboard contains URL matching expected pattern', async () => {
-          await expectText(copiedUrl).toContain(`/api-linter/api/v1/rulesets/${RUL_SUMMARY_OAS30_N.id}/data`)
-        })
+        await verifyRulesetCopyLink(portalPage, RUL_SUMMARY_OAS30_N)
       })
 
       test('P-AQ-SM-POPUP-5 Verify Activation History table content', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
-        const { rulesetInfoDialog } = summaryTab
+        const { rulesetInfoDialog } = portalPage.versionPackagePage
+
+        const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
 
         await portalPage.gotoVersion(V_OAS30_N)
 
-        const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         await ruleset.nameLink.click()
 
         const firstRecord = rulesetInfoDialog.getActivationRecord(1)
@@ -1320,18 +1371,15 @@ test.describe('API Quality Validation', () => {
 
   test.describe('API Quality Tab', () => {
     // Test resource files
-    const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
-    const FILE_QUALITY_TAB_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'quality-tab-ruleset.yaml'), {
+    const FILE_QUALITY_TAB_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'aq-tab-ruleset.yaml'), {
       yamlString: 'rules:',
     })
-    const FILE_QUALITY_TAB_LARGE = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'quality-tab-large.yaml'))
-    const FILE_SUMMARY_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas30.yaml'), {
-      yamlString: 'OAS 3.0 Spec TriggerError',
+    const FILE_TAB_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-large-oas30.yaml'), {
+      yamlString: 'Synthetic Large Spec',
     })
-    const FILE_SUMMARY_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-oas31.yaml'), {
-      yamlString: 'OAS 3.1 Spec TriggerError',
+    const FILE_TAB_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-combo-oas31.yaml'), {
+      yamlString: 'Synthetic Combo Spec',
     })
-    const FILE_SUMMARY_GRAPHQL = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'summary-graphql.graphql'))
 
     // Test data entities
     const PKG_AQ_TAB_N = new Package({
@@ -1344,7 +1392,7 @@ test.describe('API Quality Validation', () => {
       pkg: PKG_AQ_TAB_N,
       version: 'v2-tab-mixed',
       status: 'draft',
-      files: [{ file: FILE_QUALITY_TAB_LARGE }],
+      files: [{ file: FILE_TAB_OAS30 }, { file: FILE_TAB_OAS31 }],
     }
 
     const V_AQ_TAB_MULTI_N: Version = {
@@ -1352,15 +1400,25 @@ test.describe('API Quality Validation', () => {
       version: 'v1-tab-multi',
       status: 'draft',
       files: [
-        { file: FILE_SUMMARY_OAS30 },
-        { file: FILE_SUMMARY_OAS31 },
-        { file: FILE_SUMMARY_GRAPHQL },
+        { file: FILE_TAB_OAS30 },
+        { file: FILE_TAB_OAS31 },
+        { file: FILE_GRAPHQL },
       ],
     }
 
     // Ruleset data
-    let RUL_QUALITY_TAB_OAS30_N: { id: string; name: string }
-    let RUL_QUALITY_TAB_OAS31_N: { id: string; name: string }
+    let RUL_QUALITY_TAB_OAS30_N: RulesetWithFile
+    let RUL_QUALITY_TAB_OAS31_N: RulesetWithFile
+
+    // Helper functions - Actions
+    const navigateToApiQualityTab = async (
+      portalPage: PortalPage,
+      version: Version,
+    ): Promise<void> => {
+      await test.step('Navigate to the API Quality tab', async () => {
+        await portalPage.gotoVersion(version, VERSION_API_QUALITY_TAB_REST)
+      })
+    }
 
     test.beforeAll(async ({ apihubTDM, lintRulesetTdm }) => {
       // Extended timeout for API publishing
@@ -1376,7 +1434,12 @@ test.describe('API Quality Validation', () => {
         linter: LintRulesetLinters.SPECTRAL,
         rulesetFile: FILE_QUALITY_TAB_RULESET,
       })
-      RUL_QUALITY_TAB_OAS30_N = { id: qualityTabRulesetOas30.id, name: qualityTabRulesetOas30.name }
+      RUL_QUALITY_TAB_OAS30_N = {
+        id: qualityTabRulesetOas30.id,
+        name: qualityTabRulesetOas30.name,
+        apiType: LintRulesetApiTypes.OAS_3_0,
+        rulesetFile: FILE_QUALITY_TAB_RULESET,
+      }
 
       const qualityTabRulesetOas31 = await lintRulesetTdm.createRuleset({
         rulesetName: `${ALIAS_PREFIX}-Quality-Tab-OAS31-${testIdN}`,
@@ -1384,7 +1447,12 @@ test.describe('API Quality Validation', () => {
         linter: LintRulesetLinters.SPECTRAL,
         rulesetFile: FILE_QUALITY_TAB_RULESET,
       })
-      RUL_QUALITY_TAB_OAS31_N = { id: qualityTabRulesetOas31.id, name: qualityTabRulesetOas31.name }
+      RUL_QUALITY_TAB_OAS31_N = {
+        id: qualityTabRulesetOas31.id,
+        name: qualityTabRulesetOas31.name,
+        apiType: LintRulesetApiTypes.OAS_3_1,
+        rulesetFile: FILE_QUALITY_TAB_RULESET,
+      }
 
       // Activate rulesets for OAS 3.0 and OAS 3.1
       await lintRulesetTdm.activateRuleset(RUL_QUALITY_TAB_OAS30_N)
@@ -1436,12 +1504,6 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Document Selector', () => {
-      async function navigateToApiQualityTab(portalPage: PortalPage): Promise<void> {
-        await test.step('Navigate to the API Quality tab', async () => {
-          await portalPage.gotoVersion(V_AQ_TAB_MULTI_N, VERSION_API_QUALITY_TAB_REST)
-        })
-      }
-
       test('P-AQ-TAB-DOC-1 Verify Document Selector list content and icons', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
@@ -1449,11 +1511,11 @@ test.describe('API Quality Validation', () => {
         const { apiQualityTab } = portalPage.versionPackagePage
         const { documentSlt } = apiQualityTab
 
-        const oas30Doc = documentSlt.getListItem(FILE_SUMMARY_OAS30.name)
-        const oas31Doc = documentSlt.getListItem(FILE_SUMMARY_OAS31.name)
-        const graphqlDoc = documentSlt.getListItem(FILE_SUMMARY_GRAPHQL.name)
+        const oas30Doc = documentSlt.getListItem(FILE_TAB_OAS30.name)
+        const oas31Doc = documentSlt.getListItem(FILE_TAB_OAS31.name)
+        const graphqlDoc = documentSlt.getListItem(FILE_GRAPHQL.name)
 
-        await navigateToApiQualityTab(portalPage)
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MULTI_N)
 
         await test.step('Open the Document Selector dropdown', async () => {
           await documentSlt.click()
@@ -1462,11 +1524,11 @@ test.describe('API Quality Validation', () => {
         await test.step('Verify list contains all validated OAS documents with correct icons and names', async () => {
           await expect(oas30Doc).toBeVisible()
           await expect(oas30Doc).toHaveIcon(OPENAPI_ICON)
-          await expect(oas30Doc).toHaveText(FILE_SUMMARY_OAS30.name)
+          await expect(oas30Doc).toHaveText(FILE_TAB_OAS30.name)
 
           await expect(oas31Doc).toBeVisible()
           await expect(oas31Doc).toHaveIcon(OPENAPI_ICON)
-          await expect(oas31Doc).toHaveText(FILE_SUMMARY_OAS31.name)
+          await expect(oas31Doc).toHaveText(FILE_TAB_OAS31.name)
         })
 
         await test.step('Verify the list does NOT contain the GraphQL document', async () => {
@@ -1479,23 +1541,23 @@ test.describe('API Quality Validation', () => {
         const { apiQualityTab } = portalPage.versionPackagePage
         const { documentSlt } = apiQualityTab
 
-        const oas30Doc = documentSlt.getListItem(FILE_SUMMARY_OAS30.name)
-        const oas31Doc = documentSlt.getListItem(FILE_SUMMARY_OAS31.name)
+        const oas30Doc = documentSlt.getListItem(FILE_TAB_OAS30.name)
+        const oas31Doc = documentSlt.getListItem(FILE_TAB_OAS31.name)
 
-        await navigateToApiQualityTab(portalPage)
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MULTI_N)
 
         await test.step('Open the Document Selector dropdown', async () => {
           await documentSlt.click()
         })
 
         await test.step('Part of a word', async () => {
-          await documentSlt.searchBar.fill('sum')
+          await documentSlt.searchBar.fill('large')
           await expect(oas30Doc).toBeVisible()
-          await expect(oas31Doc).toBeVisible()
+          await expect(oas31Doc).toBeHidden()
         })
 
         await test.step('Adding part of a word', async () => {
-          await documentSlt.searchBar.fill('summary-oas30')
+          await documentSlt.searchBar.fill('aq-tab-large-oas30')
           await expect(oas30Doc).toBeVisible()
           await expect(oas31Doc).toBeHidden()
         })
@@ -1507,12 +1569,12 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Case insensitive search', async () => {
-          await documentSlt.searchBar.fill('oas31')
-          await expect(oas30Doc).toBeHidden()
-          await expect(oas31Doc).toBeVisible()
-          await documentSlt.searchBar.fill('OAS31')
-          await expect(oas30Doc).toBeHidden()
-          await expect(oas31Doc).toBeVisible()
+          await documentSlt.searchBar.fill('oas30')
+          await expect(oas30Doc).toBeVisible()
+          await expect(oas31Doc).toBeHidden()
+          await documentSlt.searchBar.fill('OAS30')
+          await expect(oas30Doc).toBeVisible()
+          await expect(oas31Doc).toBeHidden()
         })
 
         await test.step('Invalid search query', async () => {
@@ -1529,50 +1591,106 @@ test.describe('API Quality Validation', () => {
         const { apiQualityTab } = portalPage.versionPackagePage
         const { documentSlt } = apiQualityTab
 
-        const oas31Doc = documentSlt.getListItem(FILE_SUMMARY_OAS31.name)
+        // Note: Documents in selector are ordered alphabetically by their slug
+        // So aq-tab-combo-oas31.yaml comes before aq-tab-large-oas30.yaml (combo < large)
 
-        await navigateToApiQualityTab(portalPage)
+        const oas30Doc = documentSlt.getListItem(FILE_TAB_OAS30.name)
 
-        await test.step(`Verify ${FILE_SUMMARY_OAS30.name} is selected by default`, async () => {
-          await expect(documentSlt).toHaveText(FILE_SUMMARY_OAS30.name)
-        })
+        const verifyDocumentContent = async (
+          document: TestFile,
+          ruleset: { id: string; name: string; apiType: LintRulesetApiType },
+        ): Promise<void> => {
+          const apiTypeLabel = RULESET_API_TYPE_TITLE_MAP[ruleset.apiType]
 
-        await test.step(`Verify ruleset info for ${FILE_SUMMARY_OAS30.name}`, async () => {
-          await expect(apiQualityTab.ruleset.nameLink).toBeVisible()
-          await expect(apiQualityTab.ruleset.nameLink).toContainText(RUL_QUALITY_TAB_OAS30_N.name)
-          await expect(apiQualityTab.ruleset.apiTypeChip).toBeVisible()
-          await expect(apiQualityTab.ruleset.apiTypeChip).toHaveText(OAS_30_LABEL)
-          await expect(apiQualityTab.ruleset.statusChip).toBeVisible()
-          await expect(apiQualityTab.ruleset.statusChip).toHaveText(STATUS_ACTIVE)
-        })
+          await test.step(`Verify Document Selector shows "${document.name}"`, async () => {
+            await expect(documentSlt).toHaveText(document.name)
+          })
 
-        await test.step(`Verify document content for ${FILE_SUMMARY_OAS30.name}`, async () => {
-          await expect(apiQualityTab.rawView).toBeVisible()
-          await expect(apiQualityTab.rawView).toContainText(FILE_SUMMARY_OAS30.testMeta!.yamlString!)
-        })
+          await test.step(`Verify Issue List updates to show issues for "${document.name}"`, async () => {
+            await expect(apiQualityTab.getProblemRow(1)).toBeVisible()
+          })
 
-        await test.step(`Open Document Selector and select ${FILE_SUMMARY_OAS31.name}`, async () => {
+          await test.step(`Verify Document Viewer updates to show content of "${document.name}"`, async () => {
+            await expect(apiQualityTab.rawView).toBeVisible()
+            await expect(apiQualityTab.rawView).toContainText(document.testMeta!.yamlString!)
+          })
+
+          await test.step(`Verify ruleset link updates to show ruleset for "${document.name}"`, async () => {
+            await expect(apiQualityTab.nameLink).toBeVisible()
+            await expect(apiQualityTab.nameLink).toContainText(ruleset.name)
+            await expect(apiQualityTab.apiTypeChip).toBeVisible()
+            await expect(apiQualityTab.apiTypeChip).toHaveText(apiTypeLabel)
+            await expect(apiQualityTab.statusChip).toBeVisible()
+            await expect(apiQualityTab.statusChip).toHaveText(STATUS_ACTIVE)
+          })
+        }
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MULTI_N)
+
+        await verifyDocumentContent(FILE_TAB_OAS31, RUL_QUALITY_TAB_OAS31_N)
+
+        await test.step(`Open Document Selector and select "${FILE_TAB_OAS30.name}"`, async () => {
           await documentSlt.click()
-          await oas31Doc.click()
+          await oas30Doc.click()
         })
 
-        await test.step(`Verify Document Selector shows ${FILE_SUMMARY_OAS31.name}`, async () => {
-          await expect(documentSlt).toHaveText(FILE_SUMMARY_OAS31.name)
+        await verifyDocumentContent(FILE_TAB_OAS30, RUL_QUALITY_TAB_OAS30_N)
+      })
+    })
+
+    test.describe('Ruleset and Dialog Interactions', () => {
+      // Note: Documents in selector are ordered alphabetically by their slug.
+      // For V_AQ_TAB_MIXED_N: aq-tab-combo-oas31.yaml comes before aq-tab-large-oas30.yaml (combo < large).
+      // So by default OAS 3.1 document is selected, which corresponds to RUL_QUALITY_TAB_OAS31_N.
+
+      // Helper functions - Actions
+      const navigateToApiQualityTabAndOpenRulesetDialog = async (
+        portalPage: PortalPage,
+        version: Version,
+      ): Promise<RulesetInfoDialog> => {
+        await navigateToApiQualityTab(portalPage, version)
+
+        const { apiQualityTab } = portalPage.versionPackagePage
+        await test.step('Open ruleset dialog', async () => {
+          await apiQualityTab.nameLink.click()
         })
 
-        await test.step(`Verify ruleset info for ${FILE_SUMMARY_OAS31.name}`, async () => {
-          await expect(apiQualityTab.ruleset.nameLink).toBeVisible()
-          await expect(apiQualityTab.ruleset.nameLink).toContainText(RUL_QUALITY_TAB_OAS31_N.name)
-          await expect(apiQualityTab.ruleset.apiTypeChip).toBeVisible()
-          await expect(apiQualityTab.ruleset.apiTypeChip).toHaveText(OAS_31_LABEL)
-          await expect(apiQualityTab.ruleset.statusChip).toBeVisible()
-          await expect(apiQualityTab.ruleset.statusChip).toHaveText(STATUS_ACTIVE)
-        })
+        return portalPage.versionPackagePage.rulesetInfoDialog
+      }
 
-        await test.step(`Verify document content for ${FILE_SUMMARY_OAS31.name}`, async () => {
-          await expect(apiQualityTab.rawView).toBeVisible()
-          await expect(apiQualityTab.rawView).toContainText(FILE_SUMMARY_OAS31.testMeta!.yamlString!)
+      test('P-AQ-TAB-RULE-1 Verify Ruleset Info Dialog opens', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+
+        const rulesetInfoDialog = await navigateToApiQualityTabAndOpenRulesetDialog(
+          portalPage,
+          V_AQ_TAB_MIXED_N,
+        )
+
+        await verifyRulesetInfoDialogContent(portalPage, RUL_QUALITY_TAB_OAS31_N, STATUS_ACTIVE)
+
+        await test.step('Verify activation history first record', async () => {
+          const firstRecord = rulesetInfoDialog.getActivationRecord(1)
+          await expect(firstRecord).toBeVisible()
+          await expect(firstRecord).toContainText(`${currentFormattedDate} - ...`)
         })
+      })
+
+      test('P-AQ-TAB-RULE-2 Verify Ruleset Dialog Download', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+
+        await navigateToApiQualityTabAndOpenRulesetDialog(portalPage, V_AQ_TAB_MIXED_N)
+
+        await verifyRulesetDownload(portalPage, RUL_QUALITY_TAB_OAS31_N)
+      })
+
+      test('P-AQ-TAB-RULE-3 Verify Ruleset Dialog Copy Link', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+
+        await navigateToApiQualityTabAndOpenRulesetDialog(portalPage, V_AQ_TAB_MIXED_N)
+
+        await verifyRulesetCopyLink(portalPage, RUL_QUALITY_TAB_OAS31_N)
       })
     })
   })

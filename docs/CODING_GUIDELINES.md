@@ -66,6 +66,7 @@ const RUL_INACTIVE_OAS30_N = { id: '...', name: '...' }
   - `@test-data` for constants
 - **Implement base classes for common functionality**
 - **Import Optimization:** Always review and optimize imports after implementing any code. Remove unused imports to keep code clean and avoid linting warnings.
+- **Function Declarations:** Prefer `const` with arrow functions over `function` declarations for local functions and helpers within tests. This provides better scoping and consistency with modern JavaScript practices.
 
 ## Test Structure & Organization
 
@@ -102,6 +103,128 @@ test.describe('Feature B', () => {
   const RUL_INACTIVE_OAS30_N = { ... }
   
   test('Test 2', async () => { ... })
+})
+```
+
+### Variable and Function Organization
+
+Within a `test.describe()` block, maintain a strict order of declarations to ensure consistency and readability across test files.
+
+**Recommended Order:**
+
+1. **Constants**: Primitive values, configuration flags.
+2. **Test Resource Files**: `TestFile` instances.
+3. **Messages & Tooltips**: String constants or functions returning strings for UI verification.
+4. **Issue Count Constants**: Expected counts for validation results.
+5. **Test Data Entities**: `Group`, `Package`, `Version` objects (TDM entities).
+6. **Mock Data**: Static data used for mocking responses.
+7. **Mutable State Variables**: `let` declarations for data created during runtime (e.g., in `beforeAll`).
+8. **Helper Functions** (categorized with comments):
+   - **Actions**: Reusable navigation or interaction sequences.
+   - **Assertions**: Complex verification logic reusable across tests.
+   - **Mocks**: Functions that set up `page.route()`.
+9. **Lifecycle Hooks**: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`.
+10. **Nested Suites or Tests**: `test.describe()` or `test()`.
+
+**Comment Labels for Helper Functions:**
+
+Use descriptive comment labels to categorize helper functions within a `test.describe()` block:
+
+```typescript
+// Helper functions - Mocks
+const mockApiResponse = async (page: Page): Promise<void> => { ... }
+
+// Helper functions - Actions
+const navigateToSettings = async (portalPage: PortalPage): Promise<void> => { ... }
+
+// Helper functions - Assertions
+const verifyDialogContent = async (portalPage: PortalPage, data: SomeType): Promise<void> => { ... }
+```
+
+**Shared vs. Scoped Variables and Functions:**
+
+When multiple nested `test.describe()` blocks share common functionality, define shared variables and functions at the **parent level**. Scope-specific items should remain in their respective `test.describe()` blocks.
+
+```typescript
+test.describe('Main Feature', () => {
+  // Shared constants - used by multiple nested describes
+  const { ACTIVE: STATUS_ACTIVE } = LintRulesetStatuses
+
+  // Shared test data entities
+  const G_SHARED = new Group({ name: 'Shared-Group' })
+
+  // Shared resource files
+  const ROOT_RESOURCES_PATH = path.join(ROOT_RESOURCES, 'feature')
+  const FILE_COMMON = new TestFile(path.join(ROOT_RESOURCES_PATH, 'common.yaml'))
+
+  // Shared helper functions - Mocks
+  const mockCommonConfig = async (page: Page): Promise<void> => { ... }
+
+  // Shared helper functions - Assertions
+  const verifyCommonState = async (portalPage: PortalPage): Promise<void> => { ... }
+
+  test.beforeAll(async ({ apihubTDM }) => {
+    await apihubTDM.createPackage([G_SHARED])
+  })
+
+  test.describe('Sub-Feature A', () => {
+    // Scoped constants - only used in this describe
+    const MSG_SUCCESS_A = 'Feature A success'
+
+    // Scoped test resource files
+    const FILE_FEATURE_A = new TestFile(path.join(ROOT_RESOURCES_PATH, 'feature-a.yaml'))
+
+    // Scoped test data entities
+    const PKG_FEATURE_A = new Package({ name: 'Feature-A', parent: G_SHARED })
+
+    // Scoped mutable state
+    let rulesetA: { id: string; name: string }
+
+    // Scoped helper functions - Actions
+    const navigateToFeatureA = async (portalPage: PortalPage): Promise<void> => { ... }
+
+    test.beforeAll(async ({ lintRulesetTdm }) => { ... })
+
+    test('Test A1', async ({ page }) => { ... })
+  })
+
+  test.describe('Sub-Feature B', () => {
+    // Different scoped items for this describe
+    const MSG_SUCCESS_B = 'Feature B success'
+    const PKG_FEATURE_B = new Package({ name: 'Feature-B', parent: G_SHARED })
+
+    test('Test B1', async ({ page }) => { ... })
+  })
+})
+```
+
+**Example:**
+
+```typescript
+test.describe('Feature Suite', () => {
+  // 1. Constants
+  const DEFAULT_API_TYPE = LintRulesetApiTypes.OAS_3_0
+
+  // 2. Test Resource Files
+  const FILE_SPEC = new TestFile('path/to/spec.yaml')
+
+  // 3. Messages
+  const MSG_SUCCESS = 'Operation successful'
+
+  // 6. Test Data Entities
+  const PKG_MAIN = new Package({ name: 'Main-Package' })
+
+  // 7. Mutable State
+  let rulesetId: string
+
+  // 8. Helper Functions - Actions
+  const navigateToSettings = async (page: Page) => { ... }
+
+  // 9. Hooks
+  test.beforeAll(async () => { ... })
+
+  // 10. Tests
+  test('Verify feature works', async () => { ... })
 })
 ```
 
