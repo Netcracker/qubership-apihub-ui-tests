@@ -1412,6 +1412,44 @@ test.describe('API Quality Validation', () => {
     let RUL_QUALITY_TAB_OAS30_N: RulesetWithFile
     let RUL_QUALITY_TAB_OAS31_N: RulesetWithFile
 
+    // Linter messages (shared across Content and Interactions and Problem Tooltip tests)
+    const MSG_ERROR_1 = 'Synthetic Error 1 Found'
+    const MSG_ERROR_2 = 'Synthetic Error 2 Found'
+    const MSG_WARNING_1 = 'Synthetic Warning 1 Found'
+    const MSG_WARNING_2 = 'Synthetic Warning 2 Found'
+    const MSG_INFO_1 = 'Synthetic Info 1 Found'
+    const MSG_INFO_2 = 'Synthetic Info 2 Found'
+    const MSG_HINT_1 = 'Synthetic Hint 1 Found'
+    const MSG_HINT_2 = 'Synthetic Hint 2 Found'
+
+    // Rule names from aq-tab-ruleset.yaml (shared across Content and Interactions and Problem Tooltip tests)
+    const RULE_ERROR_1 = 'synth-error-1'
+    const RULE_ERROR_2 = 'synth-error-2'
+    const RULE_WARNING_1 = 'synth-warn-1'
+    const RULE_WARNING_2 = 'synth-warn-2'
+    const RULE_INFO_1 = 'synth-info-1'
+    const RULE_INFO_2 = 'synth-info-2'
+    const RULE_HINT_1 = 'synth-hint-1'
+    const RULE_HINT_2 = 'synth-hint-2'
+    const RULE_OVERLAP_ERROR_1 = 'synth-overlap-error-1'
+    const RULE_OVERLAP_ERROR_2 = 'synth-overlap-error-2'
+
+    // Overlap error messages (for multi-rule scenario)
+    const MSG_OVERLAP_ERROR_1 = 'Synthetic Overlap Error 1 Found'
+    const MSG_OVERLAP_ERROR_2 = 'Synthetic Overlap Error 2 Found'
+
+    // Test cases for issue navigation and tooltip tests (shared across Content and Interactions and Problem Tooltip tests)
+    const ISSUE_TEST_CASES = [
+      { linterMessage: MSG_ERROR_1, problemText: 'Operation with Error1', lineNumber: 9, ruleName: RULE_ERROR_1 },
+      { linterMessage: MSG_ERROR_2, problemText: 'Operation with Error2', lineNumber: 177, ruleName: RULE_ERROR_2 },
+      { linterMessage: MSG_WARNING_1, problemText: 'Operation with Warn1', lineNumber: 51, ruleName: RULE_WARNING_1 },
+      { linterMessage: MSG_WARNING_2, problemText: 'Operation with Warn2', lineNumber: 219, ruleName: RULE_WARNING_2 },
+      { linterMessage: MSG_INFO_1, problemText: 'Operation with Info1', lineNumber: 93, ruleName: RULE_INFO_1 },
+      { linterMessage: MSG_INFO_2, problemText: 'Operation with Info2', lineNumber: 261, ruleName: RULE_INFO_2 },
+      { linterMessage: MSG_HINT_1, problemText: 'Operation with Hint1', lineNumber: 135, ruleName: RULE_HINT_1 },
+      { linterMessage: MSG_HINT_2, problemText: 'Operation with Hint2', lineNumber: 303, ruleName: RULE_HINT_2 },
+    ]
+
     // Helper functions - Actions
     const navigateToApiQualityTab = async (
       portalPage: PortalPage,
@@ -1707,16 +1745,6 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Content and Interactions', () => {
-      // Linter messages
-      const MSG_ERROR_1 = 'Synthetic Error 1 Found'
-      const MSG_ERROR_2 = 'Synthetic Error 2 Found'
-      const MSG_WARNING_1 = 'Synthetic Warning 1 Found'
-      const MSG_WARNING_2 = 'Synthetic Warning 2 Found'
-      const MSG_INFO_1 = 'Synthetic Info 1 Found'
-      const MSG_INFO_2 = 'Synthetic Info 2 Found'
-      const MSG_HINT_1 = 'Synthetic Hint 1 Found'
-      const MSG_HINT_2 = 'Synthetic Hint 2 Found'
-
       // Severity icon IDs
       const ERROR_ICON = 'ErrorIcon'
       const WARNING_ICON = 'WarningIcon'
@@ -1780,23 +1808,12 @@ test.describe('API Quality Validation', () => {
       test('P-AQ-TAB-CONTENT-3 Verify Issue Navigation (Highlight)', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
         const { apiQualityTab } = portalPage.versionPackagePage
-        const { rawView } = apiQualityTab
-
-        const testCases = [
-          { linterMessage: MSG_ERROR_1, problemText: 'Operation with Error1', lineNumber: 9 },
-          { linterMessage: MSG_ERROR_2, problemText: 'Operation with Error2', lineNumber: 177 },
-          { linterMessage: MSG_WARNING_1, problemText: 'Operation with Warn1', lineNumber: 51 },
-          { linterMessage: MSG_WARNING_2, problemText: 'Operation with Warn2', lineNumber: 219 },
-          { linterMessage: MSG_INFO_1, problemText: 'Operation with Info1', lineNumber: 93 },
-          { linterMessage: MSG_INFO_2, problemText: 'Operation with Info2', lineNumber: 261 },
-          { linterMessage: MSG_HINT_1, problemText: 'Operation with Hint1', lineNumber: 135 },
-          { linterMessage: MSG_HINT_2, problemText: 'Operation with Hint2', lineNumber: 303 },
-        ]
+        const { rawView } = portalPage.versionPackagePage.apiQualityTab
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
 
-        for (const testCase of testCases) {
+        for (const testCase of ISSUE_TEST_CASES) {
           await test.step(`Navigate to "${testCase.linterMessage}" and verify highlighting`, async () => {
             const lineNumberContainer = rawView.getLineNumberContainer(testCase.lineNumber)
 
@@ -1859,6 +1876,139 @@ test.describe('API Quality Validation', () => {
             const row = apiQualityTab.getProblemRow(i + 1)
             await expect(row.messageCell).toContainText(SORTED_ISSUES_BY_SEVERITY[i])
           }
+        })
+      })
+    })
+
+    test.describe('Problem Tooltip - Hover Behavior', () => {
+      test('P-AQ-TAB-TIP-1 Verify Tooltip appears on hover over issue marker', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { rawView } = apiQualityTab
+        const { problemTooltip } = rawView
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+
+        for (const testCase of ISSUE_TEST_CASES) {
+          await test.step(`Verify Tooltip appears on hover over "${testCase.linterMessage}" issue marker`, async () => {
+            await test.step('Locate an issue marker (squiggly line) in the Document Viewer', async () => {
+              await apiQualityTab.getProblemRow(testCase.linterMessage).click()
+              await expect(rawView.getTextContent(testCase.problemText)).toBeVisible()
+            })
+
+            await test.step('Hover over the issue marker text', async () => {
+              // Hint tooltips appear on whitespace before text, so we use hoverHintText
+              if (testCase.linterMessage === MSG_HINT_1 || testCase.linterMessage === MSG_HINT_2) {
+                await rawView.hoverHintText(testCase.problemText)
+              } else {
+                await rawView.hoverText(testCase.problemText)
+              }
+            })
+
+            await test.step('Verify Problem Tooltip appears with issue message, Linter version, Rule name and View Problem button', async () => {
+              await expect(problemTooltip).toBeVisible()
+              await expect(problemTooltip.message).toContainText(testCase.linterMessage)
+              await expect(problemTooltip.message).toContainText(LintRulesetLinters.SPECTRAL)
+              await expect(problemTooltip.message).toContainText(testCase.ruleName)
+              // Hint tooltips don't show "View Problem" button - they only provide informational tooltips
+              if (testCase.linterMessage !== MSG_HINT_1 && testCase.linterMessage !== MSG_HINT_2) {
+                await expect(problemTooltip.viewProblemBtn).toBeVisible()
+              } else {
+                await expect(problemTooltip.viewProblemBtn).toBeHidden()
+              }
+            })
+          })
+        }
+      })
+
+      test('P-AQ-TAB-TIP-2 Verify Tooltip displays multiple issues of different types (combo scenario)', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { rawView } = apiQualityTab
+        const { problemTooltip } = rawView
+
+        const COMBO_TEXT = 'Combo Error1 Warn1 Info1 Hint1'
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
+
+        await test.step('Locate a marker with multiple issues of different types in the Document Viewer', async () => {
+          await apiQualityTab.getProblemRow(MSG_ERROR_1).click()
+          await expect(rawView.getTextContent(COMBO_TEXT)).toBeVisible()
+        })
+
+        await test.step('Hover over the issue marker', async () => {
+          // Hint tooltips appear on whitespace before text, so we use hoverHintText
+          await rawView.hoverHintText(COMBO_TEXT)
+        })
+
+        await test.step('Verify Problem Tooltip appears with all issues for that location', async () => {
+          await expect(problemTooltip).toBeVisible()
+          await expect(problemTooltip).toContainText(MSG_ERROR_1)
+          await expect(problemTooltip).toContainText(MSG_WARNING_1)
+          await expect(problemTooltip).toContainText(MSG_INFO_1)
+          await expect(problemTooltip).toContainText(MSG_HINT_1)
+          await expect(problemTooltip.viewProblemBtn).toBeVisible()
+        })
+      })
+
+      test('P-AQ-TAB-TIP-3 Verify Tooltip displays multiple issues of same type (multi-rule scenario)', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { rawView } = apiQualityTab
+        const { problemTooltip } = rawView
+        
+        const MULTI_TEXT = 'OverlapErr Operation'
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
+
+        await test.step('Locate a marker where one element triggers multiple rules of the same type', async () => {
+          await apiQualityTab.getProblemRow(MSG_OVERLAP_ERROR_1).click()
+          await expect(rawView.getTextContent(MULTI_TEXT)).toBeVisible()
+        })
+
+        await test.step('Hover over the issue marker', async () => {
+          await rawView.hoverText(MULTI_TEXT)
+        })
+
+        await test.step('Verify Problem Tooltip appears with both error messages from different rules', async () => {
+          await expect(problemTooltip).toBeVisible()
+          await expect(problemTooltip).toContainText(MSG_OVERLAP_ERROR_1)
+          await expect(problemTooltip).toContainText(MSG_OVERLAP_ERROR_2)
+          await expect(problemTooltip.viewProblemBtn).toBeVisible()
+        })
+      })
+
+      test('P-AQ-TAB-TIP-4 Verify Tooltip disappears when cursor leaves', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+        const { rawView } = apiQualityTab
+        const { problemTooltip } = rawView
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+
+        await test.step('Hover over an issue marker to show the Tooltip', async () => {
+          await apiQualityTab.getProblemRow(MSG_ERROR_1).click()
+          await expect(rawView.getTextContent('Operation with Error1')).toBeVisible()
+          await rawView.hoverText('Operation with Error1')
+          await expect(problemTooltip).toBeVisible()
+        })
+
+        await test.step('Move the cursor away from the issue marker to a neutral area', async () => {
+          await page.mouse.move(0, 0)
+        })
+
+        await test.step('Verify Problem Tooltip disappears', async () => {
+          await expect(problemTooltip).toBeHidden()
         })
       })
     })
