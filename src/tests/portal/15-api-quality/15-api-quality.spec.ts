@@ -14,6 +14,7 @@ import type { RulesetInfoDialog } from '@portal/pages/PortalPage/VersionPage/Ver
 import { expect, expectFile, expectText } from '@services/expect-decorator'
 import type { LintRulesetsTestDataManager } from '@services/test-data-manager'
 import { formatDateToUI } from '@services/utils'
+import { CLASS_ACTIVE_LINE_NUMBER, CLASS_SELECTED_DECORATOR } from '@shared/components/custom/views/RawView'
 import { OPENAPI_ICON, ROOT_RESOURCES, TestFile } from '@shared/entities'
 import { VAR_GR } from '@test-data/portal/groups'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
@@ -1375,11 +1376,11 @@ test.describe('API Quality Validation', () => {
       yamlString: 'rules:',
     })
     const FILE_TAB_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-large-oas30.yaml'), {
-      yamlString: 'Synthetic Large Spec',
+      yamlString: 'openapi: 3.0.0',
       jsonString: '"openapi": "3.0.0"',
     })
     const FILE_TAB_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-combo-oas31.yaml'), {
-      yamlString: 'Synthetic Combo Spec',
+      yamlString: 'openapi: 3.1.0',
     })
 
     // Test data entities
@@ -1418,6 +1419,18 @@ test.describe('API Quality Validation', () => {
     ): Promise<void> => {
       await test.step('Navigate to the API Quality tab', async () => {
         await portalPage.gotoVersion(version, VERSION_API_QUALITY_TAB_REST)
+      })
+    }
+
+    const switchToTestDocument = async (
+      portalPage: PortalPage,
+      documentName: string,
+    ): Promise<void> => {
+      const { apiQualityTab } = portalPage.versionPackagePage
+
+      await test.step('Switch to test document', async () => {
+        await apiQualityTab.documentSlt.click()
+        await apiQualityTab.documentSlt.getListItem(documentName).click()
       })
     }
 
@@ -1694,6 +1707,7 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Content and Interactions', () => {
+      // Linter messages
       const MSG_ERROR_1 = 'Synthetic Error 1 Found'
       const MSG_ERROR_2 = 'Synthetic Error 2 Found'
       const MSG_WARNING_1 = 'Synthetic Warning 1 Found'
@@ -1703,21 +1717,7 @@ test.describe('API Quality Validation', () => {
       const MSG_HINT_1 = 'Synthetic Hint 1 Found'
       const MSG_HINT_2 = 'Synthetic Hint 2 Found'
 
-      // According to test plan: Issues should be sorted by severity order: Error -> Warning -> Info -> Hint
-      // Within the same severity, sorted by document position (line/column) from start to end
-      // Expected order: Error1, Error2, Warning1, Warning2, Info1, Info2, Hint1, Hint2
-      const SORTED_ISSUES_BY_SEVERITY = [
-        MSG_ERROR_1,
-        MSG_ERROR_2,
-        MSG_WARNING_1,
-        MSG_WARNING_2,
-        MSG_INFO_1,
-        MSG_INFO_2,
-        MSG_HINT_1,
-        MSG_HINT_2,
-      ]
-
-      // Severity icon names
+      // Severity icon IDs
       const ERROR_ICON = 'ErrorIcon'
       const WARNING_ICON = 'WarningIcon'
       const INFO_ICON = 'InfoIcon'
@@ -1730,11 +1730,7 @@ test.describe('API Quality Validation', () => {
         const { apiQualityTab } = portalPage.versionPackagePage
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
-
-        await test.step('Switch to OAS 3.0 document', async () => {
-          await apiQualityTab.documentSlt.click()
-          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
-        })
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
 
         await test.step('Verify issues display severity icons', async () => {
           // Verify Error icon
@@ -1761,11 +1757,7 @@ test.describe('API Quality Validation', () => {
         const { rawView } = apiQualityTab
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
-
-        await test.step('Switch to OAS 3.0 document', async () => {
-          await apiQualityTab.documentSlt.click()
-          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
-        })
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
 
         await test.step('Verify default format is YAML', async () => {
           await expect(rawView.yamlBtn).toBePressed()
@@ -1790,31 +1782,45 @@ test.describe('API Quality Validation', () => {
         const { apiQualityTab } = portalPage.versionPackagePage
         const { rawView } = apiQualityTab
 
-        const selectedIssueMessage = MSG_HINT_2
-        const expectedLineNumber = 303
+        const testCases = [
+          { linterMessage: MSG_ERROR_1, problemText: 'Operation with Error1', lineNumber: 9 },
+          { linterMessage: MSG_ERROR_2, problemText: 'Operation with Error2', lineNumber: 177 },
+          { linterMessage: MSG_WARNING_1, problemText: 'Operation with Warn1', lineNumber: 51 },
+          { linterMessage: MSG_WARNING_2, problemText: 'Operation with Warn2', lineNumber: 219 },
+          { linterMessage: MSG_INFO_1, problemText: 'Operation with Info1', lineNumber: 93 },
+          { linterMessage: MSG_INFO_2, problemText: 'Operation with Info2', lineNumber: 261 },
+          { linterMessage: MSG_HINT_1, problemText: 'Operation with Hint1', lineNumber: 135 },
+          { linterMessage: MSG_HINT_2, problemText: 'Operation with Hint2', lineNumber: 303 },
+        ]
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
 
-        await test.step('Switch to OAS 3.0 document for more issues', async () => {
-          await apiQualityTab.documentSlt.click()
-          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
-        })
+        for (const testCase of testCases) {
+          await test.step(`Navigate to "${testCase.linterMessage}" and verify highlighting`, async () => {
+            const lineNumberContainer = rawView.getLineNumberContainer(testCase.lineNumber)
 
-        await test.step('Click on an issue in the Issue List table', async () => {
-          const issueRow = apiQualityTab.getProblemRow(selectedIssueMessage)
-          await issueRow.click()
-        })
+            await test.step('Click on the problem row to navigate to the issue location', async () => {
+              await apiQualityTab.getProblemRow(testCase.linterMessage).click()
+            })
 
-        await test.step('Verify the corresponding line in Document Viewer is highlighted and visible', async () => {
-          // Verify the line number is visible and in viewport
-          const lineElement = rawView.getLine(expectedLineNumber)
-          await expect(lineElement).toBeVisible()
-          await expect(lineElement).toBeInViewport()
+            await test.step('Verify line number container is visible and in viewport', async () => {
+              await expect(lineNumberContainer).toBeInViewport()
+            })
 
-          // TODO: Verify the line has a selection marker
-          const selectedDecorator = rawView.mainLocator.locator('.MonacoSelectedDecorator')
-          await expect(selectedDecorator).toBeVisible()
-        })
+            await test.step('Verify selected line number is active', async () => {
+              await expect(lineNumberContainer).toHaveClass(CLASS_ACTIVE_LINE_NUMBER)
+            })
+
+            await test.step('Verify selected problem is marked with blue indicator', async () => {
+              await expect(lineNumberContainer.marker).toHaveClass(CLASS_SELECTED_DECORATOR)
+            })
+
+            await test.step('Verify problem text is visible in the viewport', async () => {
+              await expect(rawView.getTextContent(testCase.problemText)).toBeInViewport()
+            })
+          })
+        }
       })
 
       test.skip('P-AQ-TAB-CONTENT-4 Verify Validation Issues Sorting', {
@@ -1827,17 +1833,28 @@ test.describe('API Quality Validation', () => {
         const portalPage = new PortalPage(page)
         const { apiQualityTab } = portalPage.versionPackagePage
 
-        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        // According to test plan: Issues should be sorted by severity order: Error -> Warning -> Info -> Hint
+        // Within the same severity, sorted by document position (line/column) from start to end
+        // Expected order: Error1, Error2, Warning1, Warning2, Info1, Info2, Hint1, Hint2
+        const SORTED_ISSUES_BY_SEVERITY = [
+          MSG_ERROR_1,
+          MSG_ERROR_2,
+          MSG_WARNING_1,
+          MSG_WARNING_2,
+          MSG_INFO_1,
+          MSG_INFO_2,
+          MSG_HINT_1,
+          MSG_HINT_2,
+        ]
 
-        await test.step('Switch to OAS 3.0 document with multiple issues', async () => {
-          await apiQualityTab.documentSlt.click()
-          await apiQualityTab.documentSlt.getListItem(FILE_TAB_OAS30.name).click()
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+
+        await test.step('Verify the expected number of issues', async () => {
+          await expect(apiQualityTab.getProblemRow()).toHaveCount(8)
         })
 
         await test.step('Verify issues are sorted by severity order (Error -> Warning -> Info -> Hint)', async () => {
-          // Verify the expected number of issues
-          await expect(apiQualityTab.getProblemRow()).toHaveCount(8)
-
           for (let i = 0; i < SORTED_ISSUES_BY_SEVERITY.length; i++) {
             const row = apiQualityTab.getProblemRow(i + 1)
             await expect(row.messageCell).toContainText(SORTED_ISSUES_BY_SEVERITY[i])

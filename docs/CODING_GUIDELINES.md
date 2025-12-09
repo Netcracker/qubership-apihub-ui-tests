@@ -141,6 +141,18 @@ const navigateToSettings = async (portalPage: PortalPage): Promise<void> => { ..
 const verifyDialogContent = async (portalPage: PortalPage, data: SomeType): Promise<void> => { ... }
 ```
 
+**Avoiding Code Duplication:**
+
+Extract repeated patterns into helper functions to improve maintainability and reduce duplication:
+
+- **When to Extract:** If a step or code pattern appears **more than 2 times**, extract it to a helper function.
+- **Common Candidates:** Navigation steps, dialog opening/closing, common setup actions, repeated assertion patterns.
+- **Generic Step Names:** Helper functions should use generic step names (e.g., "Switch to test document") rather than hardcoding specific values (e.g., "Switch to OAS 3.0 document").
+- **Placement:** Define helper functions at the appropriate scope level:
+  - Within `test.describe()` block if used only within that suite
+  - At parent level if shared across multiple nested suites
+  - In shared utility files if used across multiple test files
+
 **Shared vs. Scoped Variables and Functions:**
 
 When multiple nested `test.describe()` blocks share common functionality, define shared variables and functions at the **parent level**. Scope-specific items should remain in their respective `test.describe()` blocks.
@@ -484,7 +496,7 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
   // ✅ Correct: verify scrolling and viewport visibility
   const issueRow = apiQualityTab.getProblemRow(selectedIssueMessage)
   await issueRow.click() // Click automatically scrolls if needed
-  const lineElement = rawView.getLine(expectedLineNumber)
+  const lineElement = rawView.getLineNumberContainer(expectedLineNumber)
   await expect(lineElement).toBeVisible()
   await expect(lineElement).toBeInViewport()
   ```

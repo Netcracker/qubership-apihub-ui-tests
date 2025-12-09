@@ -1,7 +1,11 @@
-import type { Locator, Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import { BaseComponent, Button, Content } from '@shared/components/base'
+import { LineNumberContainer } from './RawView/LineNumberContainer'
 import { ProblemPopUp } from './RawView/ProblemPopUp'
 import { ProblemTooltip } from './RawView/ProblemTooltip'
+
+export const CLASS_ACTIVE_LINE_NUMBER = /active-line-number/
+export const CLASS_SELECTED_DECORATOR = /MonacoSelectedDecorator/
 
 export class RawView extends BaseComponent {
   readonly jsonBtn = new Button(this.page.getByTestId('ModeButton-json'), 'JSON')
@@ -13,25 +17,43 @@ export class RawView extends BaseComponent {
     super(page.locator('.monaco-editor').and(page.getByRole('code')), 'Raw view')
   }
 
-  getLine(lineNumber: number): Content {
-    return new Content(
-      this.rootLocator.locator('.margin-view-overlays .line-numbers').filter({ hasText: String(lineNumber) }),
-      `Line ${lineNumber}`,
-      'line',
+  getLineNumberContainer(lineNumber: number): LineNumberContainer {
+    // Use exact regex match to distinguish between line numbers like 9 and 19
+    const exactRegex = new RegExp(`^${lineNumber}$`)
+    return new LineNumberContainer(
+      this.rootLocator.locator('.margin-view-overlays .line-numbers').filter({ hasText: exactRegex }),
+      String(lineNumber),
     )
   }
 
-  private getTextLocator(text: string): Locator {
-    return this.rootLocator.locator('.view-lines').getByText(text)
+  getTextContent(text: string): Content {
+    return new Content(this.rootLocator.locator('.view-lines').getByText(text, { exact: true }), text, 'text')
   }
 
   async hoverText(text: string): Promise<void> {
-    const textLocator = this.getTextLocator(text)
-    await textLocator.hover()
+    const textContent = this.getTextContent(text)
+    await textContent.hover()
+  }
+
+  /**
+   * Hovers over the first space BEFORE the found text.
+   * This is used for Monaco Editor hint tooltips that appear on whitespace before text.
+   *
+   * @param text - The text to find in the editor
+   * @throws Error if the text element's bounding box cannot be determined
+   */
+  async hoverHintText(text: string): Promise<void> {
+    const textLocator = this.rootLocator.locator('.view-lines').getByText(text, { exact: true })
+    const box = await textLocator.boundingBox()
+    if (!box) {
+      throw new Error(`Cannot determine bounding box for text "${text}". Element may not be visible or rendered.`)
+    }
+    // Hover at the position before the text (left edge minus a small offset)
+    await this.page.mouse.move(box.x - 5, box.y + box.height / 2)
   }
 
   async clickText(text: string): Promise<void> {
-    const textLocator = this.getTextLocator(text)
-    await textLocator.click()
+    const textContent = this.getTextContent(text)
+    await textContent.click()
   }
 }
