@@ -488,6 +488,12 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
   const firstRow = apiQualityTab.getProblemRow(1)
   await expect(firstRow.typeCell).toHaveIcon(ERROR_ICON)
   ```
+- **Icon Class Verification:** For Monaco Editor icons (codicons) and other icons that use CSS classes instead of `data-testid`, use `toHaveIconClass()` assertion. This checks if the element itself has the specified class.
+  ```typescript
+  // ✅ Correct: verify Monaco Editor problem icon by class
+  await expect(problemPopUp.iconContainer).toHaveIconClass(CODICON_ERROR_CLASS)
+  await expect(problemPopUp.iconContainer).toHaveIconClass('codicon-warning')
+  ```
 - **Scrolling and Viewport Visibility:** When testing navigation or clicking elements that might require scrolling, always verify that:
   1. The element is scrolled into view (Playwright's `click()` handles this automatically, no need for explicit `scrollIntoViewIfNeeded()` before click)
   2. After interaction, verify the element is visible in the viewport using `toBeInViewport()`

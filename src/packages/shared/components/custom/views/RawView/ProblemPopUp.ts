@@ -3,7 +3,12 @@ import { BaseComponent, Button, Content, Title } from '@shared/components/base'
 
 export class ProblemPopUp extends BaseComponent {
   readonly title = new Title(this.rootLocator.locator('.peekview-title'), 'Problem popup')
-  readonly message = new Content(this.rootLocator.locator('.message'), 'Problem message')
+  readonly message = new Content(this.rootLocator.locator('.message'), 'Problem popup', 'message')
+  readonly iconContainer = new Content(
+    this.rootLocator.locator('.codicon').first(),
+    'Problem popup',
+    'icon container',
+  )
   readonly nextProblemBtn = new Button(
     this.rootLocator.locator('.codicon-marker-navigation-next'),
     'Go to Next Problem',

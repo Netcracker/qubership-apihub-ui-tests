@@ -6,6 +6,9 @@ import { ProblemTooltip } from './RawView/ProblemTooltip'
 
 export const CLASS_ACTIVE_LINE_NUMBER = /active-line-number/
 export const CLASS_SELECTED_DECORATOR = /MonacoSelectedDecorator/
+export const CLASS_CODICON_ERROR = 'codicon-error'
+export const CLASS_CODICON_WARNING = 'codicon-warning'
+export const CLASS_CODICON_INFO = 'codicon-info'
 
 export class RawView extends BaseComponent {
   readonly jsonBtn = new Button(this.page.getByTestId('ModeButton-json'), 'JSON')

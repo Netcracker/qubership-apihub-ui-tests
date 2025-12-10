@@ -14,7 +14,13 @@ import type { RulesetInfoDialog } from '@portal/pages/PortalPage/VersionPage/Ver
 import { expect, expectFile, expectText } from '@services/expect-decorator'
 import type { LintRulesetsTestDataManager } from '@services/test-data-manager'
 import { formatDateToUI } from '@services/utils'
-import { CLASS_ACTIVE_LINE_NUMBER, CLASS_SELECTED_DECORATOR } from '@shared/components/custom/views/RawView'
+import {
+  CLASS_ACTIVE_LINE_NUMBER,
+  CLASS_CODICON_ERROR,
+  CLASS_CODICON_INFO,
+  CLASS_CODICON_WARNING,
+  CLASS_SELECTED_DECORATOR,
+} from '@shared/components/custom/views/RawView'
 import { OPENAPI_ICON, ROOT_RESOURCES, TestFile } from '@shared/entities'
 import { VAR_GR } from '@test-data/portal/groups'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
@@ -1435,6 +1441,7 @@ test.describe('API Quality Validation', () => {
     // Overlap error messages (for multi-rule scenario)
     const MSG_OVERLAP_ERROR_1 = 'Synthetic Overlap Error 1 Found'
     const MSG_OVERLAP_ERROR_2 = 'Synthetic Overlap Error 2 Found'
+    const TEXT_OVERLAP_OPERATION = 'OverlapErr Operation'
 
     // Issue test cases configuration
     type IssueTestCase = {
@@ -1443,6 +1450,7 @@ test.describe('API Quality Validation', () => {
       yamlLineNumber: number
       jsonLineNumber: number
       ruleName: string
+      iconClass: string
     }
 
     // Test cases for issue navigation and tooltip tests (shared across Content and Interactions and Problem Tooltip tests)
@@ -1453,6 +1461,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 9,
         jsonLineNumber: 11,
         ruleName: RULE_ERROR_1,
+        iconClass: CLASS_CODICON_ERROR,
       },
       {
         linterMessage: MSG_ERROR_2,
@@ -1460,6 +1469,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 177,
         jsonLineNumber: 275,
         ruleName: RULE_ERROR_2,
+        iconClass: CLASS_CODICON_ERROR,
       },
       {
         linterMessage: MSG_WARNING_1,
@@ -1467,6 +1477,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 51,
         jsonLineNumber: 77,
         ruleName: RULE_WARNING_1,
+        iconClass: CLASS_CODICON_WARNING,
       },
       {
         linterMessage: MSG_WARNING_2,
@@ -1474,6 +1485,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 219,
         jsonLineNumber: 341,
         ruleName: RULE_WARNING_2,
+        iconClass: CLASS_CODICON_WARNING,
       },
       {
         linterMessage: MSG_INFO_1,
@@ -1481,6 +1493,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 93,
         jsonLineNumber: 143,
         ruleName: RULE_INFO_1,
+        iconClass: CLASS_CODICON_INFO,
       },
       {
         linterMessage: MSG_INFO_2,
@@ -1488,6 +1501,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 261,
         jsonLineNumber: 407,
         ruleName: RULE_INFO_2,
+        iconClass: CLASS_CODICON_INFO,
       },
       {
         linterMessage: MSG_HINT_1,
@@ -1495,6 +1509,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 135,
         jsonLineNumber: 209,
         ruleName: RULE_HINT_1,
+        iconClass: CLASS_CODICON_ERROR,
       },
       {
         linterMessage: MSG_HINT_2,
@@ -1502,6 +1517,7 @@ test.describe('API Quality Validation', () => {
         yamlLineNumber: 303,
         jsonLineNumber: 473,
         ruleName: RULE_HINT_2,
+        iconClass: CLASS_CODICON_ERROR,
       },
     ]
 
@@ -1550,7 +1566,92 @@ test.describe('API Quality Validation', () => {
       }
     }
 
+    // Helper functions - Actions
+    const openProblemPopupViaTooltip = async (
+      portalPage: PortalPage,
+      testCase: IssueTestCase,
+    ): Promise<void> => {
+      const { apiQualityTab } = portalPage.versionPackagePage
+      const { rawView } = apiQualityTab
+      const { problemTooltip } = rawView
+
+      await test.step('Hover over issue marker to show Tooltip and open Problem Popup', async () => {
+        await apiQualityTab.getProblemRow(testCase.linterMessage).click()
+        await expect(rawView.getTextContent(testCase.problemText)).toBeVisible()
+        await rawView.hoverText(testCase.problemText)
+        await expect(problemTooltip).toBeVisible()
+        await problemTooltip.viewProblemBtn.click()
+      })
+    }
+
+    const openProblemPopupForOverlappingIssue = async (
+      portalPage: PortalPage,
+      linterMessage: string,
+      problemText: string,
+    ): Promise<void> => {
+      const { apiQualityTab } = portalPage.versionPackagePage
+      const { rawView } = apiQualityTab
+
+      await test.step('Navigate to overlapping issue and open Problem Popup', async () => {
+        await apiQualityTab.getProblemRow(linterMessage).click()
+        await expect(rawView.getTextContent(problemText)).toBeVisible()
+        await rawView.hoverText(problemText)
+        await rawView.problemTooltip.viewProblemBtn.click()
+      })
+    }
+
+    const closeAndVerifyProblemPopup = async (portalPage: PortalPage): Promise<void> => {
+      const { problemPopUp } = portalPage.versionPackagePage.apiQualityTab.rawView
+
+      await test.step('Close Problem Popup and verify it is hidden', async () => {
+        await problemPopUp.closeBtn.click()
+        await expect(problemPopUp).toBeHidden()
+      })
+    }
+
+    const openProblemPopupViaAltF8 = async (
+      portalPage: PortalPage,
+      testCase: IssueTestCase,
+    ): Promise<void> => {
+      const { apiQualityTab } = portalPage.versionPackagePage
+      const { rawView } = apiQualityTab
+      const { page } = portalPage
+
+      await test.step('Position cursor on issue marker and open Popup via Alt+F8', async () => {
+        await apiQualityTab.getProblemRow(testCase.linterMessage).click()
+        await expect(rawView.getTextContent(testCase.problemText)).toBeVisible()
+        await rawView.clickText(testCase.problemText)
+        await page.keyboard.press('Alt+F8')
+      })
+    }
+
     // Helper functions - Assertions
+    const verifyProblemPopupContent = async (
+      portalPage: PortalPage,
+      testCase: IssueTestCase,
+    ): Promise<void> => {
+      const { apiQualityTab } = portalPage.versionPackagePage
+      const { rawView } = apiQualityTab
+      const { problemPopUp } = rawView
+
+      await test.step('Verify Problem Popup appears with correct content', async () => {
+        await expect(problemPopUp).toBeVisible()
+        await expect(problemPopUp.message).toContainText(testCase.linterMessage)
+        await expect(problemPopUp.message).toContainText(LintRulesetLinters.SPECTRAL)
+        await expect(problemPopUp.message).toContainText(testCase.ruleName)
+      })
+
+      await test.step('Verify Popup displays problem type icon', async () => {
+        await expect(problemPopUp.iconContainer).toHaveIconClass(testCase.iconClass)
+      })
+
+      await test.step('Verify Popup shows navigation arrows and Close button', async () => {
+        await expect(problemPopUp.nextProblemBtn).toBeVisible()
+        await expect(problemPopUp.previousProblemBtn).toBeVisible()
+        await expect(problemPopUp.closeBtn).toBeVisible()
+      })
+    }
+
     const verifyValidationIssuesSorting = async (
       portalPage: PortalPage,
     ): Promise<void> => {
@@ -1594,11 +1695,8 @@ test.describe('API Quality Validation', () => {
           const lineNumber = getLineNumber(testCase, format)
           const lineNumberContainer = rawView.getLineNumberContainer(lineNumber)
 
-          await test.step('Click on the problem row to navigate to the issue location', async () => {
+          await test.step('Navigate to issue location and verify line number container is visible', async () => {
             await apiQualityTab.getProblemRow(testCase.linterMessage).click()
-          })
-
-          await test.step('Verify line number container is visible and in viewport', async () => {
             await expect(lineNumberContainer).toBeInViewport()
           })
 
@@ -2044,7 +2142,9 @@ test.describe('API Quality Validation', () => {
         await verifyValidationIssuesSorting(portalPage)
       })
 
-      test('P-AQ-TAB-CONTENT-4-YAML Verify Issue Navigation highlights selected line in YAML', async ({ sysadminPage: page }) => {
+      test('P-AQ-TAB-CONTENT-4-YAML Verify Issue Navigation highlights selected line in YAML', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
@@ -2053,7 +2153,9 @@ test.describe('API Quality Validation', () => {
         await verifyIssueNavigationHighlight(portalPage, 'yaml')
       })
 
-      test('P-AQ-TAB-CONTENT-4-JSON Verify Issue Navigation highlights selected line in JSON', async ({ sysadminPage: page }) => {
+      test('P-AQ-TAB-CONTENT-4-JSON Verify Issue Navigation highlights selected line in JSON', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
@@ -2102,15 +2204,14 @@ test.describe('API Quality Validation', () => {
         const { apiQualityTab } = portalPage.versionPackagePage
         const { rawView } = apiQualityTab
         const { problemTooltip } = rawView
-        const MULTI_TEXT = 'OverlapErr Operation'
 
         await test.step('Locate a marker where one element triggers multiple rules of the same type', async () => {
           await apiQualityTab.getProblemRow(MSG_OVERLAP_ERROR_1).click()
-          await expect(rawView.getTextContent(MULTI_TEXT)).toBeVisible()
+          await expect(rawView.getTextContent(TEXT_OVERLAP_OPERATION)).toBeVisible()
         })
 
         await test.step('Hover over the issue marker', async () => {
-          await rawView.hoverText(MULTI_TEXT)
+          await rawView.hoverText(TEXT_OVERLAP_OPERATION)
         })
 
         await test.step('Verify Problem Tooltip appears with both error messages from different rules', async () => {
@@ -2207,6 +2308,334 @@ test.describe('API Quality Validation', () => {
         await switchToFormat(portalPage, 'json')
 
         await verifyTooltipDisappears(portalPage, page)
+      })
+    })
+
+    test.describe('Problem Popup', () => {
+      test('P-AQ-TAB-POPUP-1-YAML Verify Popup opens via View Problem button in YAML', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await openProblemPopupViaTooltip(portalPage, testCase)
+
+        await verifyProblemPopupContent(portalPage, testCase)
+      })
+
+      test('P-AQ-TAB-POPUP-1-JSON Verify Popup opens via View Problem button in JSON', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await switchToFormat(portalPage, 'json')
+        await openProblemPopupViaTooltip(portalPage, testCase)
+
+        await verifyProblemPopupContent(portalPage, testCase)
+      })
+
+      test('P-AQ-TAB-POPUP-2-YAML Verify Popup opens via Alt+F8 for specific problem in YAML', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [, testCase] = ISSUE_TEST_CASES // MSG_ERROR_2
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await openProblemPopupViaAltF8(portalPage, testCase)
+
+        await verifyProblemPopupContent(portalPage, testCase)
+      })
+
+      test('P-AQ-TAB-POPUP-2-JSON Verify Popup opens via Alt+F8 for specific problem in JSON', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [, testCase] = ISSUE_TEST_CASES // MSG_ERROR_2
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await switchToFormat(portalPage, 'json')
+        await openProblemPopupViaAltF8(portalPage, testCase)
+
+        await verifyProblemPopupContent(portalPage, testCase)
+      })
+
+      test('P-AQ-TAB-POPUP-3-YAML Verify Popup closes via Close button in YAML', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await openProblemPopupViaTooltip(portalPage, testCase)
+
+        await closeAndVerifyProblemPopup(portalPage)
+      })
+
+      test('P-AQ-TAB-POPUP-3-JSON Verify Popup closes via Close button in JSON', async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await switchToFormat(portalPage, 'json')
+        await openProblemPopupViaTooltip(portalPage, testCase)
+
+        await closeAndVerifyProblemPopup(portalPage)
+      })
+    })
+
+    test.describe('Problem Navigation via Popup', () => {
+      // Helper function to verify navigation between problems
+      const verifyProblemNavigation = async (
+        portalPage: PortalPage,
+        initialTestCase: IssueTestCase,
+        nextTestCase: IssueTestCase,
+      ): Promise<void> => {
+        const { problemPopUp } = portalPage.versionPackagePage.apiQualityTab.rawView
+
+        await test.step('Verify initial problem is displayed', async () => {
+          await expect(problemPopUp.message).toContainText(initialTestCase.linterMessage)
+        })
+
+        await test.step('Navigate to next problem and verify Popup updates', async () => {
+          await problemPopUp.nextProblemBtn.click()
+          await expect(problemPopUp.message).toContainText(nextTestCase.linterMessage)
+          await expect(problemPopUp.iconContainer).toHaveIconClass(nextTestCase.iconClass)
+        })
+
+        await test.step('Navigate to previous problem and verify Popup updates', async () => {
+          await problemPopUp.previousProblemBtn.click()
+          await expect(problemPopUp.message).toContainText(initialTestCase.linterMessage)
+          await expect(problemPopUp.iconContainer).toHaveIconClass(initialTestCase.iconClass)
+        })
+      }
+
+      const verifyKeyboardNavigation = async (
+        portalPage: PortalPage,
+        initialTestCase: IssueTestCase,
+        nextTestCase: IssueTestCase,
+      ): Promise<void> => {
+        const { problemPopUp } = portalPage.versionPackagePage.apiQualityTab.rawView
+        const { page } = portalPage
+
+        await test.step('Verify initial problem is displayed', async () => {
+          await expect(problemPopUp.message).toContainText(initialTestCase.linterMessage)
+        })
+
+        await test.step('Navigate to next problem via F8 and verify Popup updates', async () => {
+          await page.keyboard.press('F8')
+          await expect(problemPopUp.message).toContainText(nextTestCase.linterMessage)
+        })
+
+        await test.step('Navigate to previous problem via Shift+F8 and verify Popup updates', async () => {
+          await page.keyboard.press('Shift+F8')
+          await expect(problemPopUp.message).toContainText(initialTestCase.linterMessage)
+        })
+      }
+
+      const verifySeverityOrderNavigation = async (
+        portalPage: PortalPage,
+      ): Promise<void> => {
+        const { problemPopUp } = portalPage.versionPackagePage.apiQualityTab.rawView
+
+        // Expected navigation order: Error1, Error2, Warning1, Warning2, Info1, Info2, Hint1, Hint2
+        const SORTED_BY_SEVERITY = [
+          MSG_ERROR_1,
+          MSG_ERROR_2,
+          MSG_WARNING_1,
+          MSG_WARNING_2,
+          MSG_INFO_1,
+          MSG_INFO_2,
+          MSG_HINT_1,
+          MSG_HINT_2,
+        ]
+
+        await test.step('Verify initial problem is first Error', async () => {
+          await expect(problemPopUp.message).toContainText(SORTED_BY_SEVERITY[0])
+        })
+
+        for (let i = 1; i < SORTED_BY_SEVERITY.length; i++) {
+          await test.step(`Navigate to problem ${i + 1} and verify severity order`, async () => {
+            await problemPopUp.nextProblemBtn.click()
+            await expect(problemPopUp.message).toContainText(SORTED_BY_SEVERITY[i])
+          })
+        }
+      }
+
+      const verifyOverlappingIssuesNavigation = async (
+        portalPage: PortalPage,
+      ): Promise<void> => {
+        const { problemPopUp } = portalPage.versionPackagePage.apiQualityTab.rawView
+
+        await test.step('Verify Popup shows one of the overlapping errors', async () => {
+          await expect(problemPopUp.message).toContainText(MSG_OVERLAP_ERROR_1)
+        })
+
+        await test.step('Navigate to next problem and verify it follows severity order', async () => {
+          await problemPopUp.nextProblemBtn.click()
+          // Next should be the second overlap error (same severity)
+          await expect(problemPopUp.message).toContainText(MSG_OVERLAP_ERROR_2)
+        })
+
+        await test.step('Navigate back to verify we can return to first overlap error', async () => {
+          await problemPopUp.previousProblemBtn.click()
+          await expect(problemPopUp.message).toContainText(MSG_OVERLAP_ERROR_1)
+        })
+      }
+
+      test('P-AQ-TAB-NAV-1-YAML Verify Next and Previous Problem navigation via buttons in YAML', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+
+        await verifyProblemNavigation(portalPage, firstTestCase, secondTestCase)
+      })
+
+      test('P-AQ-TAB-NAV-1-JSON Verify Next and Previous Problem navigation via buttons in JSON', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await switchToFormat(portalPage, 'json')
+        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+
+        await verifyProblemNavigation(portalPage, firstTestCase, secondTestCase)
+      })
+
+      test('P-AQ-TAB-NAV-2-YAML Verify Next and Previous Problem navigation via F8 and Shift+F8 in YAML', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await openProblemPopupViaAltF8(portalPage, firstTestCase)
+
+        await verifyKeyboardNavigation(portalPage, firstTestCase, secondTestCase)
+      })
+
+      test('P-AQ-TAB-NAV-2-JSON Verify Next and Previous Problem navigation via F8 and Shift+F8 in JSON', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await switchToFormat(portalPage, 'json')
+        await openProblemPopupViaAltF8(portalPage, firstTestCase)
+
+        await verifyKeyboardNavigation(portalPage, firstTestCase, secondTestCase)
+      })
+
+      test.skip('P-AQ-TAB-NAV-3-YAML Verify navigation follows severity order in YAML', {
+        annotation: {
+          type: 'issue',
+          description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
+        },
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [firstTestCase] = ISSUE_TEST_CASES
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+
+        await verifySeverityOrderNavigation(portalPage)
+      })
+
+      test.skip('P-AQ-TAB-NAV-3-JSON Verify navigation follows severity order in JSON', {
+        annotation: {
+          type: 'issue',
+          description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
+        },
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const [firstTestCase] = ISSUE_TEST_CASES
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+        await switchToFormat(portalPage, 'json')
+        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+
+        await verifySeverityOrderNavigation(portalPage)
+      })
+
+      test('P-AQ-TAB-NAV-4-YAML Verify navigation behavior with overlapping issues in YAML', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
+        await openProblemPopupForOverlappingIssue(portalPage, MSG_OVERLAP_ERROR_1, TEXT_OVERLAP_OPERATION)
+
+        await verifyOverlappingIssuesNavigation(portalPage)
+      })
+
+      test('P-AQ-TAB-NAV-4-JSON Verify navigation behavior with overlapping issues in JSON', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+        await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
+        await switchToFormat(portalPage, 'json')
+        await openProblemPopupForOverlappingIssue(portalPage, MSG_OVERLAP_ERROR_1, TEXT_OVERLAP_OPERATION)
+
+        await verifyOverlappingIssuesNavigation(portalPage)
+      })
+    })
+
+    test.describe('Special States', () => {
+      // Message for No Validation Results state (note: no newline/space between sentences in rendered text)
+      const MSG_NO_VALIDATION_RESULTS =
+        'API Quality results are not availablePlease check the Summary tab for validation status'
+
+      // Mock for validation summary to simulate no validation results
+      const mockValidationSummaryNotAvailable = async (page: Page): Promise<void> => {
+        await test.step('Mock validation summary to return 404 (no validation results)', async () => {
+          await page.route('**/validation/summary', async (route) => {
+            await route.fulfill({
+              status: 404,
+              contentType: 'application/json',
+              body: JSON.stringify({
+                code: 'LintResultNotFound',
+                message: 'Lint result not found',
+              }),
+            })
+          })
+        })
+      }
+
+      test('P-AQ-TAB-EDGE-1-M Verify No Validation Results state', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+
+        await mockValidationSummaryNotAvailable(page)
+
+        await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+
+        await test.step('Verify placeholder message is displayed', async () => {
+          await expect(apiQualityTab.noResultsPlaceholder).toContainText(MSG_NO_VALIDATION_RESULTS)
+        })
       })
     })
   })

@@ -110,6 +110,22 @@ export class CommonExpect<T extends ExpectInput> extends BaseExpect<T> {
     )
   }
 
+  /**
+   * Verifies that an element contains an icon with the specified CSS class.
+   * Checks if the element itself has the specified class (used for Monaco codicon icons).
+   * Uses regex pattern matching to check if the class is present among other classes.
+   * @param expected - The CSS class to verify (e.g., 'codicon-error', 'codicon-warning')
+   * @param options - Optional timeout options
+   */
+  async toHaveIconClass(expected: string, options?: TimeoutOption): Promise<void> {
+    const regex = new RegExp(expected)
+    await this.executeExpectation(
+      `to have icon class "${expected}"`,
+      'toHaveClass',
+      [regex, options],
+    )
+  }
+
   async toBeInViewport(options?: TimeoutOption): Promise<void> {
     await this.executeExpectation('to be in viewport', 'toBeInViewport', [options])
   }
