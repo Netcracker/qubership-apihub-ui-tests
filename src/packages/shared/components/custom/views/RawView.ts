@@ -27,7 +27,7 @@ export class RawView extends BaseComponent {
   }
 
   getTextContent(text: string): Content {
-    return new Content(this.rootLocator.locator('.view-lines').getByText(text, { exact: true }), text, 'text')
+    return new Content(this.rootLocator.locator('.view-lines').getByText(text), text, 'text')
   }
 
   async hoverText(text: string): Promise<void> {
@@ -43,7 +43,7 @@ export class RawView extends BaseComponent {
    * @throws Error if the text element's bounding box cannot be determined
    */
   async hoverHintText(text: string): Promise<void> {
-    const textLocator = this.rootLocator.locator('.view-lines').getByText(text, { exact: true })
+    const textLocator = this.rootLocator.locator('.view-lines').getByText(text)
     const box = await textLocator.boundingBox()
     if (!box) {
       throw new Error(`Cannot determine bounding box for text "${text}". Element may not be visible or rendered.`)
