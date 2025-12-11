@@ -22,6 +22,7 @@ import {
   CLASS_SELECTED_DECORATOR,
 } from '@shared/components/custom/views/RawView'
 import { OPENAPI_ICON, ROOT_RESOURCES, TestFile } from '@shared/entities'
+import { NO_PERM_SEE_PAGE } from '@test-data/portal'
 import { VAR_GR } from '@test-data/portal/groups'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
 import type { Version } from '@test-data/props'
@@ -238,31 +239,7 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Initial State and Core UI', () => {
-      test('P-AQ-RM-UI-1 Verify Ruleset Management tab is hidden when linter is disabled', {
-        tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
-        const portalPage = new PortalPage(page)
-        const { portalSettingsPage } = portalPage
-
-        await test.step('Mock system configuration API to disable linter', async () => {
-          await mockSystemConfigurationToDisableLinter(page)
-        })
-
-        await test.step('Navigate to Portal Settings', async () => {
-          await portalPage.goto()
-          await portalPage.header.portalSettingsBtn.click()
-        })
-
-        await test.step('Verify another tab is visible to confirm page loaded correctly', async () => {
-          await expect(portalSettingsPage.userRolesTabBtn).toBeVisible()
-        })
-
-        await test.step('Verify Ruleset Management tab is not visible', async () => {
-          await expect(portalSettingsPage.rulesetManagementTab).toBeHidden()
-        })
-      })
-
-      test('P-AQ-RM-UI-2 Verify initial state for admin', {
+      test('P-AQ-RM-UI-1 Verify initial state for admin', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
@@ -295,6 +272,93 @@ test.describe('API Quality Validation', () => {
           await expect(firstRulesetRow.activationHistoryCell).toBeVisible()
           await expect(firstRulesetRow.statusCell).toBeVisible()
           await expect(firstRulesetRow.createdAtCell).toBeVisible()
+        })
+      })
+
+      test('P-AQ-RM-UI-2 Verify Ruleset Management tab is hidden when linter is disabled', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { portalSettingsPage } = portalPage
+
+        await test.step('Mock system configuration API to disable linter', async () => {
+          await mockSystemConfigurationToDisableLinter(page)
+        })
+
+        await test.step('Navigate to Portal Settings', async () => {
+          await portalPage.goto()
+          await portalPage.header.portalSettingsBtn.click()
+        })
+
+        await test.step('Verify another tab is visible to confirm page loaded correctly', async () => {
+          await expect(portalSettingsPage.userRolesTabBtn).toBeVisible()
+        })
+
+        await test.step('Verify Ruleset Management tab is not visible', async () => {
+          await expect(portalSettingsPage.rulesetManagementTab).toBeHidden()
+        })
+      })
+
+      test('P-AQ-RM-UI-3 Verify no permission placeholder when non-admin user navigates directly via URL', {
+        tag: '@smoke',
+      }, async ({ browser, usersTDM }) => {
+        // Create a non-admin user with TEST_ID_N for cleanup
+        const nonAdminUser = {
+          id: `x_atui_nonadmin_${testIdN}`,
+          email: `x_atui_nonadmin_${testIdN}@qa.at`,
+          name: `x_ATUI_NonAdmin_${testIdN}`,
+          password: process.env.TEST_USER_PASSWORD as string,
+        }
+
+        await test.step('Create non-admin test user via API', async () => {
+          await usersTDM.createGeneralUser(nonAdminUser)
+        })
+
+        // Create page context for the non-admin user
+        const { createUserStorageStateWithAuthCookieFromApi } = await import('@services/storage-state/save')
+        const context = await browser.newContext({
+          storageState: await createUserStorageStateWithAuthCookieFromApi(nonAdminUser),
+        })
+        const page = await context.newPage()
+
+        try {
+          const portalPage = new PortalPage(page)
+
+          await navigateToRulesetManagement(portalPage)
+
+          await test.step('Verify no permission placeholder is displayed', async () => {
+            await expect(portalPage.noPermissionPlaceholder).toBeVisible()
+            await expect(portalPage.noPermissionPlaceholder).toContainText(NO_PERM_SEE_PAGE)
+          })
+        } finally {
+          await context.close()
+        }
+      })
+
+      test.skip('P-AQ-RM-UI-4 Verify direct URL navigation redirects to User Roles tab when linter is disabled', {
+        tag: '@smoke',
+        annotation: {
+          type: 'Issue',
+          description: 'Tab opens and UI elements are accessible, can open Add Ruleset dialog',
+        },
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { portalSettingsPage } = portalPage
+
+        await mockSystemConfigurationToDisableLinter(page)
+
+        await navigateToRulesetManagement(portalPage)
+
+        await test.step('Verify redirect to User Roles tab occurred', async () => {
+          await expect(portalSettingsPage.userRolesTabBtn).toBeVisible()
+        })
+
+        await test.step('Verify User Roles tab content is visible', async () => {
+          await expect(portalSettingsPage.createRoleBtn).toBeVisible()
+        })
+
+        await test.step('Verify Ruleset Management tab is not visible', async () => {
+          await expect(portalSettingsPage.rulesetManagementTab).toBeHidden()
         })
       })
     })
@@ -1144,6 +1208,16 @@ test.describe('API Quality Validation', () => {
           await portalPage.versionPackagePage.apiQualityTab.hover({ force: true })
           await expect(portalPage.tooltip).toHaveText('API quality check is failed')
         })
+
+        // Direct URL navigation to API Quality tab when validation failed
+        await test.step('Navigate directly to API Quality tab via URL', async () => {
+          await portalPage.gotoVersion(V_OAS30_N, VERSION_API_QUALITY_TAB_REST)
+        })
+
+        await test.step('Verify placeholder is displayed on direct navigation', async () => {
+          const { apiQualityTab } = portalPage.versionPackagePage
+          await expect(apiQualityTab.noResultsPlaceholder).toBeVisible()
+        })
       })
     })
 
@@ -1857,6 +1931,23 @@ test.describe('API Quality Validation', () => {
 
         await test.step('Verify the Document Viewer is visible', async () => {
           await expect(apiQualityTab.rawView).toBeVisible()
+        })
+      })
+
+      test('P-AQ-TAB-UI-2-M Verify direct URL navigation shows placeholder when linter is disabled', {
+        tag: '@smoke',
+      }, async ({ sysadminPage: page }) => {
+        const portalPage = new PortalPage(page)
+        const { apiQualityTab } = portalPage.versionPackagePage
+
+        await mockSystemConfigurationToDisableLinter(page)
+
+        await test.step('Navigate directly to API Quality tab via URL', async () => {
+          await portalPage.gotoVersion(V_AQ_TAB_MIXED_N, VERSION_API_QUALITY_TAB_REST)
+        })
+
+        await test.step('Verify no results placeholder is displayed', async () => {
+          await expect(apiQualityTab.noResultsPlaceholder).toBeVisible()
         })
       })
     })

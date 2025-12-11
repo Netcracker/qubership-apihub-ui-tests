@@ -7,6 +7,7 @@ import type {
   VersionViewTabs,
 } from '@portal/entities'
 import type { GotoOptions, OperationsApiType } from '@shared/entities'
+import { Placeholder } from '@shared/components/base'
 import { MainPage } from '@shared/pages'
 import { GlobalSearchPanel } from './PortalPage/GlobalSearchPanel'
 import { OperationPage } from './PortalPage/OperationPage'
@@ -28,6 +29,7 @@ export class PortalPage extends MainPage {
   readonly versionDashboardPage = new VersionDashboardPage(this.page)
   readonly portalSettingsPage = new PortalSettingsPage(this.page)
   readonly createPackageDialog = new PortalCreatePackageDialog(this.page)
+  readonly noPermissionPlaceholder = new Placeholder(this.page.getByTestId('NoPermissionPlaceholder'), 'No permission')
 
   constructor(readonly page: Page) {
     super(page)
