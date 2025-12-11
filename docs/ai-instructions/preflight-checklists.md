@@ -14,7 +14,7 @@ Use this file verbatim when constructing the PRE-FLIGHT block. Combine the **Glo
 - [ ] **Todo mirror:** create/refresh the todo list so each PRE-FLIGHT item has a matching entry.
 - [ ] **Plan validation commands:** outline which lint/test commands will run (even if some end up `n/a`).
 - [ ] **Formatting & lint plan:** confirm all new files use LF endings, note whether `dprint` is available, and specify the aggregate commands you will run (`npx dprint fmt <files>` followed by `npx eslint --fix <files>`).
-- [ ] **Environment prerequisites:** verify mandatory local folders exist (`ai-agent-local/` for compliance log, downloads, etc.).
+- [ ] **Environment prerequisites:** verify mandatory local folders exist if needed.
 
 ## PRE-FLIGHT — Task-Type Add-ons
 
@@ -85,7 +85,7 @@ Only include the section that matches the selected playbook.
 - [ ] Lint command executed: `npx eslint --fix <all-changed-files>` ✅/❌ (quote the exact CLI and attach failure logs if ❌).
 - [ ] Tests executed (quote CLI + flags or state `n/a` with justification).
 - [ ] Instruction docs updated? list touched paths or `n/a`.
-- [ ] Compliance evidence recorded in `ai-agent-local/ai-compliance-log.md`.
+
 - [ ] Todo list updated to reflect completion.
 - [ ] Mention any follow-up actions, blockers, or newly documented errors.
 
