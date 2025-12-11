@@ -2114,7 +2114,7 @@ test.describe('API Quality Validation', () => {
       test.skip('P-AQ-TAB-CONTENT-3-YAML Verify Validation Issues Sorting in YAML', {
         tag: '@smoke',
         annotation: {
-          type: 'issue',
+          type: 'Issue',
           description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
         },
       }, async ({ sysadminPage: page }) => {
@@ -2129,7 +2129,7 @@ test.describe('API Quality Validation', () => {
       test.skip('P-AQ-TAB-CONTENT-3-JSON Verify Validation Issues Sorting in JSON', {
         tag: '@smoke',
         annotation: {
-          type: 'issue',
+          type: 'Issue',
           description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
         },
       }, async ({ sysadminPage: page }) => {
@@ -2316,75 +2316,118 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+        const [error1TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await openProblemPopupViaTooltip(portalPage, testCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
-        await verifyProblemPopupContent(portalPage, testCase)
+        await verifyProblemPopupContent(portalPage, error1TestCase)
       })
 
       test('P-AQ-TAB-POPUP-1-JSON Verify Popup opens via View Problem button in JSON', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+        const [error1TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
         await switchToFormat(portalPage, 'json')
-        await openProblemPopupViaTooltip(portalPage, testCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
-        await verifyProblemPopupContent(portalPage, testCase)
+        await verifyProblemPopupContent(portalPage, error1TestCase)
       })
+
+      test.skip(
+        'P-AQ-TAB-POPUP-1-BUG-449-YAML Verify Popup opens via View Problem button for Warning issue redirects to correct warning (bug #449)',
+        {
+          tag: '@smoke',
+          annotation: {
+            type: 'Issue',
+            description: 'https://github.com/Netcracker/qubership-apihub/issues/449',
+          },
+        },
+        async ({ sysadminPage: page }) => {
+          const portalPage = new PortalPage(page)
+          const warning1TestCase = ISSUE_TEST_CASES[2]
+
+          await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+          await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+          await openProblemPopupViaTooltip(portalPage, warning1TestCase)
+
+          await verifyProblemPopupContent(portalPage, warning1TestCase)
+        },
+      )
+
+      test.skip(
+        'P-AQ-TAB-POPUP-1-BUG-449-JSON Verify Popup opens via View Problem button for Warning issue redirects to correct warning (bug #449)',
+        {
+          tag: '@smoke',
+          annotation: {
+            type: 'Issue',
+            description: 'https://github.com/Netcracker/qubership-apihub/issues/449',
+          },
+        },
+        async ({ sysadminPage: page }) => {
+          const portalPage = new PortalPage(page)
+          const warning1TestCase = ISSUE_TEST_CASES[2]
+
+          await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
+          await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
+          await switchToFormat(portalPage, 'json')
+          await openProblemPopupViaTooltip(portalPage, warning1TestCase)
+
+          await verifyProblemPopupContent(portalPage, warning1TestCase)
+        },
+      )
 
       test('P-AQ-TAB-POPUP-2-YAML Verify Popup opens via Alt+F8 for specific problem in YAML', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [, testCase] = ISSUE_TEST_CASES // MSG_ERROR_2
+        const error2TestCase = ISSUE_TEST_CASES[1]
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await openProblemPopupViaAltF8(portalPage, testCase)
+        await openProblemPopupViaAltF8(portalPage, error2TestCase)
 
-        await verifyProblemPopupContent(portalPage, testCase)
+        await verifyProblemPopupContent(portalPage, error2TestCase)
       })
 
       test('P-AQ-TAB-POPUP-2-JSON Verify Popup opens via Alt+F8 for specific problem in JSON', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [, testCase] = ISSUE_TEST_CASES // MSG_ERROR_2
+        const error2TestCase = ISSUE_TEST_CASES[1]
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
         await switchToFormat(portalPage, 'json')
-        await openProblemPopupViaAltF8(portalPage, testCase)
+        await openProblemPopupViaAltF8(portalPage, error2TestCase)
 
-        await verifyProblemPopupContent(portalPage, testCase)
+        await verifyProblemPopupContent(portalPage, error2TestCase)
       })
 
       test('P-AQ-TAB-POPUP-3-YAML Verify Popup closes via Close button in YAML', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+        const [error1TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await openProblemPopupViaTooltip(portalPage, testCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await closeAndVerifyProblemPopup(portalPage)
       })
 
       test('P-AQ-TAB-POPUP-3-JSON Verify Popup closes via Close button in JSON', async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [testCase] = ISSUE_TEST_CASES // MSG_ERROR_1
+        const [error1TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
         await switchToFormat(portalPage, 'json')
-        await openProblemPopupViaTooltip(portalPage, testCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await closeAndVerifyProblemPopup(portalPage)
       })
@@ -2493,85 +2536,85 @@ test.describe('API Quality Validation', () => {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+        const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
-        await verifyProblemNavigation(portalPage, firstTestCase, secondTestCase)
+        await verifyProblemNavigation(portalPage, error1TestCase, error2TestCase)
       })
 
       test('P-AQ-TAB-NAV-1-JSON Verify Next and Previous Problem navigation via buttons in JSON', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+        const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
         await switchToFormat(portalPage, 'json')
-        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
-        await verifyProblemNavigation(portalPage, firstTestCase, secondTestCase)
+        await verifyProblemNavigation(portalPage, error1TestCase, error2TestCase)
       })
 
       test('P-AQ-TAB-NAV-2-YAML Verify Next and Previous Problem navigation via F8 and Shift+F8 in YAML', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+        const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await openProblemPopupViaAltF8(portalPage, firstTestCase)
+        await openProblemPopupViaAltF8(portalPage, error1TestCase)
 
-        await verifyKeyboardNavigation(portalPage, firstTestCase, secondTestCase)
+        await verifyKeyboardNavigation(portalPage, error1TestCase, error2TestCase)
       })
 
       test('P-AQ-TAB-NAV-2-JSON Verify Next and Previous Problem navigation via F8 and Shift+F8 in JSON', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [firstTestCase, secondTestCase] = ISSUE_TEST_CASES
+        const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
         await switchToFormat(portalPage, 'json')
-        await openProblemPopupViaAltF8(portalPage, firstTestCase)
+        await openProblemPopupViaAltF8(portalPage, error1TestCase)
 
-        await verifyKeyboardNavigation(portalPage, firstTestCase, secondTestCase)
+        await verifyKeyboardNavigation(portalPage, error1TestCase, error2TestCase)
       })
 
       test.skip('P-AQ-TAB-NAV-3-YAML Verify navigation follows severity order in YAML', {
         annotation: {
-          type: 'issue',
+          type: 'Issue',
           description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
         },
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [firstTestCase] = ISSUE_TEST_CASES
+        const [error1TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await verifySeverityOrderNavigation(portalPage)
       })
 
       test.skip('P-AQ-TAB-NAV-3-JSON Verify navigation follows severity order in JSON', {
         annotation: {
-          type: 'issue',
+          type: 'Issue',
           description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
         },
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-        const [firstTestCase] = ISSUE_TEST_CASES
+        const [error1TestCase] = ISSUE_TEST_CASES
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
         await switchToFormat(portalPage, 'json')
-        await openProblemPopupViaTooltip(portalPage, firstTestCase)
+        await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await verifySeverityOrderNavigation(portalPage)
       })
