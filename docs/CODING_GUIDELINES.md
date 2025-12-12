@@ -717,6 +717,53 @@ await expect(page.getByTestId('loading')).toBeHidden()
 - **Decorators:** Implement decorators for enhanced assertions.
 - **Consistency:** Follow the established project structure and patterns.
 
+### Context Awareness Fixture: `usedResources` (attach resources on failure)
+
+For UI tests, prefer registering the **actual resource files used by the test** (e.g., specs, rulesets) via the `usedResources` fixture.
+On test failure, the fixture automatically attaches the registered files to the Playwright report.
+
+**Key rules:**
+
+- Register **only relevant** resources (the ones affecting the expected result). If a test uses mocked APIs and the file content does not affect assertions, **do not** register resources.
+- If the whole `describe` uses the same base resources, register them in `test.beforeEach(...)` and then **optionally** add extra resources inside specific tests.
+- If a test does not add any extra resources beyond `beforeEach`, remove `usedResources` from the test fixture args to avoid TS unused-parameter errors.
+
+**Example (based on `src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`):**
+
+```typescript
+import { registerRulesetFiles, registerVersionFiles, test } from '@fixtures'
+import type { UsedResourcesHelper } from '@fixtures'
+
+type TestResourcesOptions = {
+  rulesets?: RulesetWithFile | RulesetWithFile[]
+  versions?: Version | Version[]
+}
+
+const registerTestResources = (usedResources: UsedResourcesHelper, options: TestResourcesOptions): void => {
+  if (options.rulesets) {
+    registerRulesetFiles(usedResources, options.rulesets)
+  }
+  if (options.versions) {
+    registerVersionFiles(usedResources, options.versions)
+  }
+}
+
+test.describe('API Quality Tab / Document Selector', () => {
+  test.beforeEach(async ({ usedResources }) => {
+    registerTestResources(usedResources, {
+      rulesets: [RUL_QUALITY_TAB_OAS30_N, RUL_QUALITY_TAB_OAS31_N],
+      versions: V_AQ_TAB_MULTI_N,
+    })
+  })
+
+  test('P-AQ-TAB-DOC-1 ...', async ({ sysadminPage: page }) => {
+    const portalPage = new PortalPage(page)
+    await portalPage.gotoVersion(V_AQ_TAB_MULTI_N)
+    // assertions...
+  })
+})
+```
+
 ## Common Test Scenarios
 
 ### Document Icon Verification

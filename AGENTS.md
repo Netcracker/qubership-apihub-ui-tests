@@ -60,10 +60,11 @@ Coding conventions are defined globally:
 - Run lint checks immediately after modifications; always start with `npx eslint --fix <all-modified-files>` using a single command that lists every touched file instead of running file-by-file.
 - Run any newly added/modified tests with `--headed --trace=on` unless the playbook marks them as `n/a`.
 
-## 8. Linting, Formatting & Line Endings
+## 8. Linting, Formatting & Type Checking
 
-- **Primary lint command:** after finishing edits (and again after formatting), run `npx eslint --fix <file1> <file2> ...` covering every created/modified file in one go. Capture the exact CLI and result in POST-FLIGHT.
+- **TypeScript check:** run `npx tsc --noEmit` to verify there are no type errors before formatting and linting. Pre-existing errors in unrelated files can be noted but should not block the task.
 - **dprint formatting:** run `npx dprint fmt <file1> <file2> ...` on all changed files before the final ESLint pass. If `dprint` or its config is missing, state that explicitly and continue.
+- **Primary lint command:** after finishing edits (and again after formatting), run `npx eslint --fix <file1> <file2> ...` covering every created/modified file in one go. Capture the exact CLI and result in POST-FLIGHT.
 - **LF endings:** save every new file with Unix line endings (LF). When copying content from Windows tools, normalize it before committing (most editors expose this in the status bar).
 
 ## 9. Workspace Detection

@@ -13,7 +13,7 @@ Use this file verbatim when constructing the PRE-FLIGHT block. Combine the **Glo
 - [ ] **Task type declaration:** state the chosen playbook and why it applies.
 - [ ] **Todo mirror:** create/refresh the todo list so each PRE-FLIGHT item has a matching entry.
 - [ ] **Plan validation commands:** outline which lint/test commands will run (even if some end up `n/a`).
-- [ ] **Formatting & lint plan:** confirm all new files use LF endings, note whether `dprint` is available, and specify the aggregate commands you will run (`npx dprint fmt <files>` followed by `npx eslint --fix <files>`).
+- [ ] **Formatting, type check & lint plan:** confirm all new files use LF endings, note whether `dprint` is available, and specify the aggregate commands you will run (`npx tsc --noEmit`, `npx dprint fmt <files>`, `npx eslint --fix <files>`).
 - [ ] **Environment prerequisites:** verify mandatory local folders exist if needed.
 
 ## PRE-FLIGHT — Task-Type Add-ons
@@ -81,6 +81,7 @@ Only include the section that matches the selected playbook.
 
 ## POST-FLIGHT — Always Required
 
+- [ ] TypeScript check: `npx tsc --noEmit` ✅/❌ (note any pre-existing errors in unrelated files).
 - [ ] Formatting: `npx dprint fmt <files>` ✅/❌ (if the CLI/config is unavailable, note why it was skipped).
 - [ ] Lint command executed: `npx eslint --fix <all-changed-files>` ✅/❌ (quote the exact CLI and attach failure logs if ❌).
 - [ ] Tests executed (quote CLI + flags or state `n/a` with justification).

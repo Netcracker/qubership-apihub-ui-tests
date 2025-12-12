@@ -1,4 +1,5 @@
-import { test } from '@fixtures'
+import { registerRulesetFiles, registerVersionFiles, test } from '@fixtures'
+import type { UsedResourcesHelper } from '@fixtures'
 import type { Page } from '@playwright/test'
 import {
   type LintRulesetApiType,
@@ -6,6 +7,7 @@ import {
   LintRulesetLinters,
   LintRulesetStatuses,
   RULESET_API_TYPE_TITLE_MAP,
+  type RulesetWithFile,
   SERVER_DEFAULT_RULESETS,
   VERSION_API_QUALITY_TAB_REST,
 } from '@portal/entities'
@@ -30,12 +32,35 @@ import { Group, Package } from '@test-data/props'
 import { HOOK_PUBLISH_TIMEOUT } from '@test-setup'
 import path from 'node:path'
 
-// Types
-type RulesetWithFile = {
-  id: string
-  name: string
-  apiType: LintRulesetApiType
-  rulesetFile: TestFile
+/**
+ * Options for test resource registration.
+ */
+type TestResourcesOptions = {
+  /** Ruleset(s) used in the test */
+  rulesets?: RulesetWithFile | RulesetWithFile[]
+  /** Version(s) whose files should be attached */
+  versions?: Version | Version[]
+}
+
+/**
+ * Registers resource files for linter tests.
+ * Attaches ruleset and/or version files for debugging on test failure.
+ *
+ * NOTE: Only register resources when the test outcome depends on them.
+ * Tests with mocked APIs (e.g., mocked validation responses) don't need resources
+ * since the actual file content doesn't affect the test result.
+ */
+const registerTestResources = (
+  usedResources: UsedResourcesHelper,
+  options: TestResourcesOptions,
+): void => {
+  if (options.rulesets) {
+    registerRulesetFiles(usedResources, options.rulesets)
+  }
+
+  if (options.versions) {
+    registerVersionFiles(usedResources, options.versions)
+  }
 }
 
 // Global helper functions
@@ -1033,10 +1058,15 @@ test.describe('API Quality Validation', () => {
     test.describe('UI Visibility and Access Control', () => {
       test('P-AQ-SM-UI-1 Verify Quality Validation section visibility for REST API', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { restApi } = portalPage.versionPackagePage.overviewTab.summaryTab.body
         const { qualityValidation } = restApi
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_OAS30_N,
+        })
 
         await portalPage.gotoVersion(V_OAS30_N)
 
@@ -1049,10 +1079,15 @@ test.describe('API Quality Validation', () => {
         })
       })
 
-      test('P-AQ-SM-UI-2 Verify Mixed API Types display - REST with GraphQL', async ({ sysadminPage: page }) => {
+      test('P-AQ-SM-UI-2 Verify Mixed API Types display - REST with GraphQL', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { body } = portalPage.versionPackagePage.overviewTab.summaryTab
         const { restApi, graphQl } = body
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_MIXED_REST_GQL_N,
+        })
 
         await portalPage.gotoVersion(V_MIXED_REST_GQL_N)
 
@@ -1070,6 +1105,7 @@ test.describe('API Quality Validation', () => {
       test('P-AQ-SM-UI-3-M Verify Quality Validation section is hidden when linter is disabled', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
+        // No resources registered - test uses mocked API, file content doesn't affect outcome
         const portalPage = new PortalPage(page)
         const { restApi } = portalPage.versionPackagePage.overviewTab.summaryTab.body
         const { qualityValidation } = restApi
@@ -1091,9 +1127,14 @@ test.describe('API Quality Validation', () => {
     test.describe('Content', () => {
       test('P-AQ-SM-CONTENT-1 Verify Ruleset info for single document', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_OAS30_N,
+        })
 
         await portalPage.gotoVersion(V_OAS30_N)
 
@@ -1112,9 +1153,14 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-SM-CONTENT-2 Verify Ruleset list items for multi-document version', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        registerTestResources(usedResources, {
+          rulesets: [RUL_SUMMARY_OAS30_N, RUL_SUMMARY_OAS31_N],
+          versions: V_MULTI_SPEC_N,
+        })
 
         await portalPage.gotoVersion(V_MULTI_SPEC_N)
 
@@ -1138,9 +1184,14 @@ test.describe('API Quality Validation', () => {
         })
       })
 
-      test('P-AQ-SM-CONTENT-3 Verify Issue Counts tooltip content', async ({ sysadminPage: page }) => {
+      test('P-AQ-SM-CONTENT-3 Verify Issue Counts tooltip content', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_OAS30_N,
+        })
 
         await portalPage.gotoVersion(V_OAS30_N)
 
@@ -1175,6 +1226,7 @@ test.describe('API Quality Validation', () => {
       test('P-AQ-SM-CONTENT-4-M Verify Validation Failed state', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
+        // No resources registered - test uses mocked validation error, file content doesn't affect outcome
         const portalPage = new PortalPage(page)
         const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
 
@@ -1224,10 +1276,15 @@ test.describe('API Quality Validation', () => {
     test.describe('Ruleset Info Popup Interactions', () => {
       test('P-AQ-SM-POPUP-1 Verify Ruleset Info Popup opens and displays correct content', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_OAS30_N,
+        })
 
         await portalPage.gotoVersion(V_OAS30_N)
 
@@ -1239,7 +1296,7 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-SM-POPUP-2 Verify multiple Rulesets can be opened in multi-spec version', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
@@ -1247,6 +1304,11 @@ test.describe('API Quality Validation', () => {
 
         const firstRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
         const secondRuleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS31_N.name)
+
+        registerTestResources(usedResources, {
+          rulesets: [RUL_SUMMARY_OAS30_N, RUL_SUMMARY_OAS31_N],
+          versions: V_MULTI_SPEC_N,
+        })
 
         await portalPage.gotoVersion(V_MULTI_SPEC_N)
 
@@ -1263,10 +1325,15 @@ test.describe('API Quality Validation', () => {
         })
       })
 
-      test('P-AQ-SM-POPUP-3 Verify Download ruleset file', async ({ sysadminPage: page }) => {
+      test('P-AQ-SM-POPUP-3 Verify Download ruleset file', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_OAS30_N,
+        })
 
         await portalPage.gotoVersion(V_OAS30_N)
 
@@ -1276,10 +1343,15 @@ test.describe('API Quality Validation', () => {
         await verifyRulesetDownload(portalPage, RUL_SUMMARY_OAS30_N)
       })
 
-      test('P-AQ-SM-POPUP-4 Verify Copy Link to ruleset', async ({ sysadminPage: page }) => {
+      test('P-AQ-SM-POPUP-4 Verify Copy Link to ruleset', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_OAS30_N,
+        })
 
         await portalPage.gotoVersion(V_OAS30_N)
 
@@ -1289,13 +1361,18 @@ test.describe('API Quality Validation', () => {
         await verifyRulesetCopyLink(portalPage, RUL_SUMMARY_OAS30_N)
       })
 
-      test('P-AQ-SM-POPUP-5 Verify Activation History table content', async ({ sysadminPage: page }) => {
+      test('P-AQ-SM-POPUP-5 Verify Activation History table content', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { summaryTab } = portalPage.versionPackagePage.overviewTab
         const { qualityValidation } = summaryTab.body.restApi
         const { rulesetInfoDialog } = portalPage.versionPackagePage
 
         const ruleset = qualityValidation.getValidationRuleset(RUL_SUMMARY_OAS30_N.name)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_SUMMARY_OAS30_N,
+          versions: V_OAS30_N,
+        })
 
         await portalPage.gotoVersion(V_OAS30_N)
 
@@ -1407,6 +1484,7 @@ test.describe('API Quality Validation', () => {
       test('P-AQ-SM-STATUS-1-M Verify Not Validated state display', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
+        // No resources registered - test uses mocked 404 response, file content doesn't affect outcome
         const portalPage = new PortalPage(page)
         const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
 
@@ -1418,6 +1496,7 @@ test.describe('API Quality Validation', () => {
       })
 
       test('P-AQ-SM-STATUS-2-M Verify Checking status display', async ({ sysadminPage: page }) => {
+        // No resources registered - test uses mocked loading state, file content doesn't affect outcome
         const portalPage = new PortalPage(page)
         const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
 
@@ -1428,6 +1507,7 @@ test.describe('API Quality Validation', () => {
       })
 
       test('P-AQ-SM-STATUS-3-M Verify In Progress status display', async ({ sysadminPage: page }) => {
+        // No resources registered - test uses mocked in-progress state, file content doesn't affect outcome
         const portalPage = new PortalPage(page)
         const { qualityValidation } = portalPage.versionPackagePage.overviewTab.summaryTab.body.restApi
 
@@ -1908,9 +1988,14 @@ test.describe('API Quality Validation', () => {
     test.describe('UI Visibility and Navigation', () => {
       test('P-AQ-TAB-UI-1 Verify API Quality Tab visibility and navigation', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { apiQualityTab } = portalPage.versionPackagePage
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
 
         await test.step('Navigate to the Package Version page', async () => {
           await portalPage.gotoVersion(V_AQ_TAB_MIXED_N)
@@ -1937,6 +2022,7 @@ test.describe('API Quality Validation', () => {
       test('P-AQ-TAB-UI-2-M Verify direct URL navigation shows placeholder when linter is disabled', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
+        // No resources registered - test uses mocked API, file content doesn't affect outcome
         const portalPage = new PortalPage(page)
         const { apiQualityTab } = portalPage.versionPackagePage
 
@@ -1956,6 +2042,13 @@ test.describe('API Quality Validation', () => {
       // Note: Documents in selector are ordered alphabetically by their slug.
       // For V_AQ_TAB_MIXED_N: aq-tab-combo-oas31.yaml comes before aq-tab-large-oas30.yaml (combo < large).
       // So by default OAS 3.1 document is selected, which corresponds to RUL_QUALITY_TAB_OAS31_N.
+
+      test.beforeEach(async ({ usedResources }) => {
+        registerTestResources(usedResources, {
+          rulesets: [RUL_QUALITY_TAB_OAS30_N, RUL_QUALITY_TAB_OAS31_N],
+          versions: V_AQ_TAB_MULTI_N,
+        })
+      })
 
       test('P-AQ-TAB-DOC-1 Verify Document Selector list content and icons', {
         tag: '@smoke',
@@ -2102,11 +2195,17 @@ test.describe('API Quality Validation', () => {
         return portalPage.versionPackagePage.rulesetInfoDialog
       }
 
+      test.beforeEach(async ({ usedResources }) => {
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
+      })
+
       test('P-AQ-TAB-RULE-1 Verify Ruleset Info Dialog opens', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
         const portalPage = new PortalPage(page)
-
         const rulesetInfoDialog = await navigateToApiQualityTabAndOpenRulesetDialog(
           portalPage,
           V_AQ_TAB_MIXED_N,
@@ -2144,6 +2243,13 @@ test.describe('API Quality Validation', () => {
       const WARNING_ICON = 'WarningIcon'
       const INFO_ICON = 'InfoIcon'
       const HINT_ICON = 'HintIcon'
+
+      test.beforeEach(async ({ usedResources }) => {
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
+      })
 
       test('P-AQ-TAB-CONTENT-1 Verify Issue List displays issues with correct structure', {
         tag: '@smoke',
@@ -2312,8 +2418,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-TIP-1-YAML Verify Tooltip appears on hover over issue marker in YAML', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2323,8 +2434,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-TIP-1-JSON Verify Tooltip appears on hover over issue marker in JSON', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2335,8 +2451,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-TIP-2-YAML Verify Tooltip displays multiple issues of different types in YAML', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
@@ -2346,8 +2467,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-TIP-2-JSON Verify Tooltip displays multiple issues of different types in JSON', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
@@ -2358,8 +2484,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-TIP-3-YAML Verify Tooltip displays multiple issues of same type in YAML', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
@@ -2369,8 +2500,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-TIP-3-JSON Verify Tooltip displays multiple issues of same type in JSON', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
@@ -2379,8 +2515,13 @@ test.describe('API Quality Validation', () => {
         await verifyMultiRuleTooltip(portalPage)
       })
 
-      test('P-AQ-TAB-TIP-4-YAML Verify Tooltip disappears when cursor leaves in YAML', async ({ sysadminPage: page }) => {
+      test('P-AQ-TAB-TIP-4-YAML Verify Tooltip disappears when cursor leaves in YAML', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2388,8 +2529,13 @@ test.describe('API Quality Validation', () => {
         await verifyTooltipDisappears(portalPage, page)
       })
 
-      test('P-AQ-TAB-TIP-4-JSON Verify Tooltip disappears when cursor leaves in JSON', async ({ sysadminPage: page }) => {
+      test('P-AQ-TAB-TIP-4-JSON Verify Tooltip disappears when cursor leaves in JSON', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2400,6 +2546,13 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Problem Popup', () => {
+      test.beforeEach(async ({ usedResources }) => {
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
+      })
+
       test('P-AQ-TAB-POPUP-1-YAML Verify Popup opens via View Problem button in YAML', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
@@ -2622,9 +2775,14 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-NAV-1-YAML Verify Next and Previous Problem navigation via buttons in YAML', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2635,9 +2793,14 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-NAV-1-JSON Verify Next and Previous Problem navigation via buttons in JSON', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2649,9 +2812,14 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-NAV-2-YAML Verify Next and Previous Problem navigation via F8 and Shift+F8 in YAML', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2662,9 +2830,14 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-NAV-2-JSON Verify Next and Previous Problem navigation via F8 and Shift+F8 in JSON', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase, error2TestCase] = ISSUE_TEST_CASES
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2679,9 +2852,14 @@ test.describe('API Quality Validation', () => {
           type: 'Issue',
           description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
         },
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase] = ISSUE_TEST_CASES
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2695,9 +2873,14 @@ test.describe('API Quality Validation', () => {
           type: 'Issue',
           description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
         },
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase] = ISSUE_TEST_CASES
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS30_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS30 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
@@ -2709,8 +2892,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-NAV-4-YAML Verify navigation behavior with overlapping issues in YAML', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
@@ -2721,8 +2909,13 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-TAB-NAV-4-JSON Verify navigation behavior with overlapping issues in JSON', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
+
+        registerTestResources(usedResources, {
+          rulesets: RUL_QUALITY_TAB_OAS31_N,
+          versions: { ...V_AQ_TAB_MIXED_N, files: [{ file: FILE_TAB_OAS31 }] },
+        })
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
@@ -2757,6 +2950,7 @@ test.describe('API Quality Validation', () => {
       test('P-AQ-TAB-EDGE-1-M Verify No Validation Results state', {
         tag: '@smoke',
       }, async ({ sysadminPage: page }) => {
+        // No resources registered - test uses mocked 404 response, file content doesn't affect outcome
         const portalPage = new PortalPage(page)
         const { apiQualityTab } = portalPage.versionPackagePage
 

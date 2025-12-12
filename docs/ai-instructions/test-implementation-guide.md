@@ -38,6 +38,52 @@ Before writing code:
 - Add robust visibility checks (e.g., when asserting something is hidden, also assert that the surrounding page/tab is visible to avoid false positives).
 - Create resources (test data constants, helper files) _before_ importing them.
 
+#### Context Awareness Fixture: `usedResources` (attach resources on failure)
+
+When a test uses resource files (e.g., **API specs**, **linter rulesets**), register them through the `usedResources` fixture so they are automatically attached to the Playwright report **only on failure**.
+
+- Use helper functions from `@fixtures` (examples; extend with new helpers as needed):
+  - `registerRulesetFiles(usedResources, rulesets)` (single or array)
+  - `registerVersionFiles(usedResources, versions)` (single or array)
+- Register **only what matters** for the test outcome. If the test uses mocked APIs and file content does not affect assertions, skip registration.
+- Optimization: if all tests in a `describe` share the same baseline resources, register them in `test.beforeEach(...)` and then add extra resources only in the specific tests that need them.
+- If a test relies only on `beforeEach` registration and does not add anything else, remove `usedResources` from the test args to avoid TS unused-parameter errors (e.g., TS6133).
+
+Example (based on `src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`):
+
+```typescript
+import { registerRulesetFiles, registerVersionFiles, test } from '@fixtures'
+import type { UsedResourcesHelper } from '@fixtures'
+
+type TestResourcesOptions = {
+  rulesets?: RulesetWithFile | RulesetWithFile[]
+  versions?: Version | Version[]
+}
+
+const registerTestResources = (usedResources: UsedResourcesHelper, options: TestResourcesOptions): void => {
+  if (options.rulesets) {
+    registerRulesetFiles(usedResources, options.rulesets)
+  }
+  if (options.versions) {
+    registerVersionFiles(usedResources, options.versions)
+  }
+}
+
+test.describe('Some suite', () => {
+  test.beforeEach(async ({ usedResources }) => {
+    registerTestResources(usedResources, {
+      rulesets: RUL_QUALITY_TAB_OAS30_N,
+      versions: V_AQ_TAB_MIXED_N,
+    })
+  })
+
+  test('TEST-ID ...', async ({ sysadminPage: page }) => {
+    const portalPage = new PortalPage(page)
+    // test steps...
+  })
+})
+```
+
 ### Phase 4 — Verification
 
 - Run `npx eslint <spec-path>` immediately after edits; fix all errors.

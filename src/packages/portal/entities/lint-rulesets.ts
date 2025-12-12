@@ -33,3 +33,19 @@ export const SERVER_DEFAULT_RULESETS = {
   [LintRulesetApiTypes.OAS_3_0]: 'default-openapi-3-0',
   [LintRulesetApiTypes.OAS_3_1]: 'default-openapi-3-1',
 } as const
+
+/**
+ * Type for ruleset with file info, used in linter tests.
+ */
+export type RulesetWithFile = {
+  id: string
+  name: string
+  apiType: LintRulesetApiType
+  rulesetFile: {
+    name: string
+    path: string
+    testMeta?: {
+      yamlString?: string
+    }
+  }
+}
