@@ -2004,13 +2004,13 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Part of a word', async () => {
-          await documentSlt.searchBar.fill('large')
+          await documentSlt.searchBar.fill('oas')
           await expect(oas30Doc).toBeVisible()
-          await expect(oas31Doc).toBeHidden()
+          await expect(oas31Doc).toBeVisible()
         })
 
         await test.step('Adding part of a word', async () => {
-          await documentSlt.searchBar.fill('aq-tab-large-oas30')
+          await documentSlt.searchBar.type('30')
           await expect(oas30Doc).toBeVisible()
           await expect(oas31Doc).toBeHidden()
         })
@@ -2022,9 +2022,6 @@ test.describe('API Quality Validation', () => {
         })
 
         await test.step('Case insensitive search', async () => {
-          await documentSlt.searchBar.fill('oas30')
-          await expect(oas30Doc).toBeVisible()
-          await expect(oas31Doc).toBeHidden()
           await documentSlt.searchBar.fill('OAS30')
           await expect(oas30Doc).toBeVisible()
           await expect(oas31Doc).toBeHidden()
