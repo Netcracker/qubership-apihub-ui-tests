@@ -1,7 +1,12 @@
 import type { Fixtures } from '@fixtures'
 import { defineConfig, devices } from '@playwright/test'
+import dayjs from 'dayjs'
 import 'dotenv/config'
 import process from 'node:process'
+
+const formatReportTimestamp = (date: Date): string => {
+  return dayjs(date).locale('en').format('DD MMM YYYY HH:mm')
+}
 
 /**
  * Read environment variables from file.
@@ -15,7 +20,7 @@ export default defineConfig<Fixtures>({
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: 'temp/test-results',
   /* Timeout for the whole test run */
-  globalTimeout: 60_000 * 50,
+  globalTimeout: 60_000 * 60,
   /* Maximum time one test can run for. */
   timeout: 70_000,
   expect: {
@@ -39,6 +44,8 @@ export default defineConfig<Fixtures>({
     ['html', {
       open: 'never',
       outputFolder: 'reports/playwright',
+      title: `${process.env.CI ? 'CI' : 'Local'} - ${formatReportTimestamp(new Date())}`,
+      noCopyPrompt: true,
     }],
     ['list'],
     ['./src/services/custom-reporter/CustomReporter.ts', { reportType: 'apihub-styled-html' }],
@@ -80,6 +87,7 @@ export default defineConfig<Fixtures>({
       name: 'Apihub-Teardown',
       testDir: './src/tests',
       testMatch: /apihub-teardown\.ts/,
+      timeout: 360_000,
     },
     {
       name: 'Portal-Setup',
@@ -88,13 +96,6 @@ export default defineConfig<Fixtures>({
       timeout: 1200_000,
       retries: 0,
       dependencies: ['Apihub-Setup'],
-      teardown: 'Portal-Teardown',
-    },
-    {
-      name: 'Portal-Teardown',
-      testDir: './src/tests/portal',
-      testMatch: /teardown\.ts/,
-      timeout: 360_000,
     },
     {
       name: 'Utils',
