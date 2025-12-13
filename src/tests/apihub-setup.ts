@@ -13,6 +13,7 @@ test('APIHUB Global Setup', async () => {
       'PLAYGROUND_BACKEND_HOST',
       'DEV_PROXY_MODE',
       'TICKET_SYSTEM_URL',
+      // AUTH is deprecated: legacy auth toggle kept temporarily until old auth logic is removed.
       'AUTH',
       'CREATE_TD',
       'CLEAR_TD',

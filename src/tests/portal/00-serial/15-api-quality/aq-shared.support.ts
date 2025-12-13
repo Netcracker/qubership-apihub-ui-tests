@@ -17,6 +17,7 @@ import { ROOT_RESOURCES, TestFile } from '@shared/entities'
 import { VAR_GR } from '@test-data/portal/groups'
 import type { Version } from '@test-data/props'
 import { Group } from '@test-data/props'
+import { CLEAR_TD } from '@test-setup'
 import path from 'node:path'
 
 /**
@@ -110,7 +111,9 @@ export const activateDefaultRulesetsAndCleanup = async (
     }
   }
 
-  await lintRulesetTdm.deleteTestRulesets(testIdN)
+  if (CLEAR_TD !== 'skip') {
+    await lintRulesetTdm.deleteTestRulesets(testIdN)
+  }
 }
 
 /**

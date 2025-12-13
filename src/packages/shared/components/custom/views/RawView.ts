@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { BaseComponent, Button, Content } from '@shared/components/base'
+import { BaseComponent, Button } from '@shared/components/base'
 import { LineNumberContainer } from './RawView/LineNumberContainer'
 import { ProblemPopUp } from './RawView/ProblemPopUp'
 import { ProblemTooltip } from './RawView/ProblemTooltip'
@@ -29,8 +29,8 @@ export class RawView extends BaseComponent {
     )
   }
 
-  getTextContent(text: string): Content {
-    return new Content(this.rootLocator.locator('.view-lines').getByText(text), text, 'text')
+  getTextContent(text: string): BaseComponent {
+    return new BaseComponent(this.rootLocator.locator('.view-lines').getByText(text), text, 'text')
   }
 
   async hoverText(text: string): Promise<void> {

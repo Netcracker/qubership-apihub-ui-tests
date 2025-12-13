@@ -1,10 +1,10 @@
 import type { Page } from '@playwright/test'
-import { BaseComponent, Button, Content, Title } from '@shared/components/base'
+import { BaseComponent, Button, Title } from '@shared/components/base'
 
 export class ProblemPopUp extends BaseComponent {
   readonly title = new Title(this.rootLocator.locator('.peekview-title'), 'Problem popup')
-  readonly message = new Content(this.rootLocator.locator('.message'), 'Problem popup', 'message')
-  readonly iconContainer = new Content(
+  readonly message = new BaseComponent(this.rootLocator.locator('.message'), 'Problem popup', 'message')
+  readonly iconContainer = new BaseComponent(
     this.rootLocator.locator('.codicon').first(),
     'Problem popup',
     'icon container',
