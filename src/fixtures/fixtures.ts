@@ -116,7 +116,6 @@ export const test = base.extend<Fixtures>({
       for (const file of files) {
         try {
           if (existsSync(file.path)) {
-            console.log(`Attaching file "${file.name}": ${file.path}`)
             await testInfo.attach(file.name, { path: file.path })
           } else {
             console.warn(`Cannot attach file "${file.name}": path not found - ${file.path}`)

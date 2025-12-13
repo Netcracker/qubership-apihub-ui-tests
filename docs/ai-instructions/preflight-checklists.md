@@ -4,7 +4,7 @@ Use this file verbatim when constructing the PRE-FLIGHT block. Combine the **Glo
 
 ## PRE-FLIGHT — Global Steps
 
-- [ ] **Workspace bootstrap:** run the root-detection script from `AGENTS.md`, set `PROJECT_ROOT`, and state `Detected project root: <abs path>`.
+- [ ] **Workspace bootstrap:** if the user didn’t explicitly say whether we’re in the monorepo root or inside `qubership-apihub-ui-tests`, detect `PROJECT_ROOT` automatically (rules in `AGENTS.md` §9) and state `Detected project root: <abs path>`.
 - [ ] **Shell scope confirmation:** ensure every subsequent command executes from `PROJECT_ROOT`.
 - [ ] **Instruction Access Protocol:** list every required file and mark it `Found + read` only after actually reading it. Minimum set:\
       `.eslintrc.json`, `AGENTS.md`, `docs/ai-instructions/preflight-checklists.md`, the chosen playbook from `docs/ai-instructions/task-playbooks.md`, and any additional docs cited in that playbook (e.g., `docs/CODING_GUIDELINES.md`, `docs/pom-in-practice.md`, `docs/ai-instructions/test-implementation-guide.md`).\
@@ -13,7 +13,7 @@ Use this file verbatim when constructing the PRE-FLIGHT block. Combine the **Glo
 - [ ] **Task type declaration:** state the chosen playbook and why it applies.
 - [ ] **Todo mirror:** create/refresh the todo list so each PRE-FLIGHT item has a matching entry.
 - [ ] **Plan validation commands:** outline which lint/test commands will run (even if some end up `n/a`).
-- [ ] **Formatting, type check & lint plan:** confirm all new files use LF endings, note whether `dprint` is available, and specify the aggregate commands you will run (`npx tsc --noEmit`, `npx dprint fmt <files>`, `npx eslint --fix <files>`).
+- [ ] **Formatting, type check & lint plan:** confirm all new files use LF endings and specify the aggregate commands you will run (`npx tsc --noEmit`, `npx dprint fmt <files>`, `npx eslint --fix <files>`).
 - [ ] **Environment prerequisites:** verify mandatory local folders exist if needed.
 
 ## PRE-FLIGHT — Task-Type Add-ons
@@ -82,7 +82,7 @@ Only include the section that matches the selected playbook.
 ## POST-FLIGHT — Always Required
 
 - [ ] TypeScript check: `npx tsc --noEmit` ✅/❌ (note any pre-existing errors in unrelated files).
-- [ ] Formatting: `npx dprint fmt <files>` ✅/❌ (if the CLI/config is unavailable, note why it was skipped).
+- [ ] Formatting: `npx dprint fmt <files>` ✅/❌ (note any errors).
 - [ ] Lint command executed: `npx eslint --fix <all-changed-files>` ✅/❌ (quote the exact CLI and attach failure logs if ❌).
 - [ ] Tests executed (quote CLI + flags or state `n/a` with justification).
 - [ ] Instruction docs updated? list touched paths or `n/a`.

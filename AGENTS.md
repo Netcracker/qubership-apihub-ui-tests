@@ -32,7 +32,7 @@ Failure to follow IAP voids the run; missing evidence is treated as non-complian
 
 ## 4. Workflow Summary
 
-1. **Detect Workspace**: Run the script in Section 9.
+1. **Detect Workspace**: If the user didn’t explicitly say whether we’re in the monorepo root or inside `qubership-apihub-ui-tests`, the agent must detect `PROJECT_ROOT` automatically (Section 9).
 2. **Access Instructions**: Execute the IAP (Section 2).
 3. **Select Playbook**: Load `docs/ai-instructions/task-playbooks.md` and the relevant guide.
 4. **Implement**: Follow the playbook's guidance.
@@ -63,39 +63,29 @@ Coding conventions are defined globally:
 ## 8. Linting, Formatting & Type Checking
 
 - **TypeScript check:** run `npx tsc --noEmit` to verify there are no type errors before formatting and linting. Pre-existing errors in unrelated files can be noted but should not block the task.
-- **dprint formatting:** run `npx dprint fmt <file1> <file2> ...` on all changed files before the final ESLint pass. If `dprint` or its config is missing, state that explicitly and continue.
+- **dprint formatting:** run `npx dprint fmt <file1> <file2> ...` on all changed files before the final ESLint pass. If the command fails due to missing `dprint` or config, note the error and continue.
 - **Primary lint command:** after finishing edits (and again after formatting), run `npx eslint --fix <file1> <file2> ...` covering every created/modified file in one go. Capture the exact CLI and result in POST-FLIGHT.
 - **LF endings:** save every new file with Unix line endings (LF). When copying content from Windows tools, normalize it before committing (most editors expose this in the status bar).
 
 ## 9. Workspace Detection
 
-Always resolve `PROJECT_ROOT` before executing other commands. Try using your agent's native file system tools (like `list_dir` or `get_cwd`) to determine the current directory first.
+Always resolve `PROJECT_ROOT` before executing other commands.
 
-If native tools are insufficient, use the simplified PowerShell helper below (covers both common launch scenarios):
+If the user did **not** explicitly say whether we’re working:
 
-```pwsh
-$start = Get-Location
-if (Test-Path (Join-Path $start 'qubership-apihub-ui-tests')) {
-  Set-Location (Join-Path $start 'qubership-apihub-ui-tests')
-} else {
-  # Already inside the repository; stay put so we can reach sibling projects if needed
-  Set-Location $start
-}
-Write-Host "Detected project root: $((Get-Location).Path)"
-```
+- inside the test project root (`qubership-apihub-ui-tests`), or
+- in a monorepo root that contains the `qubership-apihub-ui-tests` folder,
 
-If you work in Bash/Zsh, use the same logic:
+then the agent must detect it automatically.
 
-```bash
-if [ -d "$PWD/qubership-apihub-ui-tests" ]; then
-  cd "$PWD/qubership-apihub-ui-tests"
-else
-  cd "$PWD"
-fi
-printf 'Detected project root: %s\n' "$PWD"
-```
+**Detection rules (must succeed before running any commands):**
 
-Print the detected root in your first response and execute every command from that directory.
+- If the current directory contains a `qubership-apihub-ui-tests` folder → set `PROJECT_ROOT` to that folder.
+- Else, if the current directory itself looks like the test project root (contains `package.json`, `playwright.config.ts`, `src/`) → set `PROJECT_ROOT` to the current directory.
+- Else, search upward (parent directories) using the same rules.
+- If still not found → stop and ask the user where the project root is.
+
+Print `Detected project root: <abs path>` in the first response, and execute every command from `PROJECT_ROOT`.
 
 ## 10. Documentation Upkeep
 

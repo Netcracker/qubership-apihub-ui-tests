@@ -51,8 +51,11 @@ When a test uses resource files (e.g., **API specs**, **linter rulesets**), regi
 
 Example (based on `src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`):
 
+When a spec becomes very large (but tests must stay in the same `.spec.ts`), extract reusable helpers into a colocated support module (e.g., `aq-shared.support.ts`) and import them back into the spec.
+
 ```typescript
-import { registerRulesetFiles, registerVersionFiles, test } from '@fixtures'
+// src/tests/portal/00-serial/15-api-quality/aq-shared.support.ts
+import { registerRulesetFiles, registerVersionFiles } from '@fixtures'
 import type { UsedResourcesHelper } from '@fixtures'
 
 type TestResourcesOptions = {
@@ -60,7 +63,7 @@ type TestResourcesOptions = {
   versions?: Version | Version[]
 }
 
-const registerTestResources = (usedResources: UsedResourcesHelper, options: TestResourcesOptions): void => {
+export const registerTestResources = (usedResources: UsedResourcesHelper, options: TestResourcesOptions): void => {
   if (options.rulesets) {
     registerRulesetFiles(usedResources, options.rulesets)
   }
@@ -68,8 +71,16 @@ const registerTestResources = (usedResources: UsedResourcesHelper, options: Test
     registerVersionFiles(usedResources, options.versions)
   }
 }
+```
+
+```typescript
+// src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts
+import { test } from '@fixtures'
+import * as aqShared from './aq-shared.support'
 
 test.describe('Some suite', () => {
+  const { registerTestResources } = aqShared
+
   test.beforeEach(async ({ usedResources }) => {
     registerTestResources(usedResources, {
       rulesets: RUL_QUALITY_TAB_OAS30_N,
