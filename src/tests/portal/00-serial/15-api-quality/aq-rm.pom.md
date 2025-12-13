@@ -5,8 +5,8 @@
 - **Scope:** `aq-rm`
 - **Type:** `pom`
 - **Related artifacts:**
-  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-rm.overview.md`
-  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-rm.test-plan.md`
+  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-rm.overview.md`
+  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-rm.test-plan.md`
 - **Implementation (tests):**
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-rm.support.ts`
@@ -17,7 +17,7 @@ POM for Ruleset Management is **implemented** in the test repository and must be
 
 ## 2. UI implementation references (other projects)
 
-Validate selectors and behavior against UI repo:
+Validate selectors and behavior against UI repository:
 
 - `qubership-apihub-ui/packages/portal/src/routes/root/SettingsPage/RulesetManagementTab/RulesetManagementTab.tsx`
 - `qubership-apihub-ui/packages/portal/src/routes/root/SettingsPage/RulesetManagementTab/RulesetTable.tsx`
@@ -39,7 +39,7 @@ Validate selectors and behavior against UI repo:
 
 ## 4. Required POM structure (conceptual)
 
-```
+```text
 PortalPage
 └── PortalSettingsPage
     └── RulesetManagementTab

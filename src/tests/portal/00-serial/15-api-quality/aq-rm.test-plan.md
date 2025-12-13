@@ -1,17 +1,17 @@
-# Technical Specification: E2E Tests for Ruleset Management
+# Technical Specification: end-to-end tests for Ruleset Management
 
 ## Meta
 
 - **Scope:** `aq-rm`
 - **Type:** `test-plan`
 - **Related artifacts:**
-  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-rm.overview.md`
-  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-rm.pom.md`
+  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-rm.overview.md`
+  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-rm.pom.md`
 - **Implementation (tests):**
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-rm.support.ts`
 
-This document provides a complete technical specification for generating Playwright E2E tests for the Ruleset Management feature. It is divided into three parts:
+This document provides a complete technical specification for generating Playwright end-to-end tests for the Ruleset Management feature. It is divided into three parts:
 
 1. **Test Case Specification**
 2. **Test Data Management Strategy**

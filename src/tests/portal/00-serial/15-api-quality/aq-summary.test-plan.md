@@ -1,17 +1,17 @@
-# Technical Specification: E2E Tests for API Quality Summary Tab
+# Technical Specification: end-to-end tests for API Quality Summary Tab
 
 ## Meta
 
 - **Scope:** `aq-summary`
 - **Type:** `test-plan`
 - **Related artifacts:**
-  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.overview.md`
-  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.pom.md`
+  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.overview.md`
+  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.pom.md`
 - **Implementation (tests):**
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.support.ts`
 
-This document provides a complete technical specification for generating Playwright E2E tests for the API Quality Summary Tab feature. It is divided into three parts:
+This document provides a complete technical specification for generating Playwright end-to-end tests for the API Quality Summary Tab feature. It is divided into three parts:
 
 1. **Test Case Specification:** Human-readable test cases with assigned priorities.
 2. **Test Data Management Strategy:** Strategy for creating, managing, and cleaning up test data.
@@ -114,10 +114,10 @@ This document provides a complete technical specification for generating Playwri
 - **Priority:** Major
 - **Prerequisites:** Validated REST API package version.
 
-| Step                             | ER                                                                                                                                                            |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Navigate to the Summary tab.  |                                                                                                                                                               |
-| 2. Click on a Ruleset name link. | 1. Ruleset Info dialog opens.<br>2. Dialog title matches ruleset name.<br>3. API Type chip and Status chip are visible.<br>4. Ruleset file name is displayed. |
+| Step                             | ER                                                                                                                                                           |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Navigate to the Summary tab.  |                                                                                                                                                              |
+| 2. Click on a Ruleset name link. | 1. Ruleset Info dialog opens.<br>2. Dialog title matches ruleset name.<br>3. API Type chip and Status chip are visible.<br>4. Ruleset filename is displayed. |
 
 #### **P-AQ-SM-POPUP-2 Verify multiple Rulesets can be opened in multi-spec version**
 
@@ -236,7 +236,7 @@ This document provides a complete technical specification for generating Playwri
 
 ### **2.2. Test Data Hierarchy**
 
-```
+```text
 VAR_GR (Non-Reusable group with TEST_ID_N)
 └── API-Quality (G_AQ)
     └── PKG_AQ_SUMMARY_N
@@ -367,7 +367,7 @@ Suggested nested describes:
 
 - **Test Naming:** `P-AQ-SM-... <Title>`
 - **Tags:** add `@smoke` for Priority: Critical and Priority: Major tests.
-- **No regex special characters** in names.
+- **No regular expression special characters** in names.
 
 ### **3.5. Expected Issue Counts**
 

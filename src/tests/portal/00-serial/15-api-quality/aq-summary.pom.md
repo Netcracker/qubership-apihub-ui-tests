@@ -5,8 +5,8 @@
 - **Scope:** `aq-summary`
 - **Type:** `pom`
 - **Related artifacts:**
-  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.overview.md`
-  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.test-plan.md`
+  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.overview.md`
+  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.test-plan.md`
 - **Implementation (tests):**
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.support.ts`
@@ -20,14 +20,14 @@ POM for Quality Summary Tab is **implemented** in the test repository.
 Use these UI sources to validate `data-testid` / behavior:
 
 - `qubership-apihub-ui/packages/portal/src/routes/root/PortalPage/VersionPage/VersionOverviewSubPage/SummaryTab/OperationTypeSummary.tsx`
-- `qubership-apihub-ui/packages/portal/src/components/ApiQuality/ValidatationRulesetLink.tsx` (typo in filename is in UI repo)
+- `qubership-apihub-ui/packages/portal/src/components/ApiQuality/ValidatationRulesetLink.tsx` (typo in filename is in UI repository)
 - `qubership-apihub-ui/packages/portal/src/routes/root/PortalPage/VersionPage/VersionApiQualitySubPage/components/RulesetInfoDialog/RulesetInfoDialog.tsx`
 - `qubership-apihub-ui/packages/portal/src/routes/root/PortalPage/VersionPage/VersionApiQualitySubPage/RulesetFilePanel.tsx`
 - `qubership-apihub-ui/packages/portal/src/routes/root/PortalPage/VersionPage/VersionApiQualitySubPage/components/RulesetInfoDialog/RulesetActivationHistoryTable.tsx`
 
 ## 3. Required POM architecture (conceptual)
 
-```
+```text
 VersionPackagePage
 └── RulesetInfoDialog (shared dialog, reused by Summary + API Quality Tab)
 

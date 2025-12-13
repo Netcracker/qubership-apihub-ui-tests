@@ -6,9 +6,9 @@
 - **Type:** `overview`
 - **Status:** legacy snapshot kept for reference (historical gaps in `data-testid`)
 - **Related (current):**
-  - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.overview.md`
-  - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.pom.md`
-  - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.test-plan.md`
+  - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.overview.md`
+  - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.pom.md`
+  - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.test-plan.md`
 
 ## 1. Feature Description
 

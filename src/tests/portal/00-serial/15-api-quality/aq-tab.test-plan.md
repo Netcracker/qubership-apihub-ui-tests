@@ -1,17 +1,17 @@
-# Technical Specification: E2E Tests for API Quality Tab
+# Technical Specification: end-to-end tests for API Quality Tab
 
 ## Meta
 
 - **Scope:** `aq-tab`
 - **Type:** `test-plan`
 - **Related artifacts:**
-  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-tab.overview.md`
-  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-tab.pom.md`
+  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-tab.overview.md`
+  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-tab.pom.md`
 - **Implementation (tests):**
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-tab.support.ts`
 
-This document provides a complete technical specification for generating Playwright E2E tests for the API Quality Tab feature.
+This document provides a complete technical specification for generating Playwright end-to-end tests for the API Quality Tab feature.
 
 ## Part 1: Test Case Specification
 
@@ -92,10 +92,10 @@ This document provides a complete technical specification for generating Playwri
 - **Priority:** Major
 - **Prerequisites:** Validated document with an active ruleset.
 
-| Step                                | ER                                                                                                                                                            |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Navigate to the API Quality tab. |                                                                                                                                                               |
-| 2. Click on the Ruleset link.       | 1. Ruleset Info Dialog opens.<br>2. Dialog title matches the ruleset name.<br>3. Ruleset file name is displayed.<br>4. API Type and Status chips are visible. |
+| Step                                | ER                                                                                                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Navigate to the API Quality tab. |                                                                                                                                                              |
+| 2. Click on the Ruleset link.       | 1. Ruleset Info Dialog opens.<br>2. Dialog title matches the ruleset name.<br>3. Ruleset filename is displayed.<br>4. API Type and Status chips are visible. |
 
 #### **P-AQ-TAB-RULE-2 Verify Ruleset Dialog Download**
 
@@ -202,12 +202,16 @@ This document provides a complete technical specification for generating Playwri
   - Document is selected in the API Quality tab.
   - YAML format is selected.
 
-| Step                                                              | ER                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Navigate to the API Quality tab.                               |                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2. Ensure YAML format is selected.                                |                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 3. Locate an issue marker (squiggly line) in the Document Viewer. |                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 4. Hover over the issue marker text for each issue.               | 1. Problem Tooltip appears.<br>2. Tooltip contains the issue message.<br>3. Tooltip displays Linter version.<br>4. Tooltip displays Rule name (matches rule from ruleset).<br>5. For Error/Warning/Info: Tooltip displays "View Problem" button.<br>6. For Hint: Tooltip does NOT display "View Problem" button (hints are informational only).<br>7. For Hint: Tooltip appears on whitespace before text (not directly on the marked text). |
+| Step                                                              | ER                                                                                                |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 1. Navigate to the API Quality tab.                               |                                                                                                   |
+| 2. Ensure YAML format is selected.                                |                                                                                                   |
+| 3. Locate an issue marker (squiggly line) in the Document Viewer. |                                                                                                   |
+| 4. Hover over the issue marker text for each issue.               | 1. Problem Tooltip appears.<br>2. Tooltip contains the issue message.                             |
+|                                                                   | 3. Tooltip displays Linter version.<br>4. Tooltip displays Rule name (matches rule from ruleset). |
+|                                                                   | 5. For Error/Warning/Info: Tooltip displays "View Problem" button.                                |
+|                                                                   | 6. For Hint: Tooltip does NOT display "View Problem" button (hints are informational only).       |
+|                                                                   | 7. For Hint: Tooltip appears on whitespace before text (not directly on the marked text).         |
 
 #### **P-AQ-TAB-TIP-1-JSON Verify Tooltip appears on hover over issue marker in JSON**
 
@@ -217,12 +221,16 @@ This document provides a complete technical specification for generating Playwri
   - Document is selected in the API Quality tab.
   - JSON format is selected.
 
-| Step                                                              | ER                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Navigate to the API Quality tab.                               |                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2. Switch to JSON format.                                         |                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 3. Locate an issue marker (squiggly line) in the Document Viewer. |                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 4. Hover over the issue marker text for each issue.               | 1. Problem Tooltip appears.<br>2. Tooltip contains the issue message.<br>3. Tooltip displays Linter version.<br>4. Tooltip displays Rule name (matches rule from ruleset).<br>5. For Error/Warning/Info: Tooltip displays "View Problem" button.<br>6. For Hint: Tooltip does NOT display "View Problem" button (hints are informational only).<br>7. For Hint: Tooltip appears on whitespace before text (not directly on the marked text). |
+| Step                                                              | ER                                                                                                |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 1. Navigate to the API Quality tab.                               |                                                                                                   |
+| 2. Switch to JSON format.                                         |                                                                                                   |
+| 3. Locate an issue marker (squiggly line) in the Document Viewer. |                                                                                                   |
+| 4. Hover over the issue marker text for each issue.               | 1. Problem Tooltip appears.<br>2. Tooltip contains the issue message.                             |
+|                                                                   | 3. Tooltip displays Linter version.<br>4. Tooltip displays Rule name (matches rule from ruleset). |
+|                                                                   | 5. For Error/Warning/Info: Tooltip displays "View Problem" button.                                |
+|                                                                   | 6. For Hint: Tooltip does NOT display "View Problem" button (hints are informational only).       |
+|                                                                   | 7. For Hint: Tooltip appears on whitespace before text (not directly on the marked text).         |
 
 #### **P-AQ-TAB-TIP-2-YAML Verify Tooltip displays multiple issues of different types in YAML**
 
@@ -483,11 +491,13 @@ This document provides a complete technical specification for generating Playwri
   - Document with multiple issues on the same line/location (e.g., Error and Warning on same element).
   - YAML format is selected.
 
-| Step                                                             | ER                                                                                                                                                                                                                                                                                                                                                       |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Ensure YAML format is selected.                               |                                                                                                                                                                                                                                                                                                                                                          |
-| 2. Open Popup for one of the issues at the overlapping location. |                                                                                                                                                                                                                                                                                                                                                          |
-| 3. Use Next Problem to navigate through all issues.              | 1. Navigation follows **severity order**, NOT location order.<br>2. If current issue is an Error, Next Problem may jump to another Error elsewhere in the document before returning to the Warning at the same location.<br>3. All issues are eventually visited following the global severity order (all Errors → all Warnings → all Info → all Hints). |
+| Step                                                             | ER                                                                                                                                                      |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Ensure YAML format is selected.                               |                                                                                                                                                         |
+| 2. Open Popup for one of the issues at the overlapping location. |                                                                                                                                                         |
+| 3. Use Next Problem to navigate through all issues.              | 1. Navigation follows **severity order**, NOT location order.                                                                                           |
+|                                                                  | 2. If current issue is an Error, Next Problem may jump to another Error elsewhere in the document before returning to the Warning at the same location. |
+|                                                                  | 3. All issues are eventually visited following the global severity order (all Errors → all Warnings → all Info → all Hints).                            |
 
 #### **P-AQ-TAB-NAV-4-JSON Verify navigation behavior with overlapping issues in JSON**
 
@@ -496,11 +506,13 @@ This document provides a complete technical specification for generating Playwri
   - Document with multiple issues on the same line/location (e.g., Error and Warning on same element).
   - JSON format is selected.
 
-| Step                                                             | ER                                                                                                                                                                                                                                                                                                                                                       |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Switch to JSON format.                                        |                                                                                                                                                                                                                                                                                                                                                          |
-| 2. Open Popup for one of the issues at the overlapping location. |                                                                                                                                                                                                                                                                                                                                                          |
-| 3. Use Next Problem to navigate through all issues.              | 1. Navigation follows **severity order**, NOT location order.<br>2. If current issue is an Error, Next Problem may jump to another Error elsewhere in the document before returning to the Warning at the same location.<br>3. All issues are eventually visited following the global severity order (all Errors → all Warnings → all Info → all Hints). |
+| Step                                                             | ER                                                                                                                                                      |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Switch to JSON format.                                        |                                                                                                                                                         |
+| 2. Open Popup for one of the issues at the overlapping location. |                                                                                                                                                         |
+| 3. Use Next Problem to navigate through all issues.              | 1. Navigation follows **severity order**, NOT location order.                                                                                           |
+|                                                                  | 2. If current issue is an Error, Next Problem may jump to another Error elsewhere in the document before returning to the Warning at the same location. |
+|                                                                  | 3. All issues are eventually visited following the global severity order (all Errors → all Warnings → all Info → all Hints).                            |
 
 ### **Test Suite: Special States**
 
@@ -523,7 +535,7 @@ This document provides a complete technical specification for generating Playwri
 
 ### **2.2. Test Data Hierarchy**
 
-```
+```text
 VAR_GR (Non-Reusable group with TEST_ID_N)
 └── API-Quality (G_AQ)
     └── PKG_AQ_TAB_N

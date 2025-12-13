@@ -5,9 +5,9 @@
 - **Scope:** `aq-summary`
 - **Type:** `overview`
 - **Related artifacts:**
-  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.pom.md`
-  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary.test-plan.md`
-  - **Legacy (before stable `data-testid`)**: `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-summary-before-testid.overview.md`
+  - **POM instructions:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.pom.md`
+  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.test-plan.md`
+  - **Legacy (before stable `data-testid`)**: `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary-before-testid.overview.md`
 - **Implementation (tests):**
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-summary.support.ts`
@@ -30,7 +30,14 @@ The core functionalities include:
 
 A package version can contain multiple documents with different OpenAPI specifications (OAS 2.0, OAS 3.0, OAS 3.1) or different API types (REST, GraphQL):
 
-- **Multiple documents with different OpenAPI specifications** (OAS 2.0, OAS 3.0, OAS 3.1): All documents are aggregated together in the validation summary. The `useAggregatedValidationSummaryByPackageVersion` hook sums up issue counts from all documents in the `validationSummary.documents` array. Each document has an `apiType` field indicating its OpenAPI specification (`"openapi-2-0"`, `"openapi-3-0"`, or `"openapi-3-1"`). Rulesets are matched to documents based on their specification type, and multiple rulesets (one per specification type) can be displayed in the same `OperationTypeSummary` section.
+- **Multiple documents with different OpenAPI specifications** (OAS 2.0, OAS 3.0, OAS 3.1):
+  - All documents are aggregated together in the validation summary.
+  - The `useAggregatedValidationSummaryByPackageVersion` hook sums up issue counts from all documents
+    in the `validationSummary.documents` array.
+  - Each document has an `apiType` field indicating its OpenAPI specification (`"openapi-2-0"`,
+    `"openapi-3-0"`, or `"openapi-3-1"`).
+  - Rulesets are matched to documents based on their specification type. Multiple rulesets (one per
+    specification type) can be displayed in the same `OperationTypeSummary` section.
 
 - **GraphQL API type**: Currently, GraphQL is **not supported** by the linter service. When a version contains only GraphQL documents or has GraphQL as one of its API types:
   - The "Quality Validation" section is **not displayed** for GraphQL API type (`useApiQualityLinterEnabled` returns `false` for GraphQL)
@@ -239,7 +246,7 @@ export type RulesetMetadata = {
 - **Ruleset Popup Interaction**:
   - Verify Title matches ruleset name.
   - Verify chips are present in dialog title.
-  - Verify File Name is correct.
+  - Verify filename is correct.
   - Click "Download" button -> Verify download action.
   - Click "Copy Link" button -> Verify clipboard content/notification.
   - Verify Activation History table rows format.

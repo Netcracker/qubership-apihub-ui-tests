@@ -42,7 +42,7 @@ Use this exact structure for the output file:
 ## 1. Feature Overview and Test Cases
 
 - **Feature Overview**: `path/to/feature-overview.md`
-- **E2E Test Cases**: `path/to/test-plan.md`
+- **end-to-end test cases**: `path/to/test-plan.md`
 
 ## 2. UI Implementation & `data-testid` References
 

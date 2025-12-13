@@ -5,8 +5,8 @@
 - **Scope:** `aq-tab`
 - **Type:** `pom`
 - **Related artifacts:**
-  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-tab.overview.md`
-  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/artifacts/aq-tab.test-plan.md`
+  - **Feature overview:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-tab.overview.md`
+  - **Test plan:** `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-tab.test-plan.md`
 - **Implementation (tests):**
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/api-quality.spec.ts`
   - `qubership-apihub-ui-tests/src/tests/portal/00-serial/15-api-quality/aq-tab.support.ts`
@@ -55,7 +55,7 @@ POM for API Quality Tab is **implemented** in the test repository.
 
 ## 3. Required POM structure (conceptual)
 
-```
+```text
 VersionPackagePage
 ├── RulesetInfoDialog (shared)
 └── ApiQualityTab
@@ -87,4 +87,4 @@ VersionPackagePage
 If a required element has no `data-testid` or is unstable:
 
 1. Prefer semantic locators (`getByRole`, `getByLabel`, etc.) if stable.
-2. Otherwise add/fix `data-testid` in UI repo (typically `qubership-apihub-ui/...`) and then update POM accordingly.
+2. Otherwise add/fix `data-testid` in UI repository (typically `qubership-apihub-ui/...`) and then update POM accordingly.

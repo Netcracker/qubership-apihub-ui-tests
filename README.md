@@ -2,7 +2,7 @@
 
 Playwright-based test project for APIHUB UI:
 
-- Portal UI E2E tests (`--project=Portal`)
+- Portal UI end-to-end tests (`--project=Portal`)
 - ADV smoke-style checks (`ADV-operations`, `ADV-comparisons`)
 - Cleanup project (`--project=Cleanup`)
 
@@ -32,7 +32,7 @@ Minimum required variables:
 - `BASE_URL`
 - `TEST_USER_PASSWORD`
 
-### Run Portal E2E
+### Run Portal end-to-end tests
 
 ```Shell
 npx playwright test --project=Portal
@@ -43,7 +43,7 @@ npx playwright test --project=Portal
 ### Core rules
 
 - [AGENTS.md](AGENTS.md) — mandatory workflow for AI agents (IAP, PRE-FLIGHT/POST-FLIGHT, verification rules)
-- [.eslintrc.json](.eslintrc.json) — lint rules (TypeScript + Playwright)
+- [.eslintrc.json](.eslintrc.json) — linter rules (TypeScript + Playwright)
 
 ### Engineering guidelines
 
@@ -63,13 +63,16 @@ All playbooks and checklists live under:
   - [test-strategy-guide.md](docs/ai-instructions/test-strategy-guide.md)
   - [feature-analysis-guide.md](docs/ai-instructions/feature-analysis-guide.md)
 
-### Feature artifacts colocated with suites
+### Suite artifacts colocated with tests
 
-Some suites keep their feature-overview / POM instructions / test-plan in an `artifacts/` subfolder next to the spec.
+Keep suite artifacts (feature overview / POM instructions / test plan) next to the tests.
 
-Example (API Quality):
+- If a suite has a single spec file, keep artifacts in the same folder as the spec.
+- If a suite has multiple spec files, group them in a dedicated folder and keep artifacts in that folder too.
 
-- [src/tests/portal/00-serial/15-api-quality/artifacts/](src/tests/portal/00-serial/15-api-quality/artifacts/)
+Example (API Quality suite folder):
+
+- [src/tests/portal/00-serial/15-api-quality/](src/tests/portal/00-serial/15-api-quality/)
 
 ## Environment variables
 
@@ -89,15 +92,15 @@ Example (API Quality):
 
 ### Optional
 
-| Variable          | Meaning                                                                          |
-| ----------------- | -------------------------------------------------------------------------------- |
-| TICKET_SYSTEM_URL | Adds interactivity to links to test cases and issues                             |
-| AUTH              | Auth management (`skip` to reuse stored auth state; otherwise auth is performed) |
-| CREATE_TD         | Test data creation (`all`, `skip`, or default behavior)                          |
-| CLEAR_TD          | Test data deletion (`all`, `skip`, or default behavior)                          |
-| TEST_ID_R         | Reusable test data id (4 chars); auto-generated if unset                         |
-| TEST_ID_N         | Non-reusable test data id (4 chars); auto-generated if unset                     |
-| ADV_FILE          | Filename with URLs for `ADV-operations` and `ADV-comparisons` projects           |
+| Variable          | Meaning                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------- |
+| TICKET_SYSTEM_URL | Adds interactivity to links to test cases and issues                                           |
+| AUTH (deprecated) | Deprecated legacy auth toggle. Not required; kept temporarily until old auth logic is removed. |
+| CREATE_TD         | Test data creation (`all`, `skip`, or default behavior)                                        |
+| CLEAR_TD          | Test data deletion (`all`, `skip`, or default behavior)                                        |
+| TEST_ID_R         | Reusable test data ID (4 chars); auto-generated if unset                                       |
+| TEST_ID_N         | Non-reusable test data ID (4 chars); auto-generated if unset                                   |
+| ADV_FILE          | Filename with URLs for `ADV-operations` and `ADV-comparisons` projects                         |
 
 ## Running tests
 

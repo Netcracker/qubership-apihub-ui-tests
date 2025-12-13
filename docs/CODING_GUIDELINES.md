@@ -497,15 +497,6 @@ const requiredField = page.getByRole('textbox').and(page.getByTestId('Required')
 - **Scrolling and Viewport Visibility:** When testing navigation or clicking elements that might require scrolling, always verify that:
   1. The element is scrolled into view (Playwright's `click()` handles this automatically, no need for explicit `scrollIntoViewIfNeeded()` before click)
   2. After interaction, verify the element is visible in the viewport using `toBeInViewport()`
-  3. For Monaco Editor line navigation, verify the line number is visible
-  ```typescript
-  // ✅ Correct: verify scrolling and viewport visibility
-  const issueRow = apiQualityTab.getProblemRow(selectedIssueMessage)
-  await issueRow.click() // Click automatically scrolls if needed
-  const lineElement = rawView.getLineNumberContainer(expectedLineNumber)
-  await expect(lineElement).toBeVisible()
-  await expect(lineElement).toBeInViewport()
-  ```
 - **Date Formatting & Validation:**
   - Use `formatDateToUI()` from `@services/utils` to format dates in the UI format (`DD MMM, YYYY`)
   - Always use `dayjs` library (same as UI project) for date formatting, not native Date API

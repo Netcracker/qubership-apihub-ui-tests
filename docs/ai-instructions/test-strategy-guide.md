@@ -32,9 +32,9 @@ Based on `feature-overview.md`, define:
 Use this exact structure for the output file:
 
 ```markdown
-# Technical Specification for AI Agent: E2E Tests for [Feature Name]
+# Technical Specification for AI Agent: end-to-end tests for [Feature Name]
 
-This document provides a complete technical specification for an AI agent to generate Playwright E2E tests.
+This document provides a complete technical specification for an AI agent to generate Playwright end-to-end tests.
 
 ## Part 1: Test Case Specification
 
