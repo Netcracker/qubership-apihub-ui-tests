@@ -5,7 +5,7 @@ import type { LintRulesetsTestDataManager } from '@services/test-data-manager'
 import { TestFile } from '@shared/entities'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
 import path from 'node:path'
-import { ROOT_API_QUALITY } from './aq-shared.support'
+import { PATH_API_QUALITY_RULESETS } from './aq-shared.support'
 
 /**
  * Direct URL path for the Ruleset Management page.
@@ -20,7 +20,7 @@ export const DEFAULT_API_TYPE_LABEL = RULESET_API_TYPE_TITLE_MAP[LintRulesetApiT
 /**
  * Minimal valid ruleset file used for positive ruleset creation scenarios.
  */
-export const FILE_SIMPLE_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'aq-rm-simple-ruleset.yaml'), {
+export const FILE_SIMPLE_RULESET = new TestFile(path.join(PATH_API_QUALITY_RULESETS, 'aq-rm-simple-ruleset.yaml'), {
   yamlString: 'rules:',
 })
 
@@ -28,7 +28,7 @@ export const FILE_SIMPLE_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rul
  * Invalid ruleset file (wrong extension) used to verify UI validation errors.
  */
 export const FILE_INVALID_EXTENSION = new TestFile(
-  path.join(ROOT_API_QUALITY, 'rulesets', 'aq-rm-invalid-extension.txt'),
+  path.join(PATH_API_QUALITY_RULESETS, 'aq-rm-invalid-extension.txt'),
 )
 
 /**

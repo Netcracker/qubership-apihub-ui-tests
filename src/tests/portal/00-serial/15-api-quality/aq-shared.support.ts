@@ -33,11 +33,18 @@ export const G_AQ = new Group({
 })
 
 /**
- * Absolute path to the API Quality resources folder inside `resources/`.
+ * Path to API Quality rulesets folder inside `resources/`.
  *
- * Used to build file paths for rulesets/specs consumed by the tests.
+ * Note: `TestFile` resolves this to an absolute path at runtime.
  */
-export const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality')
+export const PATH_API_QUALITY_RULESETS = path.join(ROOT_RESOURCES, 'portal/api-quality/rulesets')
+
+/**
+ * Path to API Quality specs folder inside `resources/`.
+ *
+ * Note: `TestFile` resolves this to an absolute path at runtime.
+ */
+export const PATH_API_QUALITY_SPECS = path.join(ROOT_RESOURCES, 'portal/api-quality/specs')
 
 /**
  * GraphQL document used in "mixed REST + GraphQL" scenarios.
@@ -45,7 +52,7 @@ export const ROOT_API_QUALITY = path.join(ROOT_RESOURCES, 'portal', 'api-quality
  * Important: GraphQL docs are intentionally excluded from API Quality validation
  * and should not appear in the validated-document selector.
  */
-export const FILE_GRAPHQL = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-graphql.graphql'))
+export const FILE_GRAPHQL = new TestFile(path.join(PATH_API_QUALITY_SPECS, 'aq-graphql.graphql'))
 
 /**
  * Options for `registerTestResources`.

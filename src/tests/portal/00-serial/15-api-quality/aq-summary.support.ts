@@ -9,31 +9,31 @@ import type { Version } from '@test-data/props'
 import { Package } from '@test-data/props'
 import { HOOK_PUBLISH_TIMEOUT } from '@test-setup'
 import path from 'node:path'
-import { FILE_GRAPHQL, G_AQ, ROOT_API_QUALITY } from './aq-shared.support'
+import { FILE_GRAPHQL, G_AQ, PATH_API_QUALITY_RULESETS, PATH_API_QUALITY_SPECS } from './aq-shared.support'
 
 /**
  * Ruleset file used to generate deterministic validation results for Summary tab tests.
  */
-export const FILE_SUMMARY_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'aq-summary-ruleset.yaml'), {
+export const FILE_SUMMARY_RULESET = new TestFile(path.join(PATH_API_QUALITY_RULESETS, 'aq-summary-ruleset.yaml'), {
   yamlString: 'rules:',
 })
 
 /**
  * Minimal ruleset file used as an "alternate" ruleset to build activation history.
  */
-export const FILE_SIMPLE_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'aq-rm-simple-ruleset.yaml'), {
+export const FILE_SIMPLE_RULESET = new TestFile(path.join(PATH_API_QUALITY_RULESETS, 'aq-rm-simple-ruleset.yaml'), {
   yamlString: 'rules:',
 })
 
 /**
  * OAS 3.0 spec used in Summary tab tests.
  */
-export const FILE_SUMMARY_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-summary-oas30.yaml'))
+export const FILE_SUMMARY_OAS30 = new TestFile(path.join(PATH_API_QUALITY_SPECS, 'aq-summary-oas30.yaml'))
 
 /**
  * OAS 3.1 spec used in Summary tab tests.
  */
-export const FILE_SUMMARY_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-summary-oas31.yaml'))
+export const FILE_SUMMARY_OAS31 = new TestFile(path.join(PATH_API_QUALITY_SPECS, 'aq-summary-oas31.yaml'))
 
 /**
  * Placeholder message for "Not validated yet" state.

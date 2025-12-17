@@ -10,6 +10,13 @@ export const CLASS_CODICON_ERROR = 'codicon-error'
 export const CLASS_CODICON_WARNING = 'codicon-warning'
 export const CLASS_CODICON_INFO = 'codicon-info'
 
+export const RAW_VIEW_FORMATS = {
+  YAML: 'yaml',
+  JSON: 'json',
+} as const
+
+export type RawViewFormat = (typeof RAW_VIEW_FORMATS)[keyof typeof RAW_VIEW_FORMATS]
+
 export class RawView extends BaseComponent {
   readonly jsonBtn = new Button(this.page.getByTestId('ModeButton-json'), 'JSON')
   readonly yamlBtn = new Button(this.page.getByTestId('ModeButton-yaml'), 'YAML')

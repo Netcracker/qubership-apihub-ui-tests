@@ -11,6 +11,7 @@ import {
 import { PortalPage } from '@portal/pages'
 import { expect, expectFile, expectText } from '@services/expect-decorator'
 import { formatDateToUI } from '@services/utils'
+import { RAW_VIEW_FORMATS } from '@shared/components/custom/views/RawView'
 import { OPENAPI_ICON, type TestFile } from '@shared/entities'
 import { NO_PERM_SEE_PAGE } from '@test-data/portal'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
@@ -232,13 +233,15 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-RM-CREATE-2 Create a new inactive ruleset', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Create-New-${retryIndex}-${testIdN}`
+
+        usedResources.addFiles(FILE_SIMPLE_RULESET)
 
         await navigateToRulesetManagement(portalPage)
 
@@ -273,10 +276,12 @@ test.describe('API Quality Validation', () => {
 
       test('P-AQ-RM-CREATE-3 Attempt to create a ruleset with a duplicate name', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page }) => {
+      }, async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
+
+        usedResources.addFiles(FILE_SIMPLE_RULESET)
 
         await navigateToRulesetManagement(portalPage)
 
@@ -301,10 +306,12 @@ test.describe('API Quality Validation', () => {
         })
       })
 
-      test('P-AQ-RM-CREATE-4 Attempt to create a ruleset without a name', async ({ sysadminPage: page }) => {
+      test('P-AQ-RM-CREATE-4 Attempt to create a ruleset without a name', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
+
+        usedResources.addFiles(FILE_SIMPLE_RULESET)
 
         await navigateToRulesetManagement(portalPage)
 
@@ -343,13 +350,15 @@ test.describe('API Quality Validation', () => {
         })
       })
 
-      test('P-AQ-RM-CREATE-6 Attempt to create a ruleset with an invalid file extension', async ({ sysadminPage: page }) => {
+      test('P-AQ-RM-CREATE-6 Attempt to create a ruleset with an invalid file extension', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { createRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Invalid-File-${retryIndex}-${testIdN}`
+
+        usedResources.addFiles(FILE_INVALID_EXTENSION)
 
         await navigateToRulesetManagement(portalPage)
 
@@ -385,13 +394,15 @@ test.describe('API Quality Validation', () => {
     test.describe('Ruleset Activation', () => {
       test('P-AQ-RM-ACTIVATE-1 Activate a new ruleset and verify deactivation of previous active', {
         tag: '@smoke',
-      }, async ({ sysadminPage: page, lintRulesetTdm }) => {
+      }, async ({ sysadminPage: page, lintRulesetTdm, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { activateRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Activate-New-${retryIndex}-${testIdN}`
+
+        usedResources.addFiles(FILE_SIMPLE_RULESET)
 
         // Create a new ruleset for activation
         await lintRulesetTdm.createRuleset({
@@ -534,13 +545,15 @@ test.describe('API Quality Validation', () => {
         })
       })
 
-      test('P-AQ-RM-DEL-3 Delete a never-activated inactive ruleset', async ({ sysadminPage: page, lintRulesetTdm }) => {
+      test('P-AQ-RM-DEL-3 Delete a never-activated inactive ruleset', async ({ sysadminPage: page, lintRulesetTdm, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { rulesetManagementTab } = portalPage.portalSettingsPage
         const { deleteRulesetDialog } = rulesetManagementTab
 
         const retryIndex = test.info().retry + 1
         const rulesetName = `${ALIAS_PREFIX}-Delete-NeverActivated-${retryIndex}-${testIdN}`
+
+        usedResources.addFiles(FILE_SIMPLE_RULESET)
 
         await lintRulesetTdm.createRuleset({
           rulesetName: rulesetName,
@@ -569,9 +582,11 @@ test.describe('API Quality Validation', () => {
     })
 
     test.describe('Ruleset Export and Sharing', () => {
-      test('P-AQ-RM-SHARE-1 Download a ruleset file', async ({ sysadminPage: page }) => {
+      test('P-AQ-RM-SHARE-1 Download a ruleset file', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const { rulesetManagementTab } = portalPage.portalSettingsPage
+
+        usedResources.addFiles(FILE_SIMPLE_RULESET)
 
         await navigateToRulesetManagement(portalPage)
 
@@ -1519,7 +1534,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
 
         await verifyValidationIssuesSorting(portalPage)
       })
@@ -1542,7 +1557,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
 
         await verifyIssueNavigationHighlight(portalPage, 'json')
       })
@@ -1579,7 +1594,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
 
         await verifyTooltipOnHover(portalPage)
       })
@@ -1612,7 +1627,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
 
         await verifyComboTooltip(portalPage)
       })
@@ -1645,7 +1660,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
 
         await verifyMultiRuleTooltip(portalPage)
       })
@@ -1674,7 +1689,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
 
         await verifyTooltipDisappears(portalPage, page)
       })
@@ -1709,7 +1724,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
         await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await verifyProblemPopupContent(portalPage, error1TestCase)
@@ -1751,7 +1766,7 @@ test.describe('API Quality Validation', () => {
 
           await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
           await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-          await switchToFormat(portalPage, 'json')
+          await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
           await openProblemPopupViaTooltip(portalPage, warning1TestCase)
 
           await verifyProblemPopupContent(portalPage, warning1TestCase)
@@ -1779,7 +1794,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
         await openProblemPopupViaAltF8(portalPage, error2TestCase)
 
         await verifyProblemPopupContent(portalPage, error2TestCase)
@@ -1802,7 +1817,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
         await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await closeAndVerifyProblemPopup(portalPage)
@@ -1848,7 +1863,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
         await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await verifyProblemNavigation(portalPage, error1TestCase, error2TestCase)
@@ -1885,7 +1900,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
         await openProblemPopupViaAltF8(portalPage, error1TestCase)
 
         await verifyKeyboardNavigation(portalPage, error1TestCase, error2TestCase)
@@ -1928,7 +1943,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS30.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
         await openProblemPopupViaTooltip(portalPage, error1TestCase)
 
         await verifySeverityOrderNavigation(portalPage)
@@ -1963,7 +1978,7 @@ test.describe('API Quality Validation', () => {
 
         await navigateToApiQualityTab(portalPage, V_AQ_TAB_MIXED_N)
         await switchToTestDocument(portalPage, FILE_TAB_OAS31.name)
-        await switchToFormat(portalPage, 'json')
+        await switchToFormat(portalPage, RAW_VIEW_FORMATS.JSON)
         await openProblemPopupForOverlappingIssue(portalPage, MSG_OVERLAP_ERROR_1, TEXT_OVERLAP_OPERATION)
 
         await verifyOverlappingIssuesNavigation(portalPage)

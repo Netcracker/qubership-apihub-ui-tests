@@ -20,6 +20,8 @@ import {
   CLASS_CODICON_INFO,
   CLASS_CODICON_WARNING,
   CLASS_SELECTED_DECORATOR,
+  RAW_VIEW_FORMATS,
+  type RawViewFormat,
 } from '@shared/components/custom/views/RawView'
 import { TestFile } from '@shared/entities'
 import { ALIAS_PREFIX } from '@test-data/prefixes'
@@ -27,19 +29,19 @@ import type { Version } from '@test-data/props'
 import { Package } from '@test-data/props'
 import { HOOK_PUBLISH_TIMEOUT } from '@test-setup'
 import path from 'node:path'
-import { FILE_GRAPHQL, G_AQ, ROOT_API_QUALITY } from './aq-shared.support'
+import { FILE_GRAPHQL, G_AQ, PATH_API_QUALITY_RULESETS, PATH_API_QUALITY_SPECS } from './aq-shared.support'
 
 /**
  * Ruleset file used to generate deterministic linter issues for API Quality tab tests.
  */
-export const FILE_QUALITY_TAB_RULESET = new TestFile(path.join(ROOT_API_QUALITY, 'rulesets', 'aq-tab-ruleset.yaml'), {
+export const FILE_QUALITY_TAB_RULESET = new TestFile(path.join(PATH_API_QUALITY_RULESETS, 'aq-tab-ruleset.yaml'), {
   yamlString: 'rules:',
 })
 
 /**
  * Large OAS 3.0 spec used to validate navigation/highlighting across different lines.
  */
-export const FILE_TAB_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-large-oas30.yaml'), {
+export const FILE_TAB_OAS30 = new TestFile(path.join(PATH_API_QUALITY_SPECS, 'aq-tab-large-oas30.yaml'), {
   yamlString: 'openapi: 3.0.0',
   jsonString: '"openapi": "3.0.0"',
 })
@@ -47,7 +49,7 @@ export const FILE_TAB_OAS30 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 
 /**
  * OAS 3.1 spec used for multi-issue tooltip and overlapping issue scenarios.
  */
-export const FILE_TAB_OAS31 = new TestFile(path.join(ROOT_API_QUALITY, 'specs', 'aq-tab-combo-oas31.yaml'), {
+export const FILE_TAB_OAS31 = new TestFile(path.join(PATH_API_QUALITY_SPECS, 'aq-tab-combo-oas31.yaml'), {
   yamlString: 'openapi: 3.1.0',
 })
 
@@ -265,15 +267,10 @@ export const ISSUE_TEST_CASES: IssueTestCase[] = [
 ]
 
 /**
- * Document format used by the RawView toggler.
- */
-export type FormatType = 'yaml' | 'json'
-
-/**
  * Returns expected line number for a test case based on selected format.
  */
-export const getLineNumber = (testCase: IssueTestCase, format: FormatType): number => {
-  return format === 'yaml' ? testCase.yamlLineNumber : testCase.jsonLineNumber
+export const getLineNumber = (testCase: IssueTestCase, format: RawViewFormat): number => {
+  return format === RAW_VIEW_FORMATS.YAML ? testCase.yamlLineNumber : testCase.jsonLineNumber
 }
 
 /**
@@ -300,10 +297,10 @@ export const switchToTestDocument = async (portalPage: PortalPage, documentName:
 /**
  * Switches RawView format to JSON (YAML is the default).
  */
-export const switchToFormat = async (portalPage: PortalPage, format: FormatType): Promise<void> => {
+export const switchToFormat = async (portalPage: PortalPage, format: RawViewFormat): Promise<void> => {
   const { rawView } = portalPage.versionPackagePage.apiQualityTab
 
-  if (format === 'json') {
+  if (format === RAW_VIEW_FORMATS.JSON) {
     await test.step('Switch to JSON format', async () => {
       await rawView.jsonBtn.click()
       await expect(rawView.jsonBtn).toBePressed()
@@ -440,7 +437,7 @@ export const verifyValidationIssuesSorting = async (portalPage: PortalPage): Pro
 /**
  * Navigates through each issue and verifies line highlighting + selected marker indicator in RawView.
  */
-export const verifyIssueNavigationHighlight = async (portalPage: PortalPage, format: FormatType): Promise<void> => {
+export const verifyIssueNavigationHighlight = async (portalPage: PortalPage, format: RawViewFormat): Promise<void> => {
   const { apiQualityTab } = portalPage.versionPackagePage
   const { rawView } = apiQualityTab
 
