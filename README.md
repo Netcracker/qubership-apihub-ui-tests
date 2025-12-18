@@ -40,28 +40,18 @@ npx playwright test --project=Portal
 
 ## Documentation map (project-local)
 
-### Core rules
-
-- [AGENTS.md](AGENTS.md) — mandatory workflow for AI agents (IAP, PRE-FLIGHT/POST-FLIGHT, verification rules)
-- [.eslintrc.json](.eslintrc.json) — linter rules (TypeScript + Playwright)
-
 ### Engineering guidelines
 
 - [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md) — canonical conventions (test structure, assertions, TDM, POM, locator strategy)
 - [docs/pom-in-practice.md](docs/pom-in-practice.md) — real POM patterns + examples
 - [docs/localhost-run.md](docs/localhost-run.md) — localhost/proxy specifics
 
-### AI-specific instruction set
+The project uses **ESLint** for code quality and style.
 
-All playbooks and checklists live under:
+### AI Agents
 
-- [docs/ai-instructions/](docs/ai-instructions/)
-  - [task-playbooks.md](docs/ai-instructions/task-playbooks.md)
-  - [preflight-checklists.md](docs/ai-instructions/preflight-checklists.md)
-  - [test-implementation-guide.md](docs/ai-instructions/test-implementation-guide.md)
-  - [technical-design-guide.md](docs/ai-instructions/technical-design-guide.md)
-  - [test-strategy-guide.md](docs/ai-instructions/test-strategy-guide.md)
-  - [feature-analysis-guide.md](docs/ai-instructions/feature-analysis-guide.md)
+- [AGENTS.md](AGENTS.md) — mandatory workflow for AI agents
+- [docs/ai-instructions/](docs/ai-instructions/) — task playbooks and guides
 
 ### Suite artifacts colocated with tests
 
@@ -136,3 +126,4 @@ More options:
 - `--workers <n>` — configure parallelism
 - `--trace <mode>` — `on`, `off`, `on-first-retry`, `on-all-retries`, `retain-on-failure`
 - `--grep <regex>` — run only matching tests (matches project + file + describe + test title + tags)
+- `--repeat-each <n>` — run each test `n` times (useful for checking stability)

@@ -73,7 +73,7 @@ export default defineConfig<Fixtures>({
         launchOptions: {
           // slowMo: 150,
         },
-        viewport: { width: 1320, height: 768 },
+        viewport: { width: 1440, height: 810 },
       },
       dependencies: ['Portal-Setup'],
     },

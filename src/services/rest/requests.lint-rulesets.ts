@@ -17,10 +17,10 @@ export type LintRulesetRestDto = Readonly<{
 }>
 
 export type CreateLintRulesetRestParams = Readonly<{
-  rulesetName: string
+  name: string
   apiType: LintRulesetApiType
   linter: LintRulesetLinter
-  rulesetFile: TestFile
+  file: TestFile
 }>
 
 export async function rGetRulesets(rc: APIRequestContext): Promise<APIResponse> {
@@ -33,14 +33,14 @@ export async function rGetRuleset(rc: APIRequestContext, { id }: IdRestParams): 
 }
 
 export async function rCreateRuleset(rc: APIRequestContext, params: CreateLintRulesetRestParams): Promise<APIResponse> {
-  const { rulesetFile, apiType, rulesetName, linter } = params
-  const blob = await rulesetFile.blob()
+  const { file, apiType, name, linter } = params
+  const blob = await file.blob()
 
   const formData = new FormData()
-  formData.append('rulesetName', rulesetName)
+  formData.append('rulesetName', name)
   formData.append('apiType', apiType)
   formData.append('linter', linter)
-  formData.append('rulesetFile', blob, rulesetFile.name)
+  formData.append('rulesetFile', blob, file.name)
 
   return await rc.post(`${API_LINTER_API_V1}/rulesets`, {
     multipart: formData,

@@ -67,10 +67,10 @@ test.describe('API Quality Validation', () => {
     } = aqRm
 
     // Ruleset data
-    let RUL_INACTIVE_OAS30_N: { id: string; name: string }
-    let RUL_PREVIOUSLY_ACTIVE_OAS30_N: { id: string; name: string }
-    let RUL_INACTIVE_OAS31_N: { id: string; name: string }
-    let RUL_GENERAL_OAS30_N: { id: string; name: string }
+    let RUL_INACTIVE_OAS30_N: RulesetWithFile
+    let RUL_PREVIOUSLY_ACTIVE_OAS30_N: RulesetWithFile
+    let RUL_INACTIVE_OAS31_N: RulesetWithFile
+    let RUL_GENERAL_OAS30_N: RulesetWithFile
 
     test.beforeAll(async ({ lintRulesetTdm }) => {
       ({
@@ -406,10 +406,10 @@ test.describe('API Quality Validation', () => {
 
         // Create a new ruleset for activation
         await lintRulesetTdm.createRuleset({
-          rulesetName: rulesetName,
+          name: rulesetName,
           apiType: LintRulesetApiTypes.OAS_3_0,
           linter: LintRulesetLinters.SPECTRAL,
-          rulesetFile: FILE_SIMPLE_RULESET,
+          file: FILE_SIMPLE_RULESET,
         })
 
         await lintRulesetTdm.activateRuleset(RUL_GENERAL_OAS30_N)
@@ -556,10 +556,10 @@ test.describe('API Quality Validation', () => {
         usedResources.addFiles(FILE_SIMPLE_RULESET)
 
         await lintRulesetTdm.createRuleset({
-          rulesetName: rulesetName,
+          name: rulesetName,
           apiType: LintRulesetApiTypes.OAS_3_0,
           linter: LintRulesetLinters.SPECTRAL,
-          rulesetFile: FILE_SIMPLE_RULESET,
+          file: FILE_SIMPLE_RULESET,
         })
 
         await navigateToRulesetManagement(portalPage)
@@ -682,7 +682,7 @@ test.describe('API Quality Validation', () => {
 
     let RUL_SUMMARY_OAS30_N: RulesetWithFile
     let RUL_SUMMARY_OAS31_N: RulesetWithFile
-    let RUL_ALT_OAS30_N: { id: string; name: string }
+    let RUL_ALT_OAS30_N: RulesetWithFile
 
     test.beforeAll(async ({ apihubTDM, lintRulesetTdm }) => {
       ({

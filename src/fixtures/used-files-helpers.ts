@@ -45,8 +45,8 @@ export const registerRulesetFiles = (
   const rulesetsArray = Array.isArray(rulesets) ? rulesets : [rulesets]
 
   const files: ResourceFileInfo[] = rulesetsArray.map((ruleset) => ({
-    name: `${ruleset.name}_${ruleset.apiType}_${ruleset.rulesetFile.name}`,
-    path: ruleset.rulesetFile.path,
+    name: `${ruleset.name}_${ruleset.apiType}_${ruleset.file.name}`,
+    path: ruleset.file.path,
   }))
 
   usedResources.addFiles(files)

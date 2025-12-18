@@ -180,7 +180,7 @@ export const V_MIXED_REST_GQL_N: Version = {
 export type AqSummarySetupResult = {
   RUL_SUMMARY_OAS30_N: RulesetWithFile
   RUL_SUMMARY_OAS31_N: RulesetWithFile
-  RUL_ALT_OAS30_N: { id: string; name: string }
+  RUL_ALT_OAS30_N: RulesetWithFile
 }
 
 /**
@@ -197,42 +197,26 @@ export const setupQualitySummaryTabTestData = async (
 
   await apihubTDM.createPackage([PKG_AQ_SUMMARY_N])
 
-  const oas30Ruleset = await lintRulesetTdm.createRuleset({
-    rulesetName: `${ALIAS_PREFIX}-Summary-OAS30-${testIdN}`,
+  const RUL_SUMMARY_OAS30_N = await lintRulesetTdm.createRuleset({
+    name: `${ALIAS_PREFIX}-Summary-OAS30-${testIdN}`,
     apiType: LintRulesetApiTypes.OAS_3_0,
     linter: LintRulesetLinters.SPECTRAL,
-    rulesetFile: FILE_SUMMARY_RULESET,
+    file: FILE_SUMMARY_RULESET,
   })
 
-  const RUL_SUMMARY_OAS30_N: RulesetWithFile = {
-    id: oas30Ruleset.id,
-    name: oas30Ruleset.name,
-    apiType: LintRulesetApiTypes.OAS_3_0,
-    rulesetFile: FILE_SUMMARY_RULESET,
-  }
-
-  const oas31Ruleset = await lintRulesetTdm.createRuleset({
-    rulesetName: `${ALIAS_PREFIX}-Summary-OAS31-${testIdN}`,
+  const RUL_SUMMARY_OAS31_N = await lintRulesetTdm.createRuleset({
+    name: `${ALIAS_PREFIX}-Summary-OAS31-${testIdN}`,
     apiType: LintRulesetApiTypes.OAS_3_1,
     linter: LintRulesetLinters.SPECTRAL,
-    rulesetFile: FILE_SUMMARY_RULESET,
+    file: FILE_SUMMARY_RULESET,
   })
 
-  const RUL_SUMMARY_OAS31_N: RulesetWithFile = {
-    id: oas31Ruleset.id,
-    name: oas31Ruleset.name,
-    apiType: LintRulesetApiTypes.OAS_3_1,
-    rulesetFile: FILE_SUMMARY_RULESET,
-  }
-
-  const altOas30Ruleset = await lintRulesetTdm.createRuleset({
-    rulesetName: `${ALIAS_PREFIX}-Alt-OAS30-${testIdN}`,
+  const RUL_ALT_OAS30_N = await lintRulesetTdm.createRuleset({
+    name: `${ALIAS_PREFIX}-Alt-OAS30-${testIdN}`,
     apiType: LintRulesetApiTypes.OAS_3_0,
     linter: LintRulesetLinters.SPECTRAL,
-    rulesetFile: FILE_SIMPLE_RULESET,
+    file: FILE_SIMPLE_RULESET,
   })
-
-  const RUL_ALT_OAS30_N = { id: altOas30Ruleset.id, name: altOas30Ruleset.name }
 
   // Establish activation history
   await lintRulesetTdm.activateRuleset(RUL_SUMMARY_OAS30_N)

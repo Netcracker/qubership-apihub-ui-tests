@@ -335,6 +335,47 @@ const rulesetName = `${ALIAS_PREFIX}-Test-Name-${testIdN}`
 
 **Prevention:** All ruleset names (even for negative tests) must follow the pattern `${ALIAS_PREFIX}-<Name>-${testIdN}` to ensure proper cleanup in case of bugs.
 
+### Retries can re-run `beforeAll`: make backend test data creation idempotent (avoid 409 conflicts)
+
+When Playwright retries a failed test, it may re-run the relevant `beforeAll` hooks in a fresh worker.
+If your hook creates backend resources (e.g., linter rulesets) with a fixed name, the retry can fail during setup with HTTP 409 (“name is not unique”) and never reach the original failing UI step.
+
+```typescript
+// ❌ Fragile: a retry may attempt to create the same ruleset name again
+await lintRulesetTdm.createRuleset({
+  name: `${ALIAS_PREFIX}-Quality-Tab-OAS30-${testIdN}`,
+  apiType: LintRulesetApiTypes.OAS_3_0,
+  linter: LintRulesetLinters.SPECTRAL,
+  file: FILE_QUALITY_TAB_RULESET,
+})
+```
+
+**Prevention (pick one):**
+
+- **Idempotent create (recommended):** check existence by `name + apiType` and reuse it (or implement “create-or-get-existing” in the TDM).
+- **Fresh per retry/run:** make the name unique **before** the testId suffix so cleanup still works:
+
+```typescript
+const retryIndex = test.info().retry + 1
+const rulesetName = `${ALIAS_PREFIX}-Quality-Tab-OAS30-${retryIndex}-${testIdN}`
+```
+
+### Preparing tests for retry verification
+
+When preparing tests for retry testing, add `forceRetryForTesting(test.info())` at the end of **every test** in the spec file:
+
+```typescript
+import { forceRetryForTesting } from '@services/utils/debug'
+
+test('Test name', async ({ page }) => {
+  // ... all test actions + assertions ...
+
+  forceRetryForTesting(test.info())
+})
+```
+
+The function intentionally fails on first run (retry === 0) to trigger retry, verifying tests are retry-safe and `beforeAll` hooks are idempotent.
+
 ### Filtering by Container Text When Child Element Text Should Be Used
 
 When using `createItemGetter` to filter items by name, the default behavior filters by the container's entire text content. However, if the container contains multiple text elements (chips, badges, labels, etc.), exact matching may fail because the container's text includes all child elements.

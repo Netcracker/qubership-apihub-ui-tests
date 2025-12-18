@@ -41,7 +41,7 @@ export type RulesetWithFile = {
   id: string
   name: string
   apiType: LintRulesetApiType
-  rulesetFile: {
+  file: {
     name: string
     path: string
     testMeta?: {

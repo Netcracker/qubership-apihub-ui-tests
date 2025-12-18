@@ -111,10 +111,7 @@ export const activateDefaultRulesetsAndCleanup = async (
     })
 
     if (defaultRuleset) {
-      await lintRulesetTdm.activateRuleset({
-        id: defaultRuleset.id,
-        name: defaultRuleset.name,
-      })
+      await lintRulesetTdm.activateRuleset(defaultRuleset)
     }
   }
 
@@ -163,7 +160,7 @@ export const verifyRulesetInfoDialogContent = async (
     await expect(rulesetInfoDialog.title).toContainText(ruleset.name)
     await expect(rulesetInfoDialog.apiTypeChip).toHaveText(apiTypeLabel)
     await expect(rulesetInfoDialog.statusChip).toHaveText(status)
-    await expect(rulesetInfoDialog.rulesetFile).toContainText(ruleset.rulesetFile.name)
+    await expect(rulesetInfoDialog.rulesetFile).toContainText(ruleset.file.name)
   })
 }
 
@@ -178,8 +175,8 @@ export const verifyRulesetDownload = async (
   const downloadedFile = await rulesetInfoDialog.downloadRuleset()
 
   await test.step('Verify downloaded file has correct content', async () => {
-    await expectFile(downloadedFile).toHaveName(ruleset.rulesetFile.name)
-    await expectFile(downloadedFile).toContainText(ruleset.rulesetFile.testMeta!.yamlString!)
+    await expectFile(downloadedFile).toHaveName(ruleset.file.name)
+    await expectFile(downloadedFile).toContainText(ruleset.file.testMeta!.yamlString!)
   })
 }
 

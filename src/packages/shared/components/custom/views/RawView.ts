@@ -49,6 +49,10 @@ export class RawView extends BaseComponent {
    * Hovers over the first space BEFORE the found text.
    * This is used for Monaco Editor hint tooltips that appear on whitespace before text.
    *
+   * Note: this implementation uses `boundingBox()` of the rendered text element. For correct coordinates,
+   * the matched text must fit into a single visual line. If Monaco wraps the text, the bounding box can
+   * cover multiple wrapped fragments and the computed hover position may end up on a different line.
+   *
    * @param text - The text to find in the editor
    * @throws Error if the text element's bounding box cannot be determined
    */

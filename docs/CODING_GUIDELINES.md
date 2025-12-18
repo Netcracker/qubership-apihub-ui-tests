@@ -643,15 +643,10 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 
 - **Interactive Debugging:** Use the `--debug` flag.
 - **Flakiness:** Implement retry logic for unstable operations.
-- **Root Cause Analysis Over Assumptions:** If a test fails, **do not** make assumptions about the cause (e.g., "the content is not loading").
-  Instead, you **must** use available debugging tools to investigate the precise state of the application at the point of failure.
-  Masking failures with workarounds like arbitrary timeouts is strictly forbidden. The primary goal is to identify and fix the root cause.
-- **Mandatory Use of Debugging Tools (MCP):** To comply with the root cause analysis principle, you **must** utilize the powerful debugging tools at your disposal, particularly the Playwright MCP tools.
-  When a test fails because an element is not found or visible, use tools like `browser_snapshot` to capture the accessibility tree or `take_screenshot` to visually inspect the UI.
-- **Finding Unknown testId - MANDATORY FIRST STEP:** When testId is unknown or element cannot be located, **IMMEDIATELY** use Playwright MCP browser tools (`browser_navigate` + `browser_snapshot` + `browser_click`) to inspect the actual page and identify the correct testId.
-  Do NOT guess testId values or search codebase first - use browser inspection as the primary method. Only after identifying the correct testId through browser inspection, proceed with implementation.
-  Interacting with the live browser session via MCP tools is the required method for diagnosing UI-related test failures, not guessing or assuming.
-- **Bug Detection is Our Primary Goal:** When implementing tests, **NEVER** adjust test expectations to match incorrect UI behavior. If the test plan specifies expected behavior (e.g., "issues sorted by severity: Error -> Warning -> Info -> Hint") but the UI behaves differently (e.g., sorted by document position), this is a **BUG** that must be reported, not masked.
+- **Debugging workflow:** Use Playwright trace / Inspector / DevTools to confirm the real UI state before changing locators or waits. Avoid "fixes" that are just sleeps.
+- **Retry Testing:** To verify tests are retry-safe, run with `--retries=2`. For local verification, ensure retries are actually triggered (especially to check `beforeAll` idempotency) by adding `forceRetryForTesting(test.info())` (from `@services/utils/debug`) at the end of the test to intentionally fail the first run. Retry behavior can differ between local runs and CI (headless rendering, workers, hook re-runs), so verify on both
+  environments.
+- **Stability Testing:** Use the `--repeat-each <n>` flag (e.g., `--repeat-each=5`) to run a test multiple times in parallel workers. This is an alternative to retry testing for verifying test stability and ensuring that tests do not leak state or interfere with each other when running concurrently.
 
 ## Performance & Reliability
 

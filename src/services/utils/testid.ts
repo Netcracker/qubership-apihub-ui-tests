@@ -49,10 +49,11 @@ export const setNonReusableTestId = async (): Promise<void> => {
 }
 
 /**
- * @param name must start with **TEST_PREFIX** and end with "**-{testId}**"
+ * @param name must start with **prefix** and end with "**-{testId}**"
+ * @param prefix must include trailing dash, e.g. `1UI-` or `QS-`
  */
-export const getTestIdFromName = (name: string): string | undefined => {
-  if (!name.startsWith(TEST_PREFIX)) {
+export const getTestIdFromName = (name: string, prefix: string = TEST_PREFIX): string | undefined => {
+  if (!name.startsWith(prefix)) {
     return
   }
   let idLength!: number

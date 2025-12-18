@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import type { LintRulesetApiType } from '@portal/entities'
+import type { LintRulesetApiType, RulesetWithFile } from '@portal/entities'
 import { LintRulesetLinters, LintRulesetStatuses } from '@portal/entities'
 import { getAuthDataFromApi } from '@services/auth'
 import {
@@ -20,8 +20,9 @@ import {
 } from '@services/rest'
 import type { IdRestParams } from '@services/rest/rest.types'
 import type { IdNameTdmParams } from '@services/test-data-manager/tdm.entities'
-import { asyncTimeout, getRestFailMsg } from '@services/utils'
+import { asyncTimeout, getRestFailMsg, getTestIdFromName } from '@services/utils'
 import type { Credentials } from '@shared/entities'
+import { ALIAS_PREFIX } from '@test-data'
 import { BASE_URL } from '@test-setup'
 
 export type LintRulesetNameTdmParams = Readonly<{ rulesetName: string; apiType: LintRulesetApiType }>
@@ -43,43 +44,65 @@ export class LintRulesetsTestDataManager {
   }
 
   async createRuleset({
-    rulesetName,
+    name,
     apiType,
     linter = LintRulesetLinters.SPECTRAL,
-    rulesetFile,
-  }: CreateLintRulesetRestParams): Promise<LintRulesetRestDto> {
-    const message = `"${rulesetName}" ruleset of ${apiType} API type creation`
+    file,
+  }: CreateLintRulesetRestParams): Promise<RulesetWithFile> {
+    const message = `"${name}" ruleset of ${apiType} API type creation`
 
-    let createdRuleset!: LintRulesetRestDto
+    const existingRuleset = await this.getRulesetByName({ rulesetName: name, apiType: apiType })
+    if (existingRuleset) {
+      await test.step(`${message} (skipped: already exists)`, async () => {
+        expect(existingRuleset.name).toBe(name)
+        expect(existingRuleset.apiType).toBe(apiType)
+        expect(existingRuleset.linter).toBe(linter)
+        expect(existingRuleset.fileName).toBe(file.name)
+      }, { box: true })
+
+      return {
+        id: existingRuleset.id,
+        name: existingRuleset.name,
+        apiType: apiType,
+        file: file,
+      }
+    }
+
+    let createdRulesetDto!: LintRulesetRestDto
 
     await test.step(message, async () => {
       const response = await this.rest.send(rCreateRuleset, [201], {
-        rulesetName: rulesetName,
-        apiType: apiType,
-        linter: linter,
-        rulesetFile: rulesetFile,
+        name,
+        apiType,
+        linter,
+        file,
       })
 
       if (response.status() !== 201) {
         throw Error(await getRestFailMsg(message, response))
       }
 
-      createdRuleset = await response.json()
+      createdRulesetDto = await response.json()
     }, { box: true })
 
     await test.step(`Checking ${message}`, async () => {
-      if (!createdRuleset) {
+      if (!createdRulesetDto) {
         throw Error(await getRestFailMsg(`Checking ${message}`))
       }
 
-      const ruleset = await this.getRulesetById(createdRuleset)
+      const ruleset = await this.getRulesetById(createdRulesetDto)
       expect(ruleset).toBeDefined()
-      expect(ruleset?.name).toBe(rulesetName)
+      expect(ruleset?.name).toBe(name)
       expect(ruleset?.apiType).toBe(apiType)
       expect(ruleset?.linter).toBe(linter)
     }, { box: true })
 
-    return createdRuleset
+    return {
+      id: createdRulesetDto.id,
+      name: createdRulesetDto.name,
+      apiType: apiType,
+      file: file,
+    }
   }
 
   async activateRuleset({ id, name }: IdNameTdmParams): Promise<void> {
@@ -136,20 +159,37 @@ export class LintRulesetsTestDataManager {
     return ruleset
   }
 
+  private async getRulesets(): Promise<LintRulesetRestDto[]> {
+    const message = 'Getting rulesets list'
+
+    let rulesets: LintRulesetRestDto[] = []
+
+    await test.step(message, async () => {
+      const response = await this.rest.send(rGetRulesets, [200])
+
+      if (response.status() !== 200) {
+        throw Error(await getRestFailMsg(message, response))
+      }
+
+      rulesets = await response.json()
+    }, { box: true })
+
+    return rulesets
+  }
+
   async getRulesetByName(
     { rulesetName, apiType }: LintRulesetNameTdmParams,
   ): Promise<LintRulesetRestDto | undefined> {
     const message = `"${rulesetName}" ruleset of ${apiType} API type getting`
 
-    const response = await this.rest.send(rGetRulesets, [200])
+    let ruleset: LintRulesetRestDto | undefined
 
-    if (response.status() !== 200) {
-      throw Error(await getRestFailMsg(message, response))
-    }
+    await test.step(message, async () => {
+      const rulesets = await this.getRulesets()
+      ruleset = rulesets.find((r) => r.name === rulesetName && r.apiType === apiType)
+    }, { box: true })
 
-    const rulesets: LintRulesetRestDto[] = await response.json()
-
-    return rulesets.find((r) => r.name === rulesetName && r.apiType === apiType)
+    return ruleset
   }
 
   async deleteTestRulesets(testId: string | string[]): Promise<void> {
@@ -163,6 +203,7 @@ export class LintRulesetsTestDataManager {
         if (response.status() !== 204) {
           throw Error(await getRestFailMsg(message, response))
         }
+        console.log(`Rulesets with "${id}" test ID deleted`)
       }
     }, { box: true })
 
@@ -177,6 +218,32 @@ export class LintRulesetsTestDataManager {
 
       // Verify that no ruleset names contain any of the test IDs after deletion.
       expect(rulesets.every((r) => !testIds.some((id) => r.name.includes(id)))).toBeTruthy()
+    }, { box: true })
+  }
+
+  async deleteAllTestRulesets(options?: { exclude: string[] }): Promise<void> {
+    const exclude: string[] = []
+    if (options) {
+      exclude.push(...options.exclude)
+    }
+    console.log('Ruleset IDs for exclude: ', exclude)
+    const message = 'Deleting all test rulesets'
+
+    await test.step(message, async () => {
+      const rulesets = await this.getRulesets()
+
+      const testIds: string[] = []
+      for (const ruleset of rulesets) {
+        const testId = getTestIdFromName(ruleset.name, `${ALIAS_PREFIX}-`)
+        if (testId && !exclude.includes(testId) && !testIds.includes(testId)) {
+          testIds.push(testId)
+        }
+      }
+
+      console.log('Ruleset IDs for deletion: ', testIds)
+      if (testIds.length === 0) return
+
+      await this.deleteTestRulesets(testIds)
     }, { box: true })
   }
 

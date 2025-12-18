@@ -104,37 +104,23 @@ export const setupApiQualityTabTestData = async (
 
   await apihubTDM.createPackage([PKG_AQ_TAB_N])
 
-  const qualityTabRulesetOas30 = await lintRulesetTdm.createRuleset({
-    rulesetName: `${ALIAS_PREFIX}-Quality-Tab-OAS30-${testIdN}`,
+  const RUL_QUALITY_TAB_OAS30_N = await lintRulesetTdm.createRuleset({
+    name: `${ALIAS_PREFIX}-Quality-Tab-OAS30-${testIdN}`,
     apiType: LintRulesetApiTypes.OAS_3_0,
     linter: LintRulesetLinters.SPECTRAL,
-    rulesetFile: FILE_QUALITY_TAB_RULESET,
+    file: FILE_QUALITY_TAB_RULESET,
   })
 
-  const RUL_QUALITY_TAB_OAS30_N: RulesetWithFile = {
-    id: qualityTabRulesetOas30.id,
-    name: qualityTabRulesetOas30.name,
-    apiType: LintRulesetApiTypes.OAS_3_0,
-    rulesetFile: FILE_QUALITY_TAB_RULESET,
-  }
-
-  const qualityTabRulesetOas31 = await lintRulesetTdm.createRuleset({
-    rulesetName: `${ALIAS_PREFIX}-Quality-Tab-OAS31-${testIdN}`,
+  const RUL_QUALITY_TAB_OAS31_N = await lintRulesetTdm.createRuleset({
+    name: `${ALIAS_PREFIX}-Quality-Tab-OAS31-${testIdN}`,
     apiType: LintRulesetApiTypes.OAS_3_1,
     linter: LintRulesetLinters.SPECTRAL,
-    rulesetFile: FILE_QUALITY_TAB_RULESET,
+    file: FILE_QUALITY_TAB_RULESET,
   })
-
-  const RUL_QUALITY_TAB_OAS31_N: RulesetWithFile = {
-    id: qualityTabRulesetOas31.id,
-    name: qualityTabRulesetOas31.name,
-    apiType: LintRulesetApiTypes.OAS_3_1,
-    rulesetFile: FILE_QUALITY_TAB_RULESET,
-  }
 
   // Activate rulesets for OAS 3.0 and OAS 3.1
-  await lintRulesetTdm.activateRuleset({ id: RUL_QUALITY_TAB_OAS30_N.id, name: RUL_QUALITY_TAB_OAS30_N.name })
-  await lintRulesetTdm.activateRuleset({ id: RUL_QUALITY_TAB_OAS31_N.id, name: RUL_QUALITY_TAB_OAS31_N.name })
+  await lintRulesetTdm.activateRuleset(RUL_QUALITY_TAB_OAS30_N)
+  await lintRulesetTdm.activateRuleset(RUL_QUALITY_TAB_OAS31_N)
 
   // Publish versions for API Quality Tab tests
   await apihubTDM.publishVersion(V_AQ_TAB_MIXED_N)
