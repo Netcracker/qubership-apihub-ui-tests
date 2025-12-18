@@ -1906,12 +1906,7 @@ test.describe('API Quality Validation', () => {
         await verifyKeyboardNavigation(portalPage, error1TestCase, error2TestCase)
       })
 
-      test.skip('P-AQ-TAB-NAV-3-YAML Verify navigation follows severity order in YAML', {
-        annotation: {
-          type: 'Issue',
-          description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
-        },
-      }, async ({ sysadminPage: page, usedResources }) => {
+      test('P-AQ-TAB-NAV-3-YAML Verify navigation follows severity order in YAML', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase] = ISSUE_TEST_CASES
 
@@ -1927,12 +1922,7 @@ test.describe('API Quality Validation', () => {
         await verifySeverityOrderNavigation(portalPage)
       })
 
-      test.skip('P-AQ-TAB-NAV-3-JSON Verify navigation follows severity order in JSON', {
-        annotation: {
-          type: 'Issue',
-          description: 'https://github.com/Netcracker/qubership-apihub/issues/445',
-        },
-      }, async ({ sysadminPage: page, usedResources }) => {
+      test('P-AQ-TAB-NAV-3-JSON Verify navigation follows severity order in JSON', async ({ sysadminPage: page, usedResources }) => {
         const portalPage = new PortalPage(page)
         const [error1TestCase] = ISSUE_TEST_CASES
 

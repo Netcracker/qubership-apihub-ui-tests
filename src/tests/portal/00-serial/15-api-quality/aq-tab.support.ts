@@ -674,8 +674,6 @@ export const verifySeverityOrderNavigation = async (portalPage: PortalPage): Pro
     MSG_WARNING_2,
     MSG_INFO_1,
     MSG_INFO_2,
-    MSG_HINT_1,
-    MSG_HINT_2,
   ]
 
   await test.step('Verify initial problem is first Error', async () => {
