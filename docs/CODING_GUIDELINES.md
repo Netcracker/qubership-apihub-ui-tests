@@ -644,8 +644,7 @@ test('Create a new workspace', async ({ apihubTDM }) => {
 - **Interactive Debugging:** Use the `--debug` flag.
 - **Flakiness:** Implement retry logic for unstable operations.
 - **Debugging workflow:** Use Playwright trace / Inspector / DevTools to confirm the real UI state before changing locators or waits. Avoid "fixes" that are just sleeps.
-- **Retry Testing:** To verify tests are retry-safe, run with `--retries=2`. For local verification, ensure retries are actually triggered (especially to check `beforeAll` idempotency) by adding `forceRetryForTesting(test.info())` (from `@services/utils/debug`) at the end of the test to intentionally fail the first run. Retry behavior can differ between local runs and CI (headless rendering, workers, hook re-runs), so verify on both
-  environments.
+- **Retry Testing:** To verify tests are retry-safe, run with `--retries=2`. For local verification, ensure retries are actually triggered (especially to check `beforeAll` idempotency) by adding `forceRetryForTesting(test.info())` (from `@services/utils/debug`) at the end of the test to intentionally fail the first run. Retry behavior can differ between local runs and CI, so verify on both environments.
 - **Stability Testing:** Use the `--repeat-each <n>` flag (e.g., `--repeat-each=5`) to run a test multiple times in parallel workers. This is an alternative to retry testing for verifying test stability and ensuring that tests do not leak state or interfere with each other when running concurrently.
 
 ## Performance & Reliability
