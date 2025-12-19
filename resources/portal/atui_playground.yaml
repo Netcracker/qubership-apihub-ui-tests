@@ -56,7 +56,7 @@ paths:
       summary: "Get system info"
       description: "Get system info."
       operationId: getInfo
-      parameters:
+      parameters: []
       responses:
         200:
           description: "Successful execution"
@@ -118,8 +118,8 @@ paths:
                   - code
                   - message
       security:
-        - BearerAuth:
-        - api_key:
+        - BearerAuth: []
+        - api_key: []
   /pet:
     put:
       tags:
