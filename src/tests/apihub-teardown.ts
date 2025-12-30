@@ -10,7 +10,7 @@ test.describe('APIHUB Tests Teardown', () => {
   })
 
   test('Reusable test entities deletion', async ({ apihubTdmLongTimeout: apihubTdm }) => {
-    test.skip(CLEAR_TD !== 'all', 'Reusable test data clearing is disabled (set CLEAR_TD=all)')
+    test.skip(CLEAR_TD !== 'all', 'Reusable test data clearing is disabled (CLEAR_TD !== all)')
     await apihubTdm.deleteTestEntities(process.env.TEST_ID_R!)
   })
 })
