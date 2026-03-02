@@ -1698,7 +1698,7 @@ test.describe('12.1.2.0 Manual grouping: Viewing (Packages)', () => {
       })
     })
 
-  test('[P-MGOP-2.2.2-N] Exporting a GraphQL group.',
+  test('[P-MGOP-2.2.2] Exporting a GraphQL group.',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10191` },
@@ -1856,7 +1856,7 @@ test.describe('12.2.2.0 Manual grouping: Viewing (Dashboards)', () => {
       })
     })
 
-  test('[P-MGO-2.2.2-N] Exporting a GraphQL group.',
+  test('[P-MGO-2.2.2] Exporting a GraphQL group.',
     {
       tag: '@smoke',
       annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-10184` },
