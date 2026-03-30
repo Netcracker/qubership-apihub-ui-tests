@@ -1,5 +1,5 @@
-import {test} from '@fixtures'
-import {expect} from '@services/expect-decorator'
+import { test } from '@fixtures'
+import { expect } from '@services/expect-decorator'
 import {
   ARCHIVED_VERSION_STATUS,
   DRAFT_VERSION_STATUS,
@@ -10,8 +10,8 @@ import {
   REST_API_TYPE_TITLE,
   RESTAPI_ICON,
 } from '@shared/entities'
-import {PortalPage} from '@portal/pages/PortalPage'
-import {SEARCH_TIMEOUT, TICKET_BASE_URL} from '@test-setup'
+import { PortalPage } from '@portal/pages/PortalPage'
+import { SEARCH_TIMEOUT, TICKET_BASE_URL } from '@test-setup'
 import {
   GS_DOC,
   GS_LABEL,
@@ -26,7 +26,7 @@ import {
   V_P_PKG_GLOBAL_SEARCH_N,
   VAR_GR,
 } from '@test-data/portal'
-import type {FiltersConfig} from '@portal/pages/PortalPage/GlobalSearchPanel'
+import type { FiltersConfig } from '@portal/pages/PortalPage/GlobalSearchPanel'
 
 test.describe('02 Global Search', () => {
 

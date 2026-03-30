@@ -1,8 +1,8 @@
-import type {Page} from '@playwright/test'
-import type {ApiTypeTitles} from '@shared/entities/api-types'
-import {BaseComponent, SearchBar, TabButton} from '@shared/components/base'
-import {GsFilters} from './GlobalSearchPanel/GsFilters'
-import {GsSearchResults} from './GlobalSearchPanel/GsSearchResults'
+import type { Page } from '@playwright/test'
+import type { ApiTypeTitles } from '@shared/entities/api-types'
+import { BaseComponent, SearchBar, TabButton } from '@shared/components/base'
+import { GsFilters } from './GlobalSearchPanel/GsFilters'
+import { GsSearchResults } from './GlobalSearchPanel/GsSearchResults'
 
 export class GlobalSearchPanel extends BaseComponent {
 

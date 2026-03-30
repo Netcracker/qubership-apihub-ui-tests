@@ -1,7 +1,7 @@
-import type {Locator} from '@playwright/test'
-import {Autocomplete, Button, DatePicker} from '@shared/components/base'
-import {GsVersionStatusAutocomplete} from './GsFilters/GsVersionStatusAutocomplete'
-import {ApiTypeAutocomplete} from '@portal/components/autocompletes/ApiTypeAutocomplete'
+import type { Locator } from '@playwright/test'
+import { Autocomplete, Button, DatePicker } from '@shared/components/base'
+import { GsVersionStatusAutocomplete } from './GsFilters/GsVersionStatusAutocomplete'
+import { ApiTypeAutocomplete } from '@portal/components/autocompletes/ApiTypeAutocomplete'
 
 export class GsFilters {
 
