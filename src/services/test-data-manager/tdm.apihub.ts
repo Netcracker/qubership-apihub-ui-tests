@@ -11,7 +11,6 @@ import {
   rCreatePackageApiKey,
   rDeleteOperationGroup,
   rDeletePackage,
-  rDeleteVersion,
   rDeleteSysadmin,
   type Rest,
   rFavorPackage,
@@ -153,21 +152,6 @@ export class ApihubTestDataManager {
     await test.step(message, async () => {
       const response = await this.rest.send(rRecalculateGroups, [200], params)
       if (response.status() !== 200) {
-        throw Error(await getRestFailMsg(message, response))
-      }
-    }, { box: true })
-  }
-
-  async deleteVersion(params: { pkg: { packageId: string; name?: string }; version: string }): Promise<void> {
-    const { pkg, version } = params
-    const message = `"${version}" version deletion from "${pkg.name || pkg.packageId}" package`
-
-    await test.step(message, async () => {
-      const response = await this.rest.send(rDeleteVersion, [204], {
-        packageId: pkg.packageId,
-        version: version,
-      })
-      if (response.status() !== 204) {
         throw Error(await getRestFailMsg(message, response))
       }
     }, { box: true })

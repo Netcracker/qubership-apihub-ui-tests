@@ -50,13 +50,6 @@ export async function rUpdateOperationGroup(rc: APIRequestContext, params: RestO
   })
 }
 
-export async function rDeleteVersion(rc: APIRequestContext, params: {
-  packageId: string
-  version: string
-}): Promise<APIResponse> {
-  return await rc.delete(`/api/v2/packages/${params.packageId}/versions/${params.version}`)
-}
-
 export async function rDeleteOperationGroup(rc: APIRequestContext, params: RestOperationGroup): Promise<APIResponse> {
   return await rc.delete(`/api/v2/packages/${params.packageId}/versions/${params.version}/${params.apiType}/groups/${params.groupName}`)
 }
