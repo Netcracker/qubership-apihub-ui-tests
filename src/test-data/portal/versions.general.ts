@@ -177,7 +177,6 @@ export const V_P_DSH_OVERVIEW_NESTED_R: Version = {
   status: 'draft',
   refs: [
     { refId: PK12.packageId, version: V_P_PKG_FOR_DASHBOARDS_REST_BASE_R.version },
-    { refId: PK13.packageId, version: V_P_PKG_FOR_DASHBOARDS_DELETED_R.version },
     { refId: PK11.packageId, version: V_P_PKG_OPERATIONS_REST_R.version },
   ],
 } as const
