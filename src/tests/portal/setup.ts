@@ -610,17 +610,6 @@ test.describe('Reusable Test Data creation', async () => {
         await tdm.publishVersion(V_P_DSH_OVERVIEW_R)
       })
 
-      await test.step('Delete (hide) package for dashboard overview', async () => {
-        await tdm.deleteVersion({ pkg: D11, version: V_P_DSH_OVERVIEW_R.version })
-        await tdm.deleteVersion({ pkg: D12, version: V_P_DSH_OVERVIEW_NESTED_R.version })
-        await tdm.deleteVersion({ pkg: D12, version: V_P_DSH_NOT_EXIST_PKG_NESTED_R.version })
-        await tdm.deletePackage(PK13)
-        await tdm.publishVersion(V_P_DSH_NOT_EXIST_PKG_NESTED_R)
-        await tdm.publishVersion(V_P_DSH_OVERVIEW_NESTED_R)
-        await tdm.publishVersion(V_P_DSH_OVERVIEW_R)
-        await tdm.publishVersion(V_P_DSH_OVERVIEW_R) // 2nd revision
-      })
-
       await test.step('Publish by another User', async () => {
         const tdmUser1 = await createApihubTDM(TEST_USER_1)
         const versions = [V_P_PKG_REV_3_R, V_P_DSH_REV_3_R]
