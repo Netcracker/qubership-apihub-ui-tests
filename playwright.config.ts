@@ -32,6 +32,8 @@ export default defineConfig<Fixtures>({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   retries: 2,
+  /* 'isolated' runs all retries at the end, one by one in a single worker. */
+  retryStrategy: 'isolated',
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 10 : 3,
   /* Limit the number of failures on CI to save resources */
