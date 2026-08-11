@@ -255,7 +255,7 @@ test.describe('14.1 Copying Package Version', () => {
           version: targetVersion,
           status: RELEASE_VERSION_STATUS,
           labels: ['label-1', 'label-2'],
-          previousVersion: V_P_PKG_COPYING_RELEASE_N.version,
+          previousVersion: `${V_P_PKG_COPYING_RELEASE_N.version} ${V_P_PKG_COPYING_RELEASE_N.status}`,
         })
         await copyVersionDialog.copyBtn.click()
 
