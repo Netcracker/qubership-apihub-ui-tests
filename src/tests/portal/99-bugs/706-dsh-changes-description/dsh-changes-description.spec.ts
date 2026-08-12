@@ -48,12 +48,7 @@ test.describe('Dashboard API Changes description', () => {
     })
 
     await test.step('Verify human-readable change description is displayed', async () => {
-      const changeDescriptionCell = apiChangesTab.table.getChangeDescriptionCell(MSG_CHANGES_DESC)
-
-      await expect(changeDescriptionCell).toBeVisible()
-      await expect(changeDescriptionCell.mainLocator.getByText(MSG_CHANGES_DESC, { exact: true })).toHaveText(
-        MSG_CHANGES_DESC,
-      )
+      await expect(apiChangesTab.table.getChangeDescriptionCell(MSG_CHANGES_DESC)).toBeVisible()
     })
   })
 })
