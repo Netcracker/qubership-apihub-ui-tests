@@ -45,7 +45,7 @@ Reporter options are passed from `playwright.config.ts`:
 
 ### Automatic HTML skip for unit tests
 
-When every test in the run belongs to a `*.spec.unit.ts` file (the `Unit` project), HTML generation is skipped even if `html: true`. `ApihubStyledHtmlReport` calls the backend for environment metadata, which unit tests must not trigger.
+When every test in the run belongs to a `*.unit.test.ts` file (the `Unit` project), HTML generation is skipped even if `html: true`. `ApihubStyledHtmlReport` calls the backend for environment metadata, which unit tests must not trigger.
 
 Detection is based on the actual Playwright suite at runtime, so it works for `npm run test-unit`, `npx playwright test --project=Unit`, and any other invocation path.
 

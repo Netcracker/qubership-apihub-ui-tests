@@ -111,14 +111,14 @@ export default defineConfig<Fixtures>({
     {
       name: 'Component',
       testDir: './src',
-      testMatch: [/spec\.component\.ts/],
+      testMatch: [/\.component\.test\.ts/],
       retries: 0,
       dependencies: ['Apihub-Setup'],
     },
     {
       name: 'Unit',
       testDir: './src',
-      testMatch: [/spec\.unit\.ts/],
+      testMatch: [/\.unit\.test\.ts/],
       retries: 0,
     },
     {
