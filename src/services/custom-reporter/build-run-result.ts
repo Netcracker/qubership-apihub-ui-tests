@@ -1,7 +1,8 @@
 import type { FullResult, Suite, TestError } from '@playwright/test/reporter'
+import { millisecondsToMmSs } from '@services/utils'
 import { SETUP_PROJECTS } from './consts'
 import { type ReportRunResult, type ReportTestInfo, RUN_STATUS_LABELS, type TestOutcome } from './types'
-import { formatDate, formatRunDuration, getTestInfo } from './utils'
+import { formatDate, getTestInfo } from './utils'
 
 const SETUP_PROJECT_NAMES = new Set<string>(SETUP_PROJECTS)
 
@@ -96,7 +97,7 @@ export function buildRunResult(suite: Suite, fullResult: FullResult, workers: nu
   return {
     status: RUN_STATUS_LABELS[fullResult.status] ?? 'Unknown',
     startTime: formatDate(fullResult.startTime),
-    duration: formatRunDuration(fullResult.duration),
+    duration: millisecondsToMmSs(fullResult.duration),
     workers: workers,
     counts: counts,
     lists: lists,

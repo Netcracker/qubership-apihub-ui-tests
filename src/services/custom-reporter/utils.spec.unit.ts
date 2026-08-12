@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { createEmptyRunResult, createMockTestCase } from './custom-reporter.test-helpers'
-import { formatFullTitle, formatRunDuration, getAffectRatio, getTestInfo } from './utils'
+import { formatFullTitle, getAffectRatio, getTestInfo } from './utils'
 
 test.describe('custom-reporter utils unit tests', () => {
   test.describe('formatFullTitle', () => {
@@ -23,14 +23,6 @@ test.describe('custom-reporter utils unit tests', () => {
           outcome: 'expected',
         })).fullTitle,
       ).toBe('Portal > 03.0 Access Control. General. > [P-ACG-01] Roles assignee')
-    })
-  })
-
-  test.describe('formatRunDuration', () => {
-    test('formats Playwright FullResult.duration milliseconds as mm:ss', () => {
-      expect.soft(formatRunDuration(125_000)).toBe('02:05 (mm:ss)')
-      expect.soft(formatRunDuration(0)).toBe('00:00 (mm:ss)')
-      expect.soft(formatRunDuration(500)).toBe('00:01 (mm:ss)')
     })
   })
 

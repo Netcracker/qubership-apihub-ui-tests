@@ -27,19 +27,6 @@ export function formatDate(date: Date): string {
   })
 }
 
-export function formatRunDuration(durationMs: number): string {
-  if (durationMs <= 0) {
-    return '00:00 (mm:ss)'
-  }
-  if (durationMs < 1000) {
-    return '00:01 (mm:ss)'
-  }
-  const totalSeconds = Math.ceil(durationMs / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} (mm:ss)`
-}
-
 export function formatTemplate(template: string, context: ReportTemplateContext): string {
   return Object.entries(context).reduce((page, [key, value]) => {
     return page.replace(new RegExp(`{{${key}}}`, 'g'), String(value))
