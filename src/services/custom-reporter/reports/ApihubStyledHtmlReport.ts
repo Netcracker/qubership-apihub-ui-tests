@@ -1,3 +1,12 @@
+/**
+ * Builds the CI summary HTML artefact (`summary-report.html`).
+ *
+ * Markup and styling intentionally use legacy email-safe patterns (nested tables,
+ * inline `style` attributes, limited selectors) so the report renders correctly
+ * when opened in older desktop Outlook, which uses the Word HTML engine and
+ * strips or ignores much of `<head>` CSS. Do not modernise layout or CSS without
+ * re-testing in that client.
+ */
 import { getSysInfo } from '@test-data/props'
 import process from 'node:process'
 import type { ReportRunResult, ReportTemplateContext, ReportTestInfo } from '../types'
@@ -71,6 +80,7 @@ export default class ApihubStyledHtmlReport {
     if (list.size === 0) {
       return ''
     }
+    // Inline padding: Outlook does not reliably apply class rules from <head> styles.
     return `<tr>
           <td colspan="2" style="padding: 20px 0px 10px 0px" class="result-type-title">
             <span class="type-${tone}">●</span> ${SECTION_TITLES[tone]}

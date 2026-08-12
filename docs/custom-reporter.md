@@ -4,11 +4,11 @@
 
 ## Outputs
 
-| Artifact              | When                           | Purpose                                                         |
-| --------------------- | ------------------------------ | --------------------------------------------------------------- |
-| `status`              | Always                         | CI gate text: `Passed`, `Failed`, `Timed out`, or `Interrupted` |
-| `summary-report.html` | End-to-end / component runs    | Styled HTML summary (fetches environment info from the backend) |
-| GitHub Step Summary   | GitHub Actions end-to-end runs | Markdown table and failed-test details in the job summary       |
+| Artifact              | When                           | Purpose                                                                                                          |
+| --------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `status`              | Always                         | CI gate text: `Passed`, `Failed`, `Timed out`, or `Interrupted`                                                  |
+| `summary-report.html` | End-to-end / component runs    | Styled HTML summary (fetches environment info from the backend); see [HTML summary layout](#html-summary-layout) |
+| GitHub Step Summary   | GitHub Actions end-to-end runs | Markdown table and failed-test details in the job summary                                                        |
 
 Playwright's built-in HTML report (`reports/playwright/`) is separate and unchanged.
 
@@ -56,3 +56,13 @@ The `status` file is still written for unit runs.
 Enable the step summary only in CI by setting `github` in config when `GITHUB_ACTIONS=true`. `GitHubActionsReport` does not re-check the environment; the config is the single gate.
 
 Failed tests are rendered as collapsible `<details>` blocks with tags, annotations, and first-attempt error output.
+
+## HTML summary layout
+
+`summary-report.html` is consumed both as a standalone file and inside older desktop Outlook, which renders HTML through the Word engine. That client strips or ignores most `<head>` CSS, so the template under `reports/html-apihub-styled/` deliberately uses email-era patterns:
+
+- nested `<table>` layout instead of flexbox or grid
+- inline `style` attributes alongside class-based rules in `style.css`
+- simple selectors and spacing; no modern CSS features
+
+Do not refactor markup or styles for "clean" HTML/CSS without verifying the result in the target Outlook version.

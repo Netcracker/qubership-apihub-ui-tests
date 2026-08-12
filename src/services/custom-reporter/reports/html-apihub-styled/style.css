@@ -1,3 +1,10 @@
+/*
+ * Styles for summary-report.html.
+ *
+ * Inline attributes in template.html complement these rules because older desktop
+ * Outlook only reliably applies inline CSS. Avoid flexbox, grid, and advanced
+ * selectors; keep colours and spacing simple.
+ */
 body {
   height: 100%;
   font-family: ui-sans-serif, sans-serif, serif;
