@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { createEmptyRunResult, createMockTestCase } from './custom-reporter.test-helpers'
-import { formatFullTitle, getAffectRatio, getTestInfo } from './utils'
+import type { ReportTestInfo } from './types'
+import { escapeHtml, formatFullTitle, formatHtmlTestRow, getAffectRatio, getTestInfo, safeHttpUrl } from './utils'
 
 test.describe('custom-reporter utils unit tests', () => {
   test.describe('formatFullTitle', () => {
@@ -64,6 +65,36 @@ test.describe('custom-reporter utils unit tests', () => {
     test('returns 0 when there are no tests', () => {
       const runResult = createEmptyRunResult()
       expect.soft(getAffectRatio(runResult)).toBe(0)
+    })
+  })
+
+  test.describe('html escaping', () => {
+    test('escapeHtml encodes markup characters', () => {
+      expect.soft(escapeHtml('<b>"x"&\'</b>')).toBe('&lt;b&gt;&quot;x&quot;&amp;&#39;&lt;/b&gt;')
+    })
+
+    test('safeHttpUrl accepts http(s) and rejects other schemes', () => {
+      expect.soft(safeHttpUrl('https://example.com/path')).toBe('https://example.com/path')
+      expect.soft(safeHttpUrl('javascript:alert(1)')).toBeUndefined()
+    })
+
+    test('formatHtmlTestRow escapes titles and drops unsafe links', () => {
+      const testInfo: ReportTestInfo = {
+        project: 'Portal',
+        fullTitle: '<script>alert(1)</script>',
+        testCaseUrl: 'javascript:alert(1)',
+        issues: new Set([{ key: 'BUG-1<script>', url: 'https://jira.example.com/BUG-1' }]),
+        tags: [],
+        annotations: [],
+      }
+
+      const row = formatHtmlTestRow(testInfo)
+
+      expect.soft(row).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
+      expect.soft(row).not.toContain('<script>')
+      expect.soft(row).not.toContain('href="javascript:')
+      expect.soft(row).toContain('href="https://jira.example.com/BUG-1"')
+      expect.soft(row).toContain('BUG-1&lt;script&gt;')
     })
   })
 })

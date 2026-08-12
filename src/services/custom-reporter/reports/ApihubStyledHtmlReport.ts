@@ -10,7 +10,7 @@
 import { getSysInfo } from '@test-data/props'
 import process from 'node:process'
 import type { ReportRunResult, ReportTemplateContext, ReportTestInfo } from '../types'
-import { formatTemplate, getAffectRatio, loadFileForReport } from '../utils'
+import { escapeHtml, formatHtmlLink, formatHtmlTestRow, formatTemplate, getAffectRatio, loadFileForReport } from '../utils'
 
 type SectionTone = 'red' | 'orange' | 'purple' | 'blue'
 
@@ -37,8 +37,8 @@ export default class ApihubStyledHtmlReport {
     const htmlTemplate = loadFileForReport('html-apihub-styled/template.html')
     const templateKeys: ReportTemplateContext = {
       status: STATUS_HTML[this.runResult.status],
-      startTime: this.runResult.startTime,
-      duration: this.runResult.duration,
+      startTime: escapeHtml(this.runResult.startTime),
+      duration: escapeHtml(this.runResult.duration),
       workers: this.runResult.workers,
       allTests: this.runResult.counts.allTests,
       executedTests: this.runResult.counts.executedTests,
@@ -49,14 +49,14 @@ export default class ApihubStyledHtmlReport {
       skippedTests: this.runResult.counts.skippedTests,
       style: `<style>${loadFileForReport('html-apihub-styled/style.css')}</style>`,
       ratio: this.formatRatio(),
-      envName: sysInfo.environment,
-      backendVersion: sysInfo.build.backendVersion,
+      envName: formatHtmlLink(sysInfo.environment, sysInfo.environment),
+      backendVersion: escapeHtml(sysInfo.build.backendVersion),
       frontendVersion: '-',
-      pwBranch: process.env.CI_PW_BRANCH || '-',
+      pwBranch: escapeHtml(process.env.CI_PW_BRANCH || '-'),
       ciJobLink: process.env.CI_JOB_LINK
-        ? `<a class="link" href="${process.env.CI_JOB_LINK}">#${process.env.CI_JOB_NUMBER}</a>`
+        ? formatHtmlLink(process.env.CI_JOB_LINK, `#${process.env.CI_JOB_NUMBER ?? ''}`)
         : '-',
-      ciUser: process.env.CI_USER || '-',
+      ciUser: escapeHtml(process.env.CI_USER || '-'),
       failedTable: this.sectionTable('red', this.runResult.lists.failedList),
       flakyTable: this.sectionTable('orange', this.runResult.lists.flakyList),
       affectedTable: this.sectionTable('purple', this.runResult.lists.affectedList),
@@ -92,16 +92,7 @@ export default class ApihubStyledHtmlReport {
   private renderTestRows(list: Map<string, ReportTestInfo>): string {
     let rows = ''
     list.forEach(test => {
-      const testTitle = test.testCaseUrl
-        ? `<a class="link" href="${test.testCaseUrl}">${test.fullTitle}</a>`
-        : test.fullTitle
-      const issues = [...test.issues].map(issue => {
-        return issue.url
-          ? `<a class="link" href="${issue.url}">${issue.key}</a>`
-          : issue.key
-      }).join(', ')
-      rows = `${rows}
-      <tr><td class="test-cell">${testTitle}</td><td class="bugs-cell">${issues}</td></tr>`
+      rows += formatHtmlTestRow(test)
     })
     return rows
   }

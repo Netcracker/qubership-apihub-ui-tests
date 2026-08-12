@@ -5,6 +5,45 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { ReportRunResult, ReportTemplateContext, ReportTestInfo } from './types'
 
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  '\'': '&#39;',
+}
+
+export function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, char => HTML_ESCAPE_MAP[char])
+}
+
+export function safeHttpUrl(url: string): string | undefined {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return undefined
+    }
+    return parsed.href
+  } catch {
+    return undefined
+  }
+}
+
+export function formatHtmlLink(url: string | undefined, label: string): string {
+  const escapedLabel = escapeHtml(label)
+  const safeUrl = url ? safeHttpUrl(url) : undefined
+  if (safeUrl) {
+    return `<a class="link" href="${escapeHtml(safeUrl)}">${escapedLabel}</a>`
+  }
+  return escapedLabel
+}
+
+export function formatHtmlTestRow(test: ReportTestInfo): string {
+  const testTitle = formatHtmlLink(test.testCaseUrl, test.fullTitle)
+  const issues = [...test.issues].map(issue => formatHtmlLink(issue.url, issue.key)).join(', ')
+  return `<tr><td class="test-cell">${testTitle}</td><td class="bugs-cell">${issues}</td></tr>`
+}
+
 const reportAssetsDir = join(dirname(fileURLToPath(import.meta.url)), 'reports')
 
 export function getAffectRatio(runResult: ReportRunResult): number {
