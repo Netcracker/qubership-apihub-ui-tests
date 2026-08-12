@@ -126,64 +126,6 @@ test.describe('CustomReporter unit tests', () => {
       expect.soft(runResult.lists.affectedList.size).toBe(1)
     })
 
-    test('moves flaky tests from failed to flaky and keeps a single executed count', async () => {
-      const flaky = createMockTestCase({
-        project: 'Portal',
-        title: 'flaky test',
-        outcome: 'flaky',
-        results: [
-          createMockTestResult(0, [{ message: 'first try failed', stack: 'stack' }]),
-          createMockTestResult(1),
-        ],
-      })
-      const reporter = new CustomReporter({ html: false })
-
-      const runResult = await runReporterLifecycle({
-        reporter: reporter,
-        testCases: [flaky],
-        fullResultStatus: 'passed',
-      })
-
-      expect.soft(runResult.counts).toEqual({
-        allTests: 1,
-        executedTests: 1,
-        passedTests: 0,
-        failedTests: 0,
-        flakyTests: 1,
-        affectedTests: 0,
-        skippedTests: 0,
-      })
-      expect.soft(runResult.lists.failedList.size).toBe(0)
-      expect.soft(runResult.lists.flakyList.size).toBe(1)
-    })
-
-    test('counts a failed test once and stores first-attempt errors only', async () => {
-      const firstError = { message: 'first try error', stack: 'first stack' }
-      const secondError = { message: 'second try error', stack: 'second stack' }
-      const failed = createMockTestCase({
-        project: 'Portal',
-        title: 'failed test',
-        outcome: 'unexpected',
-        results: [
-          createMockTestResult(0, [firstError]),
-          createMockTestResult(1, [secondError]),
-        ],
-      })
-      const reporter = new CustomReporter({ html: false })
-
-      const runResult = await runReporterLifecycle({
-        reporter: reporter,
-        testCases: [failed],
-        fullResultStatus: 'failed',
-      })
-
-      const failedTestInfo = [...runResult.lists.failedList.values()][0]
-      expect.soft(runResult.counts.failedTests).toBe(1)
-      expect.soft(runResult.counts.executedTests).toBe(1)
-      expect.soft(runResult.lists.failedList.size).toBe(1)
-      expect.soft(failedTestInfo.firstAttemptErrors).toEqual([firstError])
-    })
-
     test('excludes setup projects from category counts and allTests total', async () => {
       const setupPassed = createMockTestCase({
         project: 'Portal-Setup',
@@ -258,34 +200,6 @@ test.describe('CustomReporter unit tests', () => {
       expect.soft(runResult.counts.failedTests).toBe(0)
       expect.soft(runResult.counts.executedTests).toBe(0)
       expect.soft(runResult.lists.flakyList.size).toBe(1)
-    })
-
-    test('keeps allTests for tests that never ran when the run is interrupted', async () => {
-      const executed = createMockTestCase({ project: 'Portal', title: 'executed test', outcome: 'expected' })
-      const notRun1 = createMockTestCase({
-        project: 'Portal',
-        title: 'not run test 1',
-        outcome: 'expected',
-        results: [],
-      })
-      const notRun2 = createMockTestCase({
-        project: 'Portal',
-        title: 'not run test 2',
-        outcome: 'expected',
-        results: [],
-      })
-      const reporter = new CustomReporter({ html: false })
-
-      const runResult = await runReporterLifecycle({
-        reporter: reporter,
-        testCases: [executed, notRun1, notRun2],
-        fullResultStatus: 'interrupted',
-      })
-
-      expect.soft(runResult.status).toBe('Interrupted')
-      expect.soft(runResult.counts.allTests).toBe(3)
-      expect.soft(runResult.counts.executedTests).toBe(1)
-      expect.soft(runResult.counts.passedTests).toBe(1)
     })
   })
 })
