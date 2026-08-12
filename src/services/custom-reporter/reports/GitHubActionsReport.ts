@@ -13,6 +13,14 @@ const STATUS_LABELS: Record<ReportRunResult['status'], string> = {
 
 type SummaryTableRow = Array<{ data: string; header?: boolean; colspan?: string }>
 
+/**
+ * Status shown in the GitHub Actions job summary.
+ *
+ * Deliberately reports Failed when executedTests is 0, even if Playwright's run
+ * status is Passed. Wrong --grep, project, or shard filters can skip every test
+ * while the job still exits green; this makes that visible in the summary. Do not
+ * drop this check without another CI gate for zero executed tests.
+ */
 function getDisplayStatus(runResult: ReportRunResult): string {
   if (runResult.counts.executedTests === 0) {
     return STATUS_LABELS.Failed
