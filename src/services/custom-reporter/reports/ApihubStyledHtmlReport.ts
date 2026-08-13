@@ -54,7 +54,7 @@ export default class ApihubStyledHtmlReport {
       frontendVersion: '-',
       pwBranch: escapeHtml(process.env.CI_PW_BRANCH || '-'),
       ciJobLink: process.env.CI_JOB_LINK
-        ? formatHtmlLink(process.env.CI_JOB_LINK, `#${process.env.CI_JOB_NUMBER ?? ''}`)
+        ? formatHtmlLink(process.env.CI_JOB_LINK, `#${process.env.CI_JOB_NUMBER ?? ''} (Detailed report)`)
         : '-',
       ciUser: escapeHtml(process.env.CI_USER || '-'),
       failedTable: this.sectionTable('red', this.runResult.lists.failedList),
