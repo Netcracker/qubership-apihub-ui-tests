@@ -53,43 +53,72 @@ test.describe('GitHubActionsReport', () => {
     })
   })
 
-  test('escapes HTML in failed test details', async () => {
-    const fullTitle = 'Foo </summary><b>bar'
-    const testInfo: ReportTestInfo = {
-      project: 'portal',
-      fullTitle: fullTitle,
-      issues: new Set(),
-      annotations: [{ type: 'Note', description: '<script>x</script>' }],
-    }
-    const runResult: ReportRunResult = {
-      ...createEmptyRunResult('Failed'),
-      counts: {
-        ...createEmptyCounts(),
-        allTests: 1,
-        executedTests: 1,
-        failedTests: 1,
-      },
-      lists: {
-        ...createEmptyRunResult('Failed').lists,
-        failedList: new Map([[fullTitle, testInfo]]),
-      },
-    }
+  test.describe('write', () => {
+    test.describe.configure({ mode: 'serial' })
 
-    const markdown = await new GitHubActionsReport(runResult, githubOptions).write()
+    // @actions/core caches GITHUB_STEP_SUMMARY on first write(); reuse one file for this describe.
+    let outputFolder: string | undefined
+    let summaryFile = ''
+    let previousStepSummary: string | undefined
 
-    expect.soft(markdown).toContain('Foo &lt;/summary&gt;&lt;b&gt;bar')
-    expect.soft(markdown).toContain('&lt;script&gt;x&lt;/script&gt;')
-    expect.soft(markdown).not.toContain('</summary><b>bar')
-  })
+    test.beforeAll(() => {
+      outputFolder = mkdtempSync(join(tmpdir(), 'gh-step-summary-'))
+      summaryFile = join(outputFolder, 'summary.md')
+      writeFileSync(summaryFile, '')
+      previousStepSummary = process.env.GITHUB_STEP_SUMMARY
+      process.env.GITHUB_STEP_SUMMARY = summaryFile
+    })
 
-  test('writes summary markdown to GITHUB_STEP_SUMMARY', async () => {
-    const outputFolder = mkdtempSync(join(tmpdir(), 'gh-step-summary-'))
-    const summaryFile = join(outputFolder, 'summary.md')
-    writeFileSync(summaryFile, '')
-    const previous = process.env.GITHUB_STEP_SUMMARY
-    process.env.GITHUB_STEP_SUMMARY = summaryFile
+    test.beforeEach(() => {
+      writeFileSync(summaryFile, '')
+    })
 
-    try {
+    test.afterAll(() => {
+      if (previousStepSummary === undefined) {
+        delete process.env.GITHUB_STEP_SUMMARY
+      } else {
+        process.env.GITHUB_STEP_SUMMARY = previousStepSummary
+      }
+      if (outputFolder !== undefined) {
+        rmSync(outputFolder, { recursive: true, force: true })
+      }
+    })
+
+    test('renders failed-test details with escaped HTML, tags, and errors', async () => {
+      const fullTitle = 'Foo </summary><b>bar'
+      const testInfo: ReportTestInfo = {
+        project: 'portal',
+        fullTitle: fullTitle,
+        issues: new Set(),
+        tags: ['@smoke', '@portal'],
+        annotations: [{ type: 'Note', description: '<script>x</script>' }],
+        firstAttemptErrors: [{ stack: 'Error: boom\n    at foo.spec.ts:10:5' }],
+      }
+      const runResult: ReportRunResult = {
+        ...createEmptyRunResult('Failed'),
+        counts: {
+          ...createEmptyCounts(),
+          allTests: 1,
+          executedTests: 1,
+          failedTests: 1,
+        },
+        lists: {
+          ...createEmptyRunResult('Failed').lists,
+          failedList: new Map([[fullTitle, testInfo]]),
+        },
+      }
+
+      const markdown = await new GitHubActionsReport(runResult, githubOptions).write()
+
+      expect.soft(markdown).toContain('Failed Tests')
+      expect.soft(markdown).toContain('**Tags:** `@smoke` `@portal`')
+      expect.soft(markdown).toContain('```\nError: boom')
+      expect.soft(markdown).toContain('Foo &lt;/summary&gt;&lt;b&gt;bar')
+      expect.soft(markdown).toContain('&lt;script&gt;x&lt;/script&gt;')
+      expect.soft(markdown).not.toContain('</summary><b>bar')
+    })
+
+    test('writes summary markdown to GITHUB_STEP_SUMMARY', async () => {
       const markdown = await new GitHubActionsReport(
         createEmptyRunResult('Failed'),
         githubOptions,
@@ -98,13 +127,6 @@ test.describe('GitHubActionsReport', () => {
       expect.soft(markdown).toContain('UI E2E tests result')
       expect.soft(markdown).toContain('Failed')
       expect.soft(readFileSync(summaryFile, 'utf8')).toContain('UI E2E tests result')
-    } finally {
-      if (previous === undefined) {
-        delete process.env.GITHUB_STEP_SUMMARY
-      } else {
-        process.env.GITHUB_STEP_SUMMARY = previous
-      }
-      rmSync(outputFolder, { recursive: true, force: true })
-    }
+    })
   })
 })

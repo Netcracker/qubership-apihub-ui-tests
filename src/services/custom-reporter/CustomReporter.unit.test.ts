@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { mkdtempSync, readFileSync, rmSync } from 'fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { createMockTestCase, createMockTestResult, runReporterLifecycle } from './custom-reporter.test-helpers'
@@ -201,5 +201,26 @@ test.describe('CustomReporter unit tests', () => {
       expect.soft(runResult.counts.executedTests).toBe(0)
       expect.soft(runResult.lists.flakyList.size).toBe(1)
     })
+  })
+
+  test('skips HTML report for unit-only suites even when html is true', async () => {
+    const outputFolder = mkdtempSync(join(tmpdir(), 'custom-reporter-unit-html-'))
+    const reporter = new CustomReporter({ html: true, outputFolder: outputFolder })
+    const testCase = createMockTestCase({
+      project: 'Unit',
+      title: 'sample unit test',
+      outcome: 'expected',
+      file: 'sample.unit.test.ts',
+    })
+
+    await runReporterLifecycle({
+      reporter: reporter,
+      testCases: [testCase],
+      fullResultStatus: 'passed',
+    })
+
+    expect.soft(readFileSync(join(outputFolder, 'status'), 'utf8')).toBe('Passed')
+    expect.soft(existsSync(join(outputFolder, 'summary-report.html'))).toBe(false)
+    rmSync(outputFolder, { recursive: true, force: true })
   })
 })

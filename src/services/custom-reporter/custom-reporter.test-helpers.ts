@@ -11,14 +11,16 @@ export type MockTestCaseParams = {
   results?: TestResult[]
   tags?: string[]
   annotations?: Array<{ type: string; description?: string }>
+  file?: string
 }
 
 export function createMockTestCase(params: MockTestCaseParams): TestCase {
   const parentTitle = params.parentTitle ?? 'describe block'
   const { outcome } = params
   const results = params.results ?? [createMockTestResult(0)]
+  const file = params.file ?? 'mock.spec.ts'
   // Mirrors Playwright titlePath: ['', project, file, ...describes, testTitle]
-  const titlePath = ['', params.project, 'mock.spec.ts', parentTitle, params.title]
+  const titlePath = ['', params.project, file, parentTitle, params.title]
   return {
     outcome: () => outcome,
     results: results,
@@ -27,6 +29,7 @@ export function createMockTestCase(params: MockTestCaseParams): TestCase {
     title: params.title,
     tags: params.tags ?? [],
     annotations: params.annotations ?? [],
+    location: { file: file },
   } as unknown as TestCase
 }
 
