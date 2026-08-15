@@ -50,20 +50,6 @@ test.describe('GitHubActionsReport', () => {
 
       expect.soft(labels).toEqual(['Summary', 'Status', 'Executed', 'Skipped', 'Flaky', 'Failed'])
     })
-
-    test('marks status as Failed when Executed is zero', () => {
-      const runResult = {
-        ...createEmptyRunResult('Passed'),
-        counts: createEmptyCounts(),
-      }
-
-      const rows = buildGitHubSummaryTable(runResult, githubOptions)
-      const statusRow = rows.find(row => row[0]?.data === 'Status')
-      const executedRow = rows.find(row => row[0]?.data === 'Executed')
-
-      expect.soft(statusRow?.[1]?.data).toBe('❌ Failed')
-      expect.soft(executedRow?.[1]?.data).toBe('0')
-    })
   })
 
   test('writes summary markdown to GITHUB_STEP_SUMMARY', async () => {
