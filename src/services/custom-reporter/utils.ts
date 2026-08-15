@@ -66,6 +66,10 @@ export function formatDate(date: Date): string {
   })
 }
 
+/**
+ * Replaces `{{key}}` placeholders with `String(value)`.
+ * Does not escape HTML; callers must escape user-controlled values first.
+ */
 export function formatTemplate(template: string, context: ReportTemplateContext): string {
   return Object.entries(context).reduce((page, [key, value]) => {
     return page.replace(new RegExp(`{{${key}}}`, 'g'), String(value))
