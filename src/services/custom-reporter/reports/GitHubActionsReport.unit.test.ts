@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createEmptyCounts, createEmptyRunResult } from '../custom-reporter.test-helpers'
+import type { ReportRunResult, ReportTestInfo } from '../types'
 import GitHubActionsReport, { buildGitHubSummaryTable } from './GitHubActionsReport'
 
 const githubOptions = { title: 'UI E2E tests result', affectRatio: false }
@@ -50,6 +51,35 @@ test.describe('GitHubActionsReport', () => {
 
       expect.soft(labels).toEqual(['Summary', 'Status', 'Executed', 'Skipped', 'Flaky', 'Failed'])
     })
+  })
+
+  test('escapes HTML in failed test details', async () => {
+    const fullTitle = 'Foo </summary><b>bar'
+    const testInfo: ReportTestInfo = {
+      project: 'portal',
+      fullTitle: fullTitle,
+      issues: new Set(),
+      annotations: [{ type: 'Note', description: '<script>x</script>' }],
+    }
+    const runResult: ReportRunResult = {
+      ...createEmptyRunResult('Failed'),
+      counts: {
+        ...createEmptyCounts(),
+        allTests: 1,
+        executedTests: 1,
+        failedTests: 1,
+      },
+      lists: {
+        ...createEmptyRunResult('Failed').lists,
+        failedList: new Map([[fullTitle, testInfo]]),
+      },
+    }
+
+    const markdown = await new GitHubActionsReport(runResult, githubOptions).write()
+
+    expect.soft(markdown).toContain('Foo &lt;/summary&gt;&lt;b&gt;bar')
+    expect.soft(markdown).toContain('&lt;script&gt;x&lt;/script&gt;')
+    expect.soft(markdown).not.toContain('</summary><b>bar')
   })
 
   test('writes summary markdown to GITHUB_STEP_SUMMARY', async () => {

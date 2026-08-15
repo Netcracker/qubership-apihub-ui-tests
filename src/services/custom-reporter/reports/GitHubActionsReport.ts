@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import type { TestError } from '@playwright/test/reporter'
 import type { GitHubReportOptions, ReportRunResult } from '../types'
-import { getAffectRatio } from '../utils'
+import { escapeHtml, getAffectRatio } from '../utils'
 
 const STATUS_LABELS: Record<ReportRunResult['status'], string> = {
   Passed: '✅ Passed',
@@ -106,7 +106,9 @@ export default class GitHubActionsReport {
 
       if (test.annotations && test.annotations.length > 0) {
         test.annotations.forEach(annotation => {
-          detailsContent += `**${annotation.type}**${annotation.description ? `: ${annotation.description}` : ''}\n\n`
+          detailsContent += `**${escapeHtml(annotation.type)}**${
+            annotation.description ? `: ${escapeHtml(annotation.description)}` : ''
+          }\n\n`
         })
       }
 
@@ -117,7 +119,7 @@ export default class GitHubActionsReport {
         })
       }
 
-      core.summary.addDetails(fullTitle, detailsContent)
+      core.summary.addDetails(escapeHtml(fullTitle), detailsContent)
     })
     core.summary.addSeparator()
   }
