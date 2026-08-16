@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     /* TS 6 reports "baseUrl" and "moduleResolution: Node" as deprecated (TS5101/TS5107);
-       both still function through 6.x. Migrating the resolution strategy belongs with
-       the TypeScript 7 move, not with this alignment. */
+      both still function through 6.x. Migrating the resolution strategy belongs with
+      the TypeScript 7 move, not with this alignment. */
     "ignoreDeprecations": "6.0",
     /* TypeScript 6 defaults "types" to [] rather than every package under @types. */
     "types": ["node"],
