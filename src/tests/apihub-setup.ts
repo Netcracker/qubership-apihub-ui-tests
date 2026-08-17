@@ -20,6 +20,18 @@ test('APIHUB Global Setup', async () => {
       'TEST_ID_R',
       'TEST_ID_N',
       'ADV_FILE',
+      'TEST_USER_PASSWORD',
+      'TEST_SSO_USER_EMAIL',
+      'TEST_SSO_USER_PASSWORD',
+      'TEST_CLOUD_ADMIN_NAME',
+      'TEST_CLOUD_ADMIN_PASSWORD',
+      'AGENT_TEST_CLOUD',
+      'TEST_DEFAULT_WORKSPACE_NAME',
+      'TEST_DEFAULT_WORKSPACE_ALIAS',
+      'TEST_PRODUCT_GROUP_NAME',
+      'TEST_PRODUCT_GROUP_ALIAS',
+      'TEST_SUB_GROUP_NAME',
+      'TEST_SUB_GROUP_ALIAS',
     ])
   })
 
