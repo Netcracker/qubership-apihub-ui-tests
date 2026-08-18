@@ -148,3 +148,45 @@ test.describe('02. Discover Services and Docs', () => {
       })
     })
 })
+
+test.describe('Specific functionality', () => {
+  const config = { namespace: TEST_NAMESPACE_2 }
+
+  test('Navigate to the Automation tab', {
+    tag: '@smoke',
+  }, async ({ sysadminPage: page }) => {
+    const agentPage = new AgentPage(page)
+    const { automationTab } = agentPage
+
+    await agentPage.gotoServicesTab(config)
+
+    await expect.soft(automationTab).toBeVisible()
+
+    await test.step('Navigate to the "Automation" tab', async () => {
+      await automationTab.click()
+
+      await expect.soft(automationTab.title).toHaveText('Automation')
+    })
+  })
+
+  test('Navigate to the Gateway Routing Report tab', {
+    tag: '@smoke',
+  }, async ({ sysadminPage: page }) => {
+    const agentPage = new AgentPage(page)
+    const { reportsTab } = agentPage
+
+    await agentPage.gotoServicesTab(config)
+
+    await test.step('Navigate to the "Security Reports" tab', async () => {
+      await reportsTab.click()
+
+      await expect.soft(reportsTab.gatewayReportTabBtn).toBeVisible()
+    })
+
+    await test.step('Navigate to the "Gateway Routing Report" tab', async () => {
+      await reportsTab.gatewayReportTabBtn.click()
+
+      await expect(reportsTab.runReportBtn).toBeEnabled()
+    })
+  })
+})

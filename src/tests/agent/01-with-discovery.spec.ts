@@ -57,7 +57,6 @@ test.describe('09. Full E2E', async () => {
         await expect.soft(agentPage.workspaceAc).toHaveValue(testWorkspace.name)
         await expect.soft(agentPage.servicesTab).toBeVisible()
         await expect.soft(agentPage.snapshotsTab).toBeVisible()
-        await expect.soft(agentPage.automationTab).toBeVisible()
         await expect.soft(stepper.discoverIndicator.icon).toBeVisible()
         await expect.soft(stepper.discoverIndicator.icon).toHaveClass(/Mui-active/)
         await expect.soft(stepper.snapshotIndicator.icon).toBeVisible()
