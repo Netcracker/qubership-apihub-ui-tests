@@ -560,10 +560,19 @@ Follow the evidence workflow defined in `AGENTS.md`, with these test-specific no
 
 ## File Structure Reference
 
+Portal:
+
 - Tests: `src/tests/portal/<feature>/<feature>.spec.ts`
 - Test data: `src/test-data/portal/<category>.ts`
 - Resources (files, fixtures): `resources/portal/<category>/<sub>/<file>`
 - POM files: `src/packages/portal/pages/<Page>/<Component>/<Component>.ts`
+
+Agent:
+
+- Tests: `src/tests/agent/<nn>-<name>.spec.ts` (project setup in `src/tests/agent/setup.ts`)
+- Test data: `src/test-data/agent/<category>.ts`
+- Resources (files, fixtures): `resources/agent/<file>`
+- POM files: `src/packages/agent/pages/<Page>/<Component>/<Component>.ts`
 
 ## Golden Rules
 
