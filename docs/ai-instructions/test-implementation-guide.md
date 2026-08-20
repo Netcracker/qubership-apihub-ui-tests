@@ -125,7 +125,7 @@ await createRulesetDialog.fillForm({
 
 ### Importing Agent POM or Agent test-data barrel from Portal
 
-`@test-data/agent` re-exports `TEST_CLOUD`, which calls `requireEnv('AGENT_TEST_CLOUD')` at module load. Portal-only runs (`--project=Portal`) still execute Portal-Setup, so a Portal spec or shared helper that imports `@agent/pages` or `@test-data/agent` will fail even if the Agent test is skipped.
+`@test-data/agent` reexports `TEST_CLOUD`, which calls `requireEnv('AGENT_TEST_CLOUD')` at module load. Portal-only runs (`--project=Portal`) still execute Portal-Setup, so a Portal spec or shared helper that imports `@agent/pages` or `@test-data/agent` will fail even if the Agent test is skipped.
 
 Keep Agent navigation/UI assertions in `src/tests/agent/**`. Shared helpers must import specific Agent modules (e.g. `./agent/packages`), not the Agent barrel. Portal specs may assert that an Agent entry point exists (button visible), but must not import Agent page objects.
 
