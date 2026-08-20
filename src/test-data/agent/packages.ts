@@ -31,3 +31,9 @@ export const TEST_SERVICE_2_VAR = new Package({
   ...TEST_SERVICE_2,
   parent: A_GR_APIHUB_N,
 })
+
+export const PK_A_UPLOAD_R = new Package({
+  name: 'Upload-options',
+  alias: 'PKAUPLR',
+  parent: A_GR_APIHUB_R,
+})

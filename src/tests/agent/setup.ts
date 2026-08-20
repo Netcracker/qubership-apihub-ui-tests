@@ -16,6 +16,7 @@ import {
   TEST_SERVICE_1_IMM,
   TEST_SERVICE_2,
   TEST_SERVICE_2_IMM,
+  PK_A_UPLOAD_R,
   V_A_ANNOTUNCLAS,
   V_A_MULTI_CHANGES,
   V_A_NO_CHANGES,
@@ -80,11 +81,15 @@ test.describe('Reusable Test Data creation', async () => {
     })
 
     await test.step('Create Packages', async () => {
-      const packages = [TEST_SERVICE_1_IMM, TEST_SERVICE_2_IMM]
+      const packages = [TEST_SERVICE_1_IMM, TEST_SERVICE_2_IMM, PK_A_UPLOAD_R]
       for (const pkg of packages) {
         await tdm.createPackage(pkg)
       }
     })
+  })
+
+  test('Empty upload package creation', async ({ apihubTDM: tdm }) => {
+    await tdm.createPackage(PK_A_UPLOAD_R)
   })
 
   test('Test Versions creation', async ({ apihubTDM: tdm }) => {

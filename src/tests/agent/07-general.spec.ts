@@ -2,9 +2,9 @@ import { AgentPage } from '@agent/pages'
 import { test } from '@fixtures'
 import { PortalPage } from '@portal/pages/PortalPage'
 import { expect } from '@services/expect-decorator'
-import { SEARCH_NAMESPACE, TEST_CLOUD } from '@test-data/agent'
+import { PK_A_UPLOAD_R, SEARCH_NAMESPACE, TEST_CLOUD } from '@test-data/agent'
 import { MIDDLE_EXPECT, TICKET_BASE_URL } from '@test-setup'
-import { isLocalHost } from '@services/utils'
+import { isDevProxyMode, isLocalHost } from '@services/utils'
 
 test.describe('01. General', () => {
 
@@ -46,6 +46,43 @@ test.describe('01. General', () => {
       await expect(portalPage.header.userMenu).toBeVisible({ timeout: MIDDLE_EXPECT })
       await expect.soft(portalPage.sidebar.workspacesBtn).toBeVisible()
     })
+
+  test('[A-GEN-3] Navigation from the Portal page',
+    {
+      tag: '@smoke',
+      annotation: { type: 'Test Case', description: `${TICKET_BASE_URL}TestCase-A-4279` },
+    },
+    async ({ sysadminPage: page }) => {
+      test.skip(isDevProxyMode(), 'Does not support dev proxy mode')
+
+      const portalPage = new PortalPage(page)
+      const agentPage = new AgentPage(page)
+
+      await portalPage.goto()
+      await portalPage.header.agentBtn.click()
+
+      await expect(agentPage.header.userMenu).toBeVisible({ timeout: MIDDLE_EXPECT })
+      await expect.soft(agentPage.cloudAc).toBeVisible()
+    })
+
+    test('[A-GEN-5] Navigation from the Upload options',
+      {
+        tag: '@smoke',
+      },
+      async ({ sysadminPage: page }) => {
+        test.skip(isDevProxyMode(), 'Does not support dev proxy mode')
+
+        const portalPage = new PortalPage(page)
+        const agentPage = new AgentPage(page)
+        const { versionPackagePage: versionPage } = portalPage
+        const { methodsForUploadDialog } = versionPage
+
+        await portalPage.gotoPackage(PK_A_UPLOAD_R)
+        await versionPage.howToUploadBtn.click()
+        await methodsForUploadDialog.toAgentBtn.click()
+
+        await expect(agentPage.cloudAc).toBeVisible()
+      })
 
   test('[A-GEN-4] Namespace search',
     {
