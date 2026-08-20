@@ -234,6 +234,7 @@ test.describe('08. Security Reports', () => {
         await expectFile(file).toHaveName(`IN PROGRESS_${config.namespace} authentication security report.xlsx`)
       })
 
+      // TODO: Investigate why this step is commented out and determine whether it is still required.
       /*await test.step('Wait for Discovery', async () => {
         await agentPage.servicesTabBtn.click()
         await agentPage.reload()
