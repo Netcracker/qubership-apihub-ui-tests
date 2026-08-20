@@ -1,8 +1,8 @@
-import { DRAFT_VERSION_STATUS_TITLE, RELEASE_VERSION_STATUS_TITLE } from '@shared/entities'
 import type { PromoteConfig } from '@agent/entities'
-import process from 'process'
+import { DRAFT_VERSION_STATUS_TITLE, RELEASE_VERSION_STATUS_TITLE } from '@shared/entities'
+import { requireEnv } from '@test-setup'
 
-export const TEST_CLOUD = process.env.AGENT_TEST_CLOUD as string
+export const TEST_CLOUD = requireEnv('AGENT_TEST_CLOUD')
 
 // For Full E2E and Reports scopes (running discovery)
 export const TEST_NAMESPACE_1 = 'api-hub-ci'
