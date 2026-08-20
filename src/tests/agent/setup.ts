@@ -10,7 +10,7 @@ import {
   A_GR_SUB_R,
   A_WS_DEFAULT,
   A_GR_PRODUCT_R,
-  getTestCloud,
+  TEST_CLOUD,
   TEST_NAMESPACE_2,
   TEST_SERVICE_1,
   TEST_SERVICE_1_IMM,
@@ -21,8 +21,6 @@ import {
   V_A_NO_CHANGES,
   V_A_NON_BREAKING,
 } from '@test-data/agent'
-
-const TEST_CLOUD = getTestCloud()
 
 test.describe.configure({ mode: 'serial', retries: 0 })
 

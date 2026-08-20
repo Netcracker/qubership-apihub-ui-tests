@@ -2,11 +2,9 @@ import { AgentPage } from '@agent/pages'
 import { test } from '@fixtures'
 import { PortalPage } from '@portal/pages/PortalPage'
 import { expect } from '@services/expect-decorator'
-import { getTestCloud, SEARCH_NAMESPACE } from '@test-data/agent'
+import { SEARCH_NAMESPACE, TEST_CLOUD } from '@test-data/agent'
 import { MIDDLE_EXPECT, TICKET_BASE_URL } from '@test-setup'
 import { isLocalHost } from '@services/utils'
-
-const TEST_CLOUD = getTestCloud()
 
 test.describe('01. General', () => {
 
