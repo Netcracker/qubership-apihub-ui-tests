@@ -2,7 +2,13 @@ import type { PromoteConfig } from '@agent/entities'
 import { DRAFT_VERSION_STATUS_TITLE, RELEASE_VERSION_STATUS_TITLE } from '@shared/entities'
 import { requireEnv } from '@test-setup'
 
-export const TEST_CLOUD = requireEnv('AGENT_TEST_CLOUD')
+let cachedTestCloud: string | undefined
+
+/** Resolves AGENT_TEST_CLOUD on first access (Agent tests only). */
+export function getTestCloud(): string {
+  cachedTestCloud ??= requireEnv('AGENT_TEST_CLOUD')
+  return cachedTestCloud
+}
 
 // For Full E2E and Reports scopes (running discovery)
 export const TEST_NAMESPACE_1 = 'api-hub-ci'

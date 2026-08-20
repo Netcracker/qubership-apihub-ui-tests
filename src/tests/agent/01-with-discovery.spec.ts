@@ -8,7 +8,7 @@ import {
   A_WS_N,
   SNAPSHOT_E2E_NO_BASELINE,
   SNAPSHOT_E2E_NO_BASELINE_SERVICE_2,
-  TEST_CLOUD,
+  getTestCloud,
   TEST_DOC,
   TEST_NAMESPACE_1,
   TEST_SERVICE,
@@ -19,6 +19,8 @@ import {
 } from '@test-data/agent'
 import { SYSADMIN, TEST_CLOUD_ADMIN } from '@test-data'
 import { getSysConfig } from '@test-data/props'
+
+const TEST_CLOUD = getTestCloud()
 
 test.describe('09. Full E2E', async () => {
   test('[A-DRP-1] Promote version after Re-Discovery',
