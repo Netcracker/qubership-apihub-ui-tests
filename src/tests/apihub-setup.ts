@@ -9,6 +9,7 @@ import path from 'path'
 test('APIHUB Global Setup', async () => {
   await test.step('Print environment variables', async () => {
     logEnvVars([
+      'CHROME_EXECUTABLE_PATH',
       'BASE_URL',
       'PLAYGROUND_BACKEND_HOST',
       'DEV_PROXY_MODE',

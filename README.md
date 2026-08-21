@@ -104,20 +104,21 @@ Hardcoded cluster objects (see `src/test-data/agent/other.ts`):
 
 ### Optional
 
-| Variable                     | Meaning                                                                |
-| ---------------------------- | ---------------------------------------------------------------------- |
-| TICKET_SYSTEM_URL            | Adds interactivity to links to test cases and issues                   |
-| CREATE_TD                    | Test data creation (`all`, `skip`, or default behavior)                |
-| CLEAR_TD                     | Test data deletion (`all`, `skip`, or default behavior)                |
-| TEST_ID_R                    | Reusable test data ID (4 chars); auto-generated if unset               |
-| TEST_ID_N                    | Non-reusable test data ID (4 chars); auto-generated if unset           |
-| ADV_FILE                     | Filename with URLs for `ADV-operations` and `ADV-comparisons` projects |
-| TEST_DEFAULT_WORKSPACE_NAME  | Agent default workspace name (default `Qubership`)                     |
-| TEST_DEFAULT_WORKSPACE_ALIAS | Agent default workspace alias (default `QS`)                           |
-| TEST_PRODUCT_GROUP_NAME      | Agent product group name (default `QS Product`)                        |
-| TEST_PRODUCT_GROUP_ALIAS     | Agent product group alias (default `QS`)                               |
-| TEST_SUB_GROUP_NAME          | Agent sub-group name (default `Sub Group`)                             |
-| TEST_SUB_GROUP_ALIAS         | Agent sub-group alias (default `SG`)                                   |
+| Variable                     | Meaning                                                                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| CHROME_EXECUTABLE_PATH       | Path to a Chrome/Chromium binary. Unset = Playwright bundled Chromium. Custom-Chrome CI example: `./chrome-linux64/chrome` |
+| TICKET_SYSTEM_URL            | Adds interactivity to links to test cases and issues                                                                       |
+| CREATE_TD                    | Test data creation (`all`, `skip`, or default behavior)                                                                    |
+| CLEAR_TD                     | Test data deletion (`all`, `skip`, or default behavior)                                                                    |
+| TEST_ID_R                    | Reusable test data ID (4 chars); auto-generated if unset                                                                   |
+| TEST_ID_N                    | Non-reusable test data ID (4 chars); auto-generated if unset                                                               |
+| ADV_FILE                     | Filename with URLs for `ADV-operations` and `ADV-comparisons` projects                                                     |
+| TEST_DEFAULT_WORKSPACE_NAME  | Agent default workspace name (default `Qubership`)                                                                         |
+| TEST_DEFAULT_WORKSPACE_ALIAS | Agent default workspace alias (default `QS`)                                                                               |
+| TEST_PRODUCT_GROUP_NAME      | Agent product group name (default `QS Product`)                                                                            |
+| TEST_PRODUCT_GROUP_ALIAS     | Agent product group alias (default `QS`)                                                                                   |
+| TEST_SUB_GROUP_NAME          | Agent sub-group name (default `Sub Group`)                                                                                 |
+| TEST_SUB_GROUP_ALIAS         | Agent sub-group alias (default `SG`)                                                                                       |
 
 ## Running tests
 
