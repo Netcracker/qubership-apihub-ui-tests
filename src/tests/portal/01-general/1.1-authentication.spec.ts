@@ -153,7 +153,9 @@ test.describe('Internal Authentication', () => {
     })
 })
 
-test.describe('SSO Authentication', () => {
+test.describe('SSO Authentication', { tag: '@specific' }, () => {
+  test.skip(!process.env.TEST_SSO_USER_EMAIL, 'Test environment is not configured for SSO testing')
+
   const TIMEOUT = 5000
 
   test('[P-SSO-1] Valid credentials (Email)',
