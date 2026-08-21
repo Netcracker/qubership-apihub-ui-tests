@@ -91,7 +91,6 @@ export default defineConfig<Fixtures>({
       name: 'Agent',
       testDir: './src/tests/agent',
       timeout: 100_000,
-      retries: process.env.CI ? 2 : 0,
       use: {
         ...devices['Desktop Chrome'],
       },
