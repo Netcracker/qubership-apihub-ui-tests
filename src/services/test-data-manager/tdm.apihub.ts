@@ -262,30 +262,6 @@ export class ApihubTestDataManager {
     await this.publishVersion(params)
   }
 
-  async updatePackageVersion(params: {
-    pkg: {
-      packageId: string
-      name?: string
-    }
-    version: string
-    status?: VersionStatuses
-    versionLabels?: string[]
-  }): Promise<void> {
-    const message = `Updating the "${params.version}" version in the "${
-      params.pkg.name || params.pkg.packageId
-    }" package`
-
-    await test.step(message, async () => {
-      const response = await this.rest.send(rUpdatePackageVersion, [200], {
-        ...params,
-        packageId: params.pkg.packageId,
-      })
-      if (response.status() !== 200) {
-        throw Error(await getRestFailMsg(message, response))
-      }
-    }, { box: true })
-  }
-
   async createOperationGroup(params: TdmOperationGroup): Promise<void> {
     const message = `Creating the "${params.groupName}" group in the "${params.packageId} / ${params.version} " version`
 
