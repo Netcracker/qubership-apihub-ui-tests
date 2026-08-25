@@ -8,10 +8,6 @@ export type VersionStatuses =
 export const RELEASE_VERSION_STATUS_TITLE = 'Release'
 export const DRAFT_VERSION_STATUS_TITLE = 'Draft'
 
-export type VersionStatusTitles =
-  | typeof RELEASE_VERSION_STATUS_TITLE
-  | typeof DRAFT_VERSION_STATUS_TITLE
-
 export const AGENT_SUCCESS_STATUS_ICON = 'CheckCircleRoundedIcon'
 export const AGENT_WARNING_STATUS_ICON = 'ErrorRoundedIcon'
 export const AGENT_ERROR_STATUS_ICON = 'CancelIcon'

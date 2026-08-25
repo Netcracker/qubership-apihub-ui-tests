@@ -24,12 +24,11 @@ import {
   rRecalculateGroups,
   rUpdateOperationGroup,
   rUpdatePackage,
-  rUpdatePackageVersion,
 } from '@services/rest'
 import type { RestPublishConfig, RestPublishFile } from '@services/rest/rest.types'
 import { asyncTimeout, getResponseDebugMsg, getRestFailMsg, getTestIdFromName } from '@services/utils'
 import { packToZip } from '@services/utils/files'
-import type { Credentials, PackageApiKey, TestFile, VersionStatuses } from '@shared/entities'
+import type { Credentials, PackageApiKey, TestFile } from '@shared/entities'
 import { TEST_PREFIX } from '@test-data'
 import { BASE_URL } from '@test-setup'
 import type {
