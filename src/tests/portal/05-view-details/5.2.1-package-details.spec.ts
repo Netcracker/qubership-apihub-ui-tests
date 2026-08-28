@@ -259,9 +259,7 @@ test.describe('5.2.1 Package details', () => {
       await versionSlt.click()
 
       await expect.soft(versionSlt.releaseBtn).toBeVisible()
-      // await expect.soft(versionSlt.releaseCandidateBtn).toBeVisible()
       await expect.soft(versionSlt.draftBtn).toBeVisible()
-      // await expect.soft(versionSlt.deprecatedBtn).toBeVisible()
       await expect.soft(versionSlt.getVersionRow(V_P_PKG_OPERATIONS_REST_R.version).publicationDateCell).not.toBeEmpty()
       await expect.soft(versionSlt.getVersionRow(V_P_PKG_OPERATIONS_REST_R.version).labelsCell).toHaveText(standardLabels)
 
