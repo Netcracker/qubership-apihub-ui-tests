@@ -1,50 +1,54 @@
 {
   "compilerOptions": {
-    /* TS 6 reports "baseUrl" and "moduleResolution: Node" as deprecated (TS5101/TS5107);
-      both still function through 6.x. Migrating the resolution strategy belongs with
-      the TypeScript 7 move, not with this alignment. */
-    "ignoreDeprecations": "6.0",
+    /* 'bundler' rather than 'nodenext'. This package is "type": "module", and nodenext
+      requires an explicit file extension on every relative import in an ESM package - 2,096
+      of them here. 'bundler' imposes no such requirement, is accepted by TypeScript 7, and
+      matches what playwright's own loader does. Was "Node", which TS 7 removed (TS5108).
+      "baseUrl" is gone for the same reason (TS5102). The paths targets below gained a
+      leading ./ so they stay explicit; without baseUrl they resolve relative to this file,
+      which is the directory baseUrl "." pointed at. Nothing here imports bare specifiers.
+      Kept as one comment block: eslint's json/* rule rejects comments in this file, and
+      splitting it would add a fourth error to a check that is already red with three. */
+    "moduleResolution": "bundler",
     /* TypeScript 6 defaults "types" to [] rather than every package under @types. */
     "types": ["node"],
     "target": "ES6",
     "module": "commonjs",
-    "moduleResolution": "Node",
     "sourceMap": true,
     "outDir": "dist/esm",
     "resolveJsonModule": true,
     "strict": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "paths": {
       "@factories": [
-        "src/factories"
+        "./src/factories"
       ],
       "@helpers": [
-        "src/helpers"
+        "./src/helpers"
       ],
       "@fixtures": [
-        "src/fixtures"
+        "./src/fixtures"
       ],
       "@agent/*": [
-        "src/packages/agent/*"
+        "./src/packages/agent/*"
       ],
       "@portal/*": [
-        "src/packages/portal/*"
+        "./src/packages/portal/*"
       ],
       "@shared/*": [
-        "src/packages/shared/*"
+        "./src/packages/shared/*"
       ],
       "@services/*": [
-        "src/services/*"
+        "./src/services/*"
       ],
       "@test-setup": [
-        "src/test-setup"
+        "./src/test-setup"
       ],
       "@test-data": [
-        "src/test-data"
+        "./src/test-data"
       ],
       "@test-data/*": [
-        "src/test-data/*"
+        "./src/test-data/*"
       ]
     }
   },

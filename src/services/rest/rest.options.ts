@@ -1,5 +1,20 @@
-import type { Serializable } from 'playwright-core/types/structs'
 import type { ReadStream } from 'fs'
+
+/**
+ * playwright-core declares `export type Serializable = any` in types/structs.d.ts. That file is
+ * not published by the package's `exports` map - only types/types.d.ts is, and it imports
+ * Serializable without re-exporting it - so the name is genuinely internal to playwright rather
+ * than merely unreachable. `moduleResolution: node` ignored the exports map and let the deep
+ * import through; `bundler` does not.
+ *
+ * Declared locally rather than reached for through a paths mapping, which is what the other two
+ * cases of this in the fleet needed. Those packages named a .d.ts in "types" and simply failed to
+ * expose it, so pointing at the shipped file recovered real type information. Here the upstream
+ * type is `any`, so there is nothing to recover: this alias is the identical contract without the
+ * boundary violation.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Serializable = any
 
 export type PostOptions = {
   /**
