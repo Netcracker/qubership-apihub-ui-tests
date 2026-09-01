@@ -3,10 +3,9 @@ import { defineConfig, devices } from '@playwright/test'
 import dayjs from 'dayjs'
 import 'dotenv/config'
 import process from 'node:process'
+import { getChromeExecutablePath } from './src/test-setup/process'
 
-const formatReportTimestamp = (date: Date): string => {
-  return dayjs(date).locale('en').format('DD MMM YYYY HH:mm')
-}
+const chromeExecutablePath = getChromeExecutablePath()
 
 /**
  * Read environment variables from file.
@@ -16,11 +15,12 @@ const formatReportTimestamp = (date: Date): string => {
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+
 export default defineConfig<Fixtures>({
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: 'temp/test-results',
   /* Timeout for the whole test run */
-  globalTimeout: 60_000 * 60,
+  globalTimeout: 60_000 * 110,
   /* Maximum time one test can run for. */
   timeout: 70_000,
   expect: {
@@ -35,6 +35,8 @@ export default defineConfig<Fixtures>({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   retries: 2,
+  /* 'isolated' runs all retries at the end, one by one in a single worker. */
+  retryStrategy: 'isolated',
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 10 : 3,
   /* Limit the number of failures on CI to save resources */
@@ -48,7 +50,15 @@ export default defineConfig<Fixtures>({
       noCopyPrompt: true,
     }],
     ['list'],
-    ['./src/services/custom-reporter/CustomReporter.ts', { reportType: 'apihub-styled-html' }],
+    [
+      './src/services/custom-reporter/CustomReporter.ts',
+      {
+        html: true,
+        github: process.env.GITHUB_ACTIONS === 'true'
+          ? { title: 'UI E2E tests result', affectRatio: false }
+          : false,
+      },
+    ],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -62,6 +72,10 @@ export default defineConfig<Fixtures>({
     /* Whether to ignore HTTPS errors when sending network requests. For Firefox in this case */
     ignoreHTTPSErrors: true,
     permissions: ['clipboard-read'],
+    /* Set CHROME_EXECUTABLE_PATH in CI that ships a custom Chrome; leave unset locally. */
+    launchOptions: chromeExecutablePath
+      ? { executablePath: chromeExecutablePath }
+      : undefined,
   },
   projects: [
     {
@@ -69,12 +83,18 @@ export default defineConfig<Fixtures>({
       testDir: './src/tests/portal',
       use: {
         ...devices['Desktop Chrome'],
-        launchOptions: {
-          // slowMo: 150,
-        },
         viewport: { width: 1440, height: 810 },
       },
       dependencies: ['Portal-Setup'],
+    },
+    {
+      name: 'Agent',
+      testDir: './src/tests/agent',
+      timeout: 100_000,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+      dependencies: ['Agent-Setup'],
     },
     {
       name: 'Apihub-Setup',
@@ -97,6 +117,16 @@ export default defineConfig<Fixtures>({
       dependencies: ['Apihub-Setup'],
     },
     {
+      name: 'Agent-Setup',
+      testDir: './src/tests/agent',
+      testMatch: /setup\.ts/,
+      timeout: 140_000,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+      dependencies: ['Apihub-Setup'],
+    },
+    {
       name: 'Utils',
       testDir: './src/tests/utils',
       testMatch: [/tools\.ts/, /cleanup\.ts/, /debug\.spec\.ts/],
@@ -104,14 +134,14 @@ export default defineConfig<Fixtures>({
     {
       name: 'Component',
       testDir: './src',
-      testMatch: [/spec\.component\.ts/],
+      testMatch: [/\.component\.test\.ts/],
       retries: 0,
       dependencies: ['Apihub-Setup'],
     },
     {
       name: 'Unit',
       testDir: './src',
-      testMatch: [/spec\.unit\.ts/],
+      testMatch: [/\.unit\.test\.ts/],
       retries: 0,
     },
     {
@@ -152,3 +182,7 @@ export default defineConfig<Fixtures>({
   //   port: 3000,
   // },
 })
+
+function formatReportTimestamp(date: Date): string {
+  return dayjs(date).locale('en').format('DD MMM YYYY HH:mm')
+}
